@@ -1,10 +1,14 @@
-//! Declarative scenario spec, loaded from TOML. v1 covers one operation:
-//! decode the input and compare per-frame hashes against a reference engine.
+//! Declarative scenario spec, loaded from TOML. Two modes:
+//! - differential: decode the input and compare per-frame hashes against a
+//!   reference engine (needs `[video]` geometry).
+//! - robustness: corrupt the input via `[fault]` and assert every engine
+//!   degrades gracefully instead of crashing or hanging.
 
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+use crate::fault::Fault;
 use crate::{Error, Result};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -18,7 +22,17 @@ pub struct Scenario {
     #[serde(default = "default_timeout")]
     pub timeout_secs: u64,
     pub input: Input,
-    pub video: Video,
+    /// decoded geometry, required for a differential scenario (no `[fault]`)
+    pub video: Option<Video>,
+    /// present for a robustness scenario: corrupt the input before running
+    pub fault: Option<Fault>,
+}
+
+impl Scenario {
+    /// robustness scenarios assert graceful degradation, not frame equality
+    pub fn is_robustness(&self) -> bool {
+        self.fault.is_some()
+    }
 }
 
 fn default_timeout() -> u64 {
@@ -86,13 +100,29 @@ impl Scenario {
                 self.reference
             )));
         }
-        match (&self.input.corpus, &self.input.path) {
-            (Some(_), None) | (None, Some(_)) => Ok(()),
-            _ => Err(Error::Parse(format!(
+        if !matches!(
+            (&self.input.corpus, &self.input.path),
+            (Some(_), None) | (None, Some(_))
+        ) {
+            return Err(Error::Parse(format!(
                 "{}: input needs exactly one of corpus / path",
                 at()
-            ))),
+            )));
         }
+        // a differential scenario compares decoded frames, so it needs geometry;
+        // a robustness scenario ignores it (a corrupt stream will not decode)
+        if self.fault.is_none() && self.video.is_none() {
+            return Err(Error::Parse(format!(
+                "{}: a differential scenario needs [video] (or add [fault] for robustness)",
+                at()
+            )));
+        }
+        if let Some(fault) = &self.fault {
+            fault
+                .validate()
+                .map_err(|e| Error::Parse(format!("{}: {e}", at())))?;
+        }
+        Ok(())
     }
 }
 
@@ -149,6 +179,38 @@ mod tests {
             width = 16
             height = 16
             format = "i420"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+    }
+
+    #[test]
+    fn robustness_scenario_needs_no_video() {
+        let toml = r#"
+            id = "fuzz"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+
+            [input]
+            path = "clip.ts"
+
+            [fault]
+            mode = "bit-flip"
+            count = 200
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        s.validate(Path::new("test.toml")).unwrap();
+        assert!(s.is_robustness());
+    }
+
+    #[test]
+    fn rejects_differential_scenario_without_video() {
+        let toml = r#"
+            id = "no-geom"
+            engines = ["ffmpeg"]
+            reference = "ffmpeg"
+            [input]
+            path = "clip.ts"
         "#;
         let s: Scenario = toml::from_str(toml).unwrap();
         assert!(s.validate(Path::new("test.toml")).is_err());

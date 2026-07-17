@@ -5,10 +5,15 @@ multiple engines (ffmpeg, GStreamer, [glass2glass](https://github.com/Glass2Glas
 as black-box subprocesses and asserts their outputs are bit-exact, so a
 divergence is a real bug in one of them.
 
-v1 scope: decode scenarios compared by per-frame MD5 (ffmpeg's framemd5
-format), with crash/signal/timeout detection and peak-RSS tracking.
-Engine-neutral by construction: engine knowledge lives only in
-`calliope-adapter-*` crates.
+Two scenario modes:
+- **differential**: decode and compare per-frame MD5 (ffmpeg's framemd5
+  format) against a reference engine; a divergence is a real bug.
+- **robustness**: corrupt the input (`[fault]`: bit-flip, truncate, byte-drop)
+  and require every engine to degrade gracefully (clean exit or error), never
+  crash or hang. Targets parser / demuxer hardening against malformed input.
+
+Both track crash/signal/timeout status and peak RSS. Engine-neutral by
+construction: engine knowledge lives only in `calliope-adapter-*` crates.
 
 ## Layout
 
@@ -39,9 +44,21 @@ glass2glass build: `cargo build -p g2g-plugins --features std --bin g2g-launch`.
 
 One TOML per scenario, see `scenarios/`. Input is a local `path` or a `corpus`
 vector id from `corpus/vectors.toml`; vectors download on demand into
-`~/.cache/calliope` (override: `CALLIOPE_CACHE`) and verify by sha256. Decoded
-geometry is explicit (`[video]`) because raw-dump engines are hashed by
-chunking; wrong geometry fails loudly as a trailing partial frame.
+`~/.cache/calliope` (override: `CALLIOPE_CACHE`) and verify by sha256.
+
+A differential scenario declares `[video]` geometry (raw-dump engines are
+hashed by chunking; wrong geometry fails loudly as a trailing partial frame). A
+robustness scenario declares `[fault]` instead and needs no geometry:
+
+```toml
+[fault]
+mode = "bit-flip"   # or truncate | byte-drop
+seed = 1            # reproducible corruption
+count = 500         # bit-flip / byte-drop operations
+keep-percent = 50   # truncate: front fraction kept
+```
+
+The corrupted input is generated once and fed to every engine identically.
 
 Timing and RSS are recorded per run for within-engine regression tracking;
 they are never compared across engines (different buffering models make that

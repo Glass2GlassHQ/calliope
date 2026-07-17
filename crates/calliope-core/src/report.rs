@@ -15,6 +15,8 @@ pub struct Report {
 pub struct ScenarioReport {
     pub scenario: String,
     pub reference: String,
+    /// robustness scenario: judged on graceful degradation, not frame equality
+    pub robustness: bool,
     pub runs: Vec<EngineReport>,
 }
 
@@ -28,6 +30,12 @@ pub struct EngineReport {
 
 impl ScenarioReport {
     pub fn passed(&self) -> bool {
+        if self.robustness {
+            return self
+                .runs
+                .iter()
+                .all(|r| r.run.status.survived_corrupt_input());
+        }
         self.runs.iter().all(|r| {
             matches!(r.run.status, RunStatus::Ok) && r.comparison.as_ref().is_none_or(|c| c.matched)
         })

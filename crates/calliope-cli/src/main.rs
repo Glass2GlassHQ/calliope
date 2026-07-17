@@ -140,13 +140,25 @@ async fn run_matrix(
 
     let mut prepared = Vec::new();
     for scenario in scenarios {
-        let input = match (&scenario.input.corpus, &scenario.input.path) {
+        let source = match (&scenario.input.corpus, &scenario.input.path) {
             (Some(id), _) => {
                 let vector = manifest.as_ref().unwrap().get(id)?;
                 corpus::fetch(vector, &cache).await?
             }
             (None, Some(path)) => path.clone(),
             _ => unreachable!("validated at load"),
+        };
+        // a robustness scenario corrupts the input once, then feeds the mangled
+        // file to every engine (all engines see the identical corruption)
+        let input = match &scenario.fault {
+            Some(fault) => {
+                let dir = workdir.join(&scenario.id);
+                std::fs::create_dir_all(&dir)?;
+                let corrupted = dir.join("input.corrupted");
+                fault.corrupt_file(&source, &corrupted)?;
+                corrupted
+            }
+            None => source,
         };
         let engine_ids: Vec<&String> = scenario
             .engines
@@ -219,6 +231,7 @@ async fn run_matrix(
         report.scenarios.push(ScenarioReport {
             scenario: scenario.id.clone(),
             reference: scenario.reference.clone(),
+            robustness: scenario.is_robustness(),
             runs,
         });
     }
@@ -241,7 +254,15 @@ fn print_summary(report: &Report) {
                 .run
                 .peak_rss_kb
                 .map_or("-".into(), |kb| format!("{} MB", kb / 1024));
-            let verdict = if r.run.engine == scenario.reference {
+            let verdict = if scenario.robustness {
+                // absolute per engine: a crash / hang is a hardening bug
+                match &r.run.status {
+                    RunStatus::Signaled { .. } => "CRASHED".to_string(),
+                    RunStatus::Timeout => "HUNG".to_string(),
+                    s if s.survived_corrupt_input() => "survived".to_string(),
+                    _ => "errored".to_string(),
+                }
+            } else if r.run.engine == scenario.reference {
                 "(reference)".to_string()
             } else {
                 match &r.comparison {

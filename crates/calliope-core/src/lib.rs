@@ -6,6 +6,7 @@
 pub mod compare;
 pub mod corpus;
 pub mod engine;
+pub mod fault;
 pub mod framehash;
 pub mod report;
 pub mod runner;

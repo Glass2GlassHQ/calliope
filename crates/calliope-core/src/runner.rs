@@ -24,6 +24,15 @@ pub enum RunStatus {
     Error { message: String },
 }
 
+impl RunStatus {
+    /// Robustness verdict: a corrupt input may be rejected (non-zero exit) but
+    /// must not crash the process or hang. A `Signaled` (SIGSEGV / SIGABRT) or
+    /// `Timeout` is a hardening bug; a harness `Error` means we could not judge.
+    pub fn survived_corrupt_input(&self) -> bool {
+        matches!(self, RunStatus::Ok | RunStatus::ExitFailure { .. })
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct RunResult {
     pub engine: String,
@@ -114,7 +123,9 @@ pub async fn run_one(
     let peak = peak_rss.load(Ordering::Relaxed);
     let peak_rss_kb = (peak > 0).then_some(peak);
 
-    let frame_hashes = if matches!(status, RunStatus::Ok) {
+    // a robustness scenario judges the exit status only; a corrupt stream is
+    // not expected to produce comparable frames, so skip hash extraction
+    let frame_hashes = if !scenario.is_robustness() && matches!(status, RunStatus::Ok) {
         match extract_hashes(&invocation.output, scenario) {
             Ok(h) => Some(h),
             Err(e) => {
@@ -150,7 +161,10 @@ fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String
             framehash::parse_framemd5(&std::fs::read_to_string(path)?)
         }
         OutputSpec::RawVideoFile(path) => {
-            framehash::hash_raw_dump(path, scenario.video.frame_size())?
+            let video = scenario
+                .video
+                .ok_or_else(|| Error::Parse("raw-dump engine needs [video] geometry".into()))?;
+            framehash::hash_raw_dump(path, video.frame_size())?
         }
     };
     if hashes.is_empty() {
@@ -226,11 +240,12 @@ mod tests {
                 corpus: None,
                 path: Some("/dev/null".into()),
             },
-            video: Video {
+            video: Some(Video {
                 width: 2,
                 height: 2,
                 format: PixelFormat::I420,
-            },
+            }),
+            fault: None,
         }
     }
 
