@@ -37,8 +37,16 @@ Non-zero exit on any divergence, crash, or timeout. `--engines ffmpeg,gstreamer`
 restricts a run to installed engines (the scenario's reference must stay).
 
 Engine binaries resolve from PATH; override with `CALLIOPE_FFMPEG`,
-`CALLIOPE_GST_LAUNCH`, `CALLIOPE_G2G_LAUNCH`. `g2g-launch` comes from a
-glass2glass build: `cargo build -p g2g-plugins --features std --bin g2g-launch`.
+`CALLIOPE_GST_LAUNCH`, `CALLIOPE_G2G_LAUNCH`. Build `g2g-launch` with the codec
+features you want to exercise and point the env var at a stable copy, not
+`target/debug` (a background `cargo`/rust-analyzer rebuild can overwrite it with
+a different feature set):
+
+```sh
+cargo build -p g2g-plugins --features ffmpeg --bin g2g-launch
+cp target/debug/g2g-launch ~/.local/bin/g2g-launch-ffmpeg
+export CALLIOPE_G2G_LAUNCH=~/.local/bin/g2g-launch-ffmpeg
+```
 
 ## Scenarios
 
@@ -48,7 +56,10 @@ vector id from `corpus/vectors.toml`; vectors download on demand into
 
 A differential scenario declares `[video]` geometry (raw-dump engines are
 hashed by chunking; wrong geometry fails loudly as a trailing partial frame). A
-robustness scenario declares `[fault]` instead and needs no geometry:
+`[soak]` scenario repeats the run `iterations` times and passes only if no
+iteration crashes or hangs (catches intermittent failures; each iteration is a
+fresh process, so this is a stability probe, not a memory-leak endurance test).
+A robustness scenario declares `[fault]` instead and needs no geometry:
 
 ```toml
 [fault]

@@ -10,7 +10,7 @@ use calliope_core::compare::compare;
 use calliope_core::corpus::{self, Manifest};
 use calliope_core::engine::Engine;
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
-use calliope_core::runner::{RunStatus, run_one};
+use calliope_core::runner::{RunStatus, run_one, run_soak};
 use calliope_core::scenario::Scenario;
 
 #[derive(Parser)]
@@ -187,7 +187,11 @@ async fn run_matrix(
                 break;
             };
             pending.push(async move {
-                let result = run_one(engine.as_ref(), scenario, &input, workdir).await;
+                let result = if scenario.is_soak() {
+                    run_soak(engine.as_ref(), scenario, &input, workdir).await
+                } else {
+                    run_one(engine.as_ref(), scenario, &input, workdir).await
+                };
                 (scenario.id.clone(), result)
             });
         }
@@ -232,6 +236,7 @@ async fn run_matrix(
             scenario: scenario.id.clone(),
             reference: scenario.reference.clone(),
             robustness: scenario.is_robustness(),
+            soak: scenario.is_soak(),
             runs,
         });
     }
@@ -254,7 +259,17 @@ fn print_summary(report: &Report) {
                 .run
                 .peak_rss_kb
                 .map_or("-".into(), |kb| format!("{} MB", kb / 1024));
-            let verdict = if scenario.robustness {
+            let verdict = if scenario.soak {
+                let done = r.run.iterations_completed.unwrap_or(0);
+                match &r.run.status {
+                    RunStatus::Signaled { signal } => {
+                        format!("CRASHED (signal {signal}) at run {done}")
+                    }
+                    RunStatus::Timeout => format!("HUNG at run {done}"),
+                    s if s.survived_corrupt_input() => format!("stable ({done} runs)"),
+                    _ => format!("errored at run {done}"),
+                }
+            } else if scenario.robustness {
                 // absolute per engine: a crash / hang is a hardening bug
                 match &r.run.status {
                     RunStatus::Signaled { .. } => "CRASHED".to_string(),

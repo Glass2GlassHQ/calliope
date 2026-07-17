@@ -26,12 +26,33 @@ pub struct Scenario {
     pub video: Option<Video>,
     /// present for a robustness scenario: corrupt the input before running
     pub fault: Option<Fault>,
+    /// present for a soak scenario: repeat the run and watch for instability
+    pub soak: Option<Soak>,
+}
+
+/// Repeat the run `iterations` times and assert it never crashes or hangs on
+/// any iteration. Catches intermittent / order-dependent failures a single
+/// pass misses. Each iteration is a fresh process, so this is a stability
+/// probe, not a within-process memory-leak endurance test.
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Soak {
+    pub iterations: usize,
 }
 
 impl Scenario {
     /// robustness scenarios assert graceful degradation, not frame equality
     pub fn is_robustness(&self) -> bool {
         self.fault.is_some()
+    }
+
+    pub fn is_soak(&self) -> bool {
+        self.soak.is_some()
+    }
+
+    /// only a plain differential scenario hashes and compares decoded frames
+    pub fn judges_frames(&self) -> bool {
+        self.fault.is_none() && self.soak.is_none()
     }
 }
 
@@ -109,11 +130,17 @@ impl Scenario {
                 at()
             )));
         }
-        // a differential scenario compares decoded frames, so it needs geometry;
-        // a robustness scenario ignores it (a corrupt stream will not decode)
-        if self.fault.is_none() && self.video.is_none() {
+        if self.fault.is_some() && self.soak.is_some() {
             return Err(Error::Parse(format!(
-                "{}: a differential scenario needs [video] (or add [fault] for robustness)",
+                "{}: [fault] and [soak] are separate modes, use one",
+                at()
+            )));
+        }
+        // a differential scenario compares decoded frames, so it needs geometry;
+        // robustness / soak scenarios do not judge frames
+        if self.judges_frames() && self.video.is_none() {
+            return Err(Error::Parse(format!(
+                "{}: a differential scenario needs [video] (or add [fault] / [soak])",
                 at()
             )));
         }
@@ -121,6 +148,14 @@ impl Scenario {
             fault
                 .validate()
                 .map_err(|e| Error::Parse(format!("{}: {e}", at())))?;
+        }
+        if let Some(soak) = &self.soak
+            && soak.iterations < 2
+        {
+            return Err(Error::Parse(format!(
+                "{}: soak iterations must be >= 2",
+                at()
+            )));
         }
         Ok(())
     }

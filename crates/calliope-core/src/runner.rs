@@ -42,6 +42,9 @@ pub struct RunResult {
     #[serde(skip)]
     pub frame_hashes: Option<Vec<String>>,
     pub log_dir: PathBuf,
+    /// soak only: how many iterations ran (all of them if it never crashed)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub iterations_completed: Option<usize>,
 }
 
 /// run one engine on one scenario; never panics on engine failure, every
@@ -60,6 +63,7 @@ pub async fn run_one(
         peak_rss_kb: None,
         frame_hashes: None,
         log_dir: run_dir.clone(),
+        iterations_completed: None,
     };
 
     if let Err(e) = std::fs::create_dir_all(&run_dir) {
@@ -123,9 +127,9 @@ pub async fn run_one(
     let peak = peak_rss.load(Ordering::Relaxed);
     let peak_rss_kb = (peak > 0).then_some(peak);
 
-    // a robustness scenario judges the exit status only; a corrupt stream is
-    // not expected to produce comparable frames, so skip hash extraction
-    let frame_hashes = if !scenario.is_robustness() && matches!(status, RunStatus::Ok) {
+    // only a differential scenario compares frames; robustness / soak judge the
+    // exit status only, so skip hash extraction for them
+    let frame_hashes = if scenario.judges_frames() && matches!(status, RunStatus::Ok) {
         match extract_hashes(&invocation.output, scenario) {
             Ok(h) => Some(h),
             Err(e) => {
@@ -138,6 +142,7 @@ pub async fn run_one(
                     peak_rss_kb,
                     frame_hashes: None,
                     log_dir: run_dir,
+                    iterations_completed: None,
                 };
             }
         }
@@ -152,7 +157,41 @@ pub async fn run_one(
         peak_rss_kb,
         frame_hashes,
         log_dir: run_dir,
+        iterations_completed: None,
     }
+}
+
+/// Repeat [`run_one`] `iterations` times (a soak scenario), stopping at the
+/// first crash or hang. Returns a single `RunResult` whose status is the first
+/// non-surviving outcome (else `Ok`), `peak_rss_kb` the max seen, and
+/// `iterations_completed` how many ran. Each iteration is a fresh process.
+pub async fn run_soak(
+    engine: &dyn Engine,
+    scenario: &Scenario,
+    input: &Path,
+    workdir: &Path,
+) -> RunResult {
+    let iterations = scenario.soak.map(|s| s.iterations).unwrap_or(1);
+    let mut peak_rss_kb: Option<u64> = None;
+    let mut total_ms = 0u128;
+    let mut last = None;
+    let mut completed = 0;
+    for _ in 0..iterations {
+        let r = run_one(engine, scenario, input, workdir).await;
+        completed += 1;
+        total_ms += r.duration_ms;
+        peak_rss_kb = peak_rss_kb.max(r.peak_rss_kb);
+        let survived = r.status.survived_corrupt_input();
+        last = Some(r);
+        if !survived {
+            break;
+        }
+    }
+    let mut result = last.expect("soak runs at least once");
+    result.duration_ms = total_ms;
+    result.peak_rss_kb = peak_rss_kb;
+    result.iterations_completed = Some(completed);
+    result
 }
 
 fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String>> {
@@ -246,6 +285,7 @@ mod tests {
                 format: PixelFormat::I420,
             }),
             fault: None,
+            soak: None,
         }
     }
 
@@ -295,5 +335,36 @@ mod tests {
         };
         let result = run_one(&engine, &scenario(1), Path::new("/dev/null"), &wd).await;
         assert!(matches!(result.status, RunStatus::Timeout));
+    }
+
+    fn soak_scenario(iterations: usize, timeout_secs: u64) -> Scenario {
+        let mut s = scenario(timeout_secs);
+        s.soak = Some(crate::scenario::Soak { iterations });
+        s
+    }
+
+    #[tokio::test]
+    async fn soak_runs_all_iterations_when_stable() {
+        let wd = workdir("soak-ok");
+        let engine = FakeEngine {
+            program: "true",
+            args: vec![],
+        };
+        let result = run_soak(&engine, &soak_scenario(5, 30), Path::new("/dev/null"), &wd).await;
+        assert!(result.status.survived_corrupt_input());
+        assert_eq!(result.iterations_completed, Some(5));
+    }
+
+    #[tokio::test]
+    async fn soak_stops_at_first_hang() {
+        let wd = workdir("soak-hang");
+        let engine = FakeEngine {
+            program: "sleep",
+            args: vec!["10".into()],
+        };
+        let result = run_soak(&engine, &soak_scenario(5, 1), Path::new("/dev/null"), &wd).await;
+        assert!(matches!(result.status, RunStatus::Timeout));
+        // stopped on the very first iteration's hang, not all five
+        assert_eq!(result.iterations_completed, Some(1));
     }
 }

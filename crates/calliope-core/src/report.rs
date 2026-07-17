@@ -17,6 +17,8 @@ pub struct ScenarioReport {
     pub reference: String,
     /// robustness scenario: judged on graceful degradation, not frame equality
     pub robustness: bool,
+    /// soak scenario: judged on stability across repeated iterations
+    pub soak: bool,
     pub runs: Vec<EngineReport>,
 }
 
@@ -30,7 +32,9 @@ pub struct EngineReport {
 
 impl ScenarioReport {
     pub fn passed(&self) -> bool {
-        if self.robustness {
+        // robustness and soak both pass on graceful survival (no crash / hang),
+        // differential on Ok status plus a matching frame comparison
+        if self.robustness || self.soak {
             return self
                 .runs
                 .iter()
