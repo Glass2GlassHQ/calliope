@@ -17,6 +17,7 @@ md-5.workspace = true
 sha2.workspace = true
 hex.workspace = true
 reqwest.workspace = true
+zip.workspace = true
 
 [lints]
 workspace = true

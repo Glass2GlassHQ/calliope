@@ -18,6 +18,7 @@ calliope-adapter-g2g.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 serde_json.workspace = true
+toml.workspace = true
 tokio.workspace = true
 futures.workspace = true
 

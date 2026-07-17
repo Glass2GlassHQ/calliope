@@ -31,6 +31,17 @@ enum Command {
         /// vector ids; all when empty
         ids: Vec<String>,
     },
+    /// import Fluster conformance suite JSONs into the corpus manifest
+    CorpusImport {
+        /// a Fluster test_suites directory or a single suite .json
+        #[arg(long)]
+        fluster: PathBuf,
+        #[arg(long, default_value = "corpus/vectors.toml")]
+        out: PathBuf,
+        /// cap the number of imported vectors (0 = all)
+        #[arg(long, default_value_t = 0)]
+        limit: usize,
+    },
     /// run scenarios and compare engines against the reference
     Run {
         scenarios: Vec<PathBuf>,
@@ -90,6 +101,35 @@ async fn main() -> Result<ExitCode> {
                 let path = corpus::fetch(vector, &cache).await?;
                 println!("{:<40} {}", vector.id, path.display());
             }
+            Ok(ExitCode::SUCCESS)
+        }
+        Command::CorpusImport { fluster, out, limit } => {
+            let mut imported = if fluster.is_dir() {
+                calliope_core::fluster::import_dir(&fluster)?
+            } else {
+                calliope_core::fluster::import_suite_json(&std::fs::read_to_string(&fluster)?)?
+            };
+            if limit > 0 {
+                imported.truncate(limit);
+            }
+            // merge additively into an existing manifest, keyed by id
+            let mut manifest = if out.exists() {
+                Manifest::load(&out)?
+            } else {
+                Manifest::default()
+            };
+            let existing: std::collections::HashSet<String> =
+                manifest.vector.iter().map(|v| v.id.clone()).collect();
+            let added = imported.iter().filter(|v| !existing.contains(&v.id)).count();
+            manifest
+                .vector
+                .extend(imported.into_iter().filter(|v| !existing.contains(&v.id)));
+            manifest.vector.sort_by(|a, b| a.id.cmp(&b.id));
+            if let Some(parent) = out.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(&out, toml::to_string(&manifest)?)?;
+            println!("imported {added} new vectors ({} total) -> {}", manifest.vector.len(), out.display());
             Ok(ExitCode::SUCCESS)
         }
         Command::Run {
