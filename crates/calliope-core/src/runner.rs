@@ -45,6 +45,10 @@ pub struct RunResult {
     /// soak only: how many iterations ran (all of them if it never crashed)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub iterations_completed: Option<usize>,
+    /// golden only: MD5 of the whole decoded output, compared to the vector's
+    /// conformance `decoded-md5`
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub golden_md5: Option<String>,
 }
 
 /// run one engine on one scenario; never panics on engine failure, every
@@ -64,6 +68,7 @@ pub async fn run_one(
         frame_hashes: None,
         log_dir: run_dir.clone(),
         iterations_completed: None,
+        golden_md5: None,
     };
 
     if let Err(e) = std::fs::create_dir_all(&run_dir) {
@@ -143,8 +148,20 @@ pub async fn run_one(
                     frame_hashes: None,
                     log_dir: run_dir,
                     iterations_completed: None,
+                    golden_md5: None,
                 };
             }
+        }
+    } else {
+        None
+    };
+
+    // golden: MD5 the whole decoded output to compare against the conformance
+    // hash (all engines emit a raw-video dump in golden mode)
+    let golden_md5 = if scenario.is_golden() && matches!(status, RunStatus::Ok) {
+        match &invocation.output {
+            OutputSpec::RawVideoFile(path) => whole_file_md5(path).ok(),
+            OutputSpec::FrameMd5File(_) => None,
         }
     } else {
         None
@@ -158,7 +175,25 @@ pub async fn run_one(
         frame_hashes,
         log_dir: run_dir,
         iterations_completed: None,
+        golden_md5,
     }
+}
+
+/// streaming MD5 of a whole file (the golden conformance hash)
+fn whole_file_md5(path: &Path) -> Result<String> {
+    use md5::{Digest, Md5};
+    use std::io::Read;
+    let mut file = std::fs::File::open(path)?;
+    let mut hasher = Md5::new();
+    let mut buf = [0u8; 64 * 1024];
+    loop {
+        let n = file.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    Ok(hex::encode(hasher.finalize()))
 }
 
 /// Repeat [`run_one`] `iterations` times (a soak scenario), stopping at the
@@ -289,6 +324,7 @@ mod tests {
             }),
             fault: None,
             soak: None,
+            golden: false,
         }
     }
 

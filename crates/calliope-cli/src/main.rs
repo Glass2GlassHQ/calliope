@@ -11,7 +11,7 @@ use calliope_core::corpus::{self, Manifest};
 use calliope_core::engine::Engine;
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
 use calliope_core::runner::{RunStatus, run_one, run_soak};
-use calliope_core::scenario::Scenario;
+use calliope_core::scenario::{Scenario, Video};
 
 #[derive(Parser)]
 #[command(name = "calliope", about = "differential media QA harness", version)]
@@ -192,7 +192,7 @@ async fn run_matrix(
     // resolve each scenario once (fetch input, corrupt for a fault, probe
     // geometry when a differential scenario omits [video]); the resolved
     // scenario is shared across its engines and drives the report.
-    let mut resolved: Vec<Arc<Scenario>> = Vec::new();
+    let mut resolved: Vec<(Arc<Scenario>, Option<String>)> = Vec::new();
     let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf)> = Vec::new();
     for scenario in scenarios {
         let source = match (&scenario.input.corpus, &scenario.input.path) {
@@ -216,7 +216,32 @@ async fn run_matrix(
             None => source,
         };
         let mut scenario = scenario.clone();
-        if scenario.judges_frames() && scenario.video.is_none() {
+        let mut golden_expected = None;
+        if scenario.is_golden() {
+            // the corpus vector carries the oracle: its output format and the
+            // conformance MD5 every engine's decoded output must match
+            let id = scenario.input.corpus.as_ref().expect("golden needs corpus");
+            let vector = manifest.as_ref().unwrap().get(id)?;
+            let format = vector.output_format.with_context(|| {
+                format!(
+                    "{}: vector '{id}' has no output-format for golden",
+                    scenario.id
+                )
+            })?;
+            golden_expected = Some(vector.decoded_md5.clone().with_context(|| {
+                format!(
+                    "{}: vector '{id}' has no decoded-md5 for golden",
+                    scenario.id
+                )
+            })?);
+            // golden hashes the whole output, so geometry is unused; only the
+            // pixel format drives the engines' conversion target
+            scenario.video = Some(Video {
+                width: 0,
+                height: 0,
+                format,
+            });
+        } else if scenario.judges_frames() && scenario.video.is_none() {
             scenario.video = Some(
                 calliope_core::probe::probe_geometry(&input)
                     .with_context(|| format!("{}: auto-probing geometry", scenario.id))?,
@@ -238,7 +263,7 @@ async fn run_matrix(
         for id in engine_ids {
             prepared.push((Arc::clone(&scenario), engine_by_id(id)?, input.clone()));
         }
-        resolved.push(scenario);
+        resolved.push((scenario, golden_expected));
     }
 
     // flat (scenario, engine) matrix with bounded parallelism
@@ -268,7 +293,7 @@ async fn run_matrix(
     let mut report = Report {
         scenarios: Vec::new(),
     };
-    for scenario in &resolved {
+    for (scenario, golden_expected) in &resolved {
         let mut runs: Vec<_> = results
             .extract_if(.., |(id, _)| id == &scenario.id)
             .map(|(_, run)| run)
@@ -301,6 +326,7 @@ async fn run_matrix(
             reference: scenario.reference.clone(),
             robustness: scenario.is_robustness(),
             soak: scenario.is_soak(),
+            golden_expected: golden_expected.clone(),
             runs,
         });
     }
@@ -323,7 +349,13 @@ fn print_summary(report: &Report) {
                 .run
                 .peak_rss_kb
                 .map_or("-".into(), |kb| format!("{} MB", kb / 1024));
-            let verdict = if scenario.soak {
+            let verdict = if let Some(expected) = &scenario.golden_expected {
+                match &r.run.golden_md5 {
+                    Some(got) if got.eq_ignore_ascii_case(expected) => "golden ok".to_string(),
+                    Some(got) => format!("GOLDEN MISMATCH ({}…)", &got[..got.len().min(8)]),
+                    None => "no output".to_string(),
+                }
+            } else if scenario.soak {
                 let done = r.run.iterations_completed.unwrap_or(0);
                 match &r.run.status {
                     RunStatus::Signaled { signal } => {

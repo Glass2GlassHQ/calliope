@@ -5,14 +5,18 @@ multiple engines (ffmpeg, GStreamer, [glass2glass](https://github.com/Glass2Glas
 as black-box subprocesses and asserts their outputs are bit-exact, so a
 divergence is a real bug in one of them.
 
-Two scenario modes:
+Scenario modes:
 - **differential**: decode and compare per-frame MD5 (ffmpeg's framemd5
   format) against a reference engine; a divergence is a real bug.
+- **golden**: decode a conformance vector and assert every engine's whole
+  decoded output matches the vector's official MD5 (`decoded-md5`), reproducing
+  the Fluster oracle. No reference engine, an absolute correctness check.
 - **robustness**: corrupt the input (`[fault]`: bit-flip, truncate, byte-drop)
   and require every engine to degrade gracefully (clean exit or error), never
   crash or hang. Targets parser / demuxer hardening against malformed input.
+- **soak**: repeat a run (`[soak]`) and fail on any crash or hang.
 
-Both track crash/signal/timeout status and peak RSS. Engine-neutral by
+All modes track crash/signal/timeout status and peak RSS. Engine-neutral by
 construction: engine knowledge lives only in `calliope-adapter-*` crates.
 
 ## Layout
@@ -75,6 +79,17 @@ keep-percent = 50   # truncate: front fraction kept
 ```
 
 The corrupted input is generated once and fed to every engine identically.
+
+A `golden = true` scenario needs a `corpus` input; the vector's `decoded-md5`
+and `output-format` (populated by `calliope corpus-import --fluster`) are the
+oracle. Each engine decodes the whole stream to that format and its output MD5
+must equal `decoded-md5`. Run the imported Fluster corpus this way to check a
+decoder against official conformance output without a reference engine:
+
+```sh
+calliope corpus-import --fluster /path/to/fluster/test_suites
+calliope run scenarios/jvt-golden.toml   # golden = true, input.corpus = "fluster/..."
+```
 
 Timing and RSS are recorded per run for within-engine regression tracking;
 they are never compared across engines (different buffering models make that

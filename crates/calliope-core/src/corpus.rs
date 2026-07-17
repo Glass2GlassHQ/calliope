@@ -36,10 +36,13 @@ pub struct Vector {
     /// when set, `url` is a zip and this member is extracted to the cache path
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub archive_member: Option<String>,
-    /// expected decoded-output MD5 (Fluster `result`), reserved for a future
-    /// engine-independent oracle; unused today
+    /// expected whole-output MD5 (Fluster `result`): the golden oracle for a
+    /// `golden` scenario. Paired with `output_format` (the pixel format that
+    /// hash was computed in).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub decoded_md5: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub output_format: Option<crate::scenario::PixelFormat>,
     pub license: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub notes: String,
@@ -198,6 +201,7 @@ mod tests {
             md5: None,
             archive_member: None,
             decoded_md5: None,
+            output_format: None,
             license: "l".into(),
             notes: String::new(),
         };
@@ -212,6 +216,7 @@ mod tests {
             md5: Some(md5.into()),
             archive_member: archive_member.map(str::to_string),
             decoded_md5: None,
+            output_format: None,
             license: "conformance".into(),
             notes: String::new(),
         }

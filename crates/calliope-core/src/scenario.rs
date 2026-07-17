@@ -29,6 +29,11 @@ pub struct Scenario {
     pub fault: Option<Fault>,
     /// present for a soak scenario: repeat the run and watch for instability
     pub soak: Option<Soak>,
+    /// golden scenario: assert each engine's whole decoded output matches the
+    /// corpus vector's `decoded-md5` (the official conformance hash). No
+    /// reference engine; requires a `corpus` input carrying that hash + format.
+    #[serde(default)]
+    pub golden: bool,
 }
 
 /// Repeat the run `iterations` times and assert it never crashes or hangs on
@@ -51,9 +56,14 @@ impl Scenario {
         self.soak.is_some()
     }
 
+    pub fn is_golden(&self) -> bool {
+        self.golden
+    }
+
     /// only a plain differential scenario hashes and compares decoded frames
+    /// per-frame against a reference engine
     pub fn judges_frames(&self) -> bool {
-        self.fault.is_none() && self.soak.is_none()
+        self.fault.is_none() && self.soak.is_none() && !self.golden
     }
 }
 
@@ -85,7 +95,7 @@ pub struct Video {
 
 /// 8-bit planar YUV, the formats we can chunk and cross-check. Others (10-bit,
 /// packed, NV12) are rejected by the probe with a clear message.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PixelFormat {
     I420,
@@ -119,6 +129,15 @@ impl PixelFormat {
             Self::I420 => "i420",
             Self::I422 => "i422",
             Self::I444 => "i444",
+        }
+    }
+
+    /// the ffmpeg `pix_fmt` / `format=` filter name
+    pub fn ffmpeg_pix_fmt(self) -> &'static str {
+        match self {
+            Self::I420 => "yuv420p",
+            Self::I422 => "yuv422p",
+            Self::I444 => "yuv444p",
         }
     }
 }
@@ -172,9 +191,17 @@ impl Scenario {
                 at()
             )));
         }
-        if self.fault.is_some() && self.soak.is_some() {
+        let modes = self.fault.is_some() as u8 + self.soak.is_some() as u8 + self.golden as u8;
+        if modes > 1 {
             return Err(Error::Parse(format!(
-                "{}: [fault] and [soak] are separate modes, use one",
+                "{}: fault / soak / golden are separate modes, use one",
+                at()
+            )));
+        }
+        // golden reads the expected hash from the corpus vector, so it needs one
+        if self.golden && self.input.corpus.is_none() {
+            return Err(Error::Parse(format!(
+                "{}: a golden scenario needs a corpus input (its decoded-md5 is the oracle)",
                 at()
             )));
         }

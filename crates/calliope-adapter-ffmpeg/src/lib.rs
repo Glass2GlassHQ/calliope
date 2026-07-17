@@ -23,22 +23,41 @@ impl Engine for Ffmpeg {
         )
     }
 
-    fn plan(&self, _scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
-        let out = workdir.join("out.framemd5");
-        Ok(Invocation {
-            program: binary("CALLIOPE_FFMPEG", "ffmpeg"),
-            args: vec![
-                "-nostdin".into(),
-                "-hide_banner".into(),
-                "-y".into(),
-                "-i".into(),
-                input.display().to_string(),
-                "-an".into(),
+    fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
+        let program = binary("CALLIOPE_FFMPEG", "ffmpeg");
+        let mut args = vec![
+            "-nostdin".into(),
+            "-hide_banner".into(),
+            "-y".into(),
+            "-i".into(),
+            input.display().to_string(),
+            "-an".into(),
+        ];
+        // golden: whole decoded output as raw video in the vector's format, so
+        // the runner's whole-file MD5 reproduces the conformance `result`
+        // (Fluster's `-vf format=<fmt> -f rawvideo`). Otherwise per-frame md5.
+        let output = if scenario.is_golden() {
+            let fmt = scenario
+                .video
+                .map_or("yuv420p", |v| v.format.ffmpeg_pix_fmt());
+            let out = workdir.join("out.rawvideo");
+            args.extend([
+                "-vf".into(),
+                format!("format={fmt}"),
                 "-f".into(),
-                "framemd5".into(),
+                "rawvideo".into(),
                 out.display().to_string(),
-            ],
-            output: OutputSpec::FrameMd5File(out),
+            ]);
+            OutputSpec::RawVideoFile(out)
+        } else {
+            let out = workdir.join("out.framemd5");
+            args.extend(["-f".into(), "framemd5".into(), out.display().to_string()]);
+            OutputSpec::FrameMd5File(out)
+        };
+        Ok(Invocation {
+            program,
+            args,
+            output,
         })
     }
 }

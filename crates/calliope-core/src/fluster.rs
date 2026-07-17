@@ -31,6 +31,8 @@ struct TestVector {
     source_checksum: String,
     input_file: String,
     #[serde(default)]
+    output_format: Option<String>,
+    #[serde(default)]
     result: Option<String>,
 }
 
@@ -88,6 +90,11 @@ impl Suite {
             md5: Some(tv.source_checksum.clone()),
             archive_member: is_zip.then(|| tv.input_file.clone()),
             decoded_md5: tv.result.clone(),
+            // only carry the golden format when it is one we can reproduce
+            output_format: tv
+                .output_format
+                .as_deref()
+                .and_then(crate::scenario::PixelFormat::from_pix_fmt),
             license: format!("{} conformance (Fluster suite {})", self.codec, self.name),
             notes: String::new(),
         })
