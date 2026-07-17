@@ -13,5 +13,14 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
     -f lavfi -i "testsrc2=duration=2:size=176x144:rate=25" \
     -c:v libx264 -pix_fmt yuv420p -f mpegts local-corpus/testsrc-176x144.ts
 
+# H.265: raw elementary (parse path) and in MP4 (demux path).
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "testsrc2=duration=2:size=176x144:rate=25" \
+    -c:v libx265 -pix_fmt yuv420p -f hevc local-corpus/testsrc-176x144.h265
+
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "testsrc2=duration=2:size=176x144:rate=25" \
+    -c:v libx265 -pix_fmt yuv420p local-corpus/testsrc-176x144-h265.mp4
+
 echo "local-corpus ready:"
 ls -l local-corpus
