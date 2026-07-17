@@ -123,15 +123,6 @@ impl PixelFormat {
         }
     }
 
-    /// the format name g2g's `videoconvert format=` uses
-    pub fn g2g_format(self) -> &'static str {
-        match self {
-            Self::I420 => "i420",
-            Self::I422 => "i422",
-            Self::I444 => "i444",
-        }
-    }
-
     /// the ffmpeg `pix_fmt` / `format=` filter name
     pub fn ffmpeg_pix_fmt(self) -> &'static str {
         match self {

@@ -12,6 +12,7 @@ cargo run -p calliope-cli -- run \
     scenarios/h264-ts-decode.toml \
     scenarios/h264-autoprobe.toml \
     scenarios/h264-422-autoprobe.toml \
+    scenarios/h264-444-autoprobe.toml \
     scenarios/h265-decode.toml \
     scenarios/h265-mp4-decode.toml \
     scenarios/h264-ts-bitflip.toml \
