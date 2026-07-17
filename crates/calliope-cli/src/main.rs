@@ -74,6 +74,23 @@ enum Command {
         #[arg(long)]
         report: Option<PathBuf>,
     },
+    /// golden-check every corpus vector with a decoded-md5 (a conformance run)
+    Conformance {
+        #[arg(long, default_value = "corpus/vectors.toml")]
+        corpus: PathBuf,
+        /// engines to check (comma-separated); default ffmpeg,gstreamer,g2g
+        #[arg(long, value_delimiter = ',')]
+        engines: Vec<String>,
+        /// cap the number of vectors checked (0 = all)
+        #[arg(long, default_value_t = 0)]
+        limit: usize,
+        #[arg(long, default_value_t = 4)]
+        jobs: usize,
+        #[arg(long, default_value = "runs")]
+        workdir: PathBuf,
+        #[arg(long)]
+        report: Option<PathBuf>,
+    },
 }
 
 fn all_engines() -> Vec<Arc<dyn Engine>> {
@@ -143,6 +160,33 @@ fn engine_crashes(
             Err(_) => return false,
         }
     }
+}
+
+/// Synthesize one golden scenario per corpus vector that carries a conformance
+/// hash (`decoded-md5` + `output-format`), so a whole imported suite runs in one
+/// `conformance` pass. The first engine is the (unused for golden) reference.
+fn golden_scenarios(
+    vectors: &[calliope_core::corpus::Vector],
+    engines: &[String],
+) -> Vec<Scenario> {
+    vectors
+        .iter()
+        .filter(|v| v.decoded_md5.is_some() && v.output_format.is_some())
+        .map(|v| Scenario {
+            id: v.id.clone(),
+            engines: engines.to_vec(),
+            reference: engines[0].clone(),
+            timeout_secs: 120,
+            input: Input {
+                corpus: Some(v.id.clone()),
+                path: None,
+            },
+            video: None,
+            fault: None,
+            soak: None,
+            golden: true,
+        })
+        .collect()
 }
 
 /// A process death by signal (not a normal exit code) is a crash.
@@ -278,6 +322,53 @@ async fn main() -> Result<ExitCode> {
                 .collect::<Result<Vec<_>>>()?;
             let out = run_matrix(&loaded, &corpus, &engines, jobs, &workdir).await?;
             print_summary(&out);
+            if let Some(path) = report {
+                std::fs::write(&path, serde_json::to_vec_pretty(&out)?)?;
+                println!("report: {}", path.display());
+            }
+            Ok(if out.passed() {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::FAILURE
+            })
+        }
+        Command::Conformance {
+            corpus,
+            engines,
+            limit,
+            jobs,
+            workdir,
+            report,
+        } => {
+            let manifest = Manifest::load(&corpus)?;
+            let engines = if engines.is_empty() {
+                vec!["ffmpeg".into(), "gstreamer".into(), "g2g".into()]
+            } else {
+                engines
+            };
+            // one golden scenario per vector that carries a conformance hash
+            let mut scenarios = golden_scenarios(&manifest.vector, &engines);
+            if scenarios.is_empty() {
+                bail!(
+                    "no vectors in {} have both decoded-md5 and output-format (import a Fluster suite first)",
+                    corpus.display()
+                );
+            }
+            if limit > 0 {
+                scenarios.truncate(limit);
+            }
+            println!(
+                "conformance: {} vectors x {} engines",
+                scenarios.len(),
+                engines.len()
+            );
+            let out = run_matrix(&scenarios, &corpus, &[], jobs, &workdir).await?;
+            print_summary(&out);
+            let passed = out.scenarios.iter().filter(|s| s.passed()).count();
+            println!(
+                "conformance: {passed}/{} vectors passed",
+                out.scenarios.len()
+            );
             if let Some(path) = report {
                 std::fs::write(&path, serde_json::to_vec_pretty(&out)?)?;
                 println!("report: {}", path.display());
@@ -512,5 +603,38 @@ fn print_summary(report: &Report) {
                 rss,
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use calliope_core::corpus::Vector;
+
+    fn vector(id: &str, golden: bool) -> Vector {
+        Vector {
+            id: id.into(),
+            url: "u".into(),
+            sha256: Some("00".into()),
+            md5: None,
+            archive_member: None,
+            decoded_md5: golden.then(|| "abc".into()),
+            output_format: golden.then_some(calliope_core::scenario::PixelFormat::I420),
+            license: "l".into(),
+            notes: String::new(),
+        }
+    }
+
+    #[test]
+    fn golden_scenarios_only_for_vectors_with_a_conformance_hash() {
+        let vectors = [vector("has-hash", true), vector("no-hash", false)];
+        let engines = vec!["ffmpeg".to_string(), "g2g".to_string()];
+        let scenarios = golden_scenarios(&vectors, &engines);
+        assert_eq!(scenarios.len(), 1);
+        let s = &scenarios[0];
+        assert_eq!(s.id, "has-hash");
+        assert!(s.is_golden());
+        assert_eq!(s.reference, "ffmpeg");
+        assert_eq!(s.input.corpus.as_deref(), Some("has-hash"));
     }
 }

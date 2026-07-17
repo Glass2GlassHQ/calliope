@@ -99,6 +99,15 @@ calliope corpus-import --fluster /path/to/fluster/test_suites
 calliope run scenarios/jvt-golden.toml   # golden = true, input.corpus = "fluster/..."
 ```
 
+To golden-check an entire imported suite in one pass (a conformance run), skip
+the per-vector scenarios:
+
+```sh
+calliope conformance --corpus corpus/vectors.toml --limit 20
+# fetches each vector, decodes on every engine, compares to its official MD5;
+# prints N/total passed and exits non-zero on any mismatch.
+```
+
 Timing and RSS are recorded per run for within-engine regression tracking;
 they are never compared across engines (different buffering models make that
 meaningless).
