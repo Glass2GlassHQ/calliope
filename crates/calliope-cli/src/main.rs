@@ -11,7 +11,7 @@ use calliope_core::corpus::{self, Manifest};
 use calliope_core::engine::Engine;
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
 use calliope_core::runner::{RunStatus, run_one, run_soak};
-use calliope_core::scenario::{Scenario, Video};
+use calliope_core::scenario::{Input, Scenario, Video};
 
 #[derive(Parser)]
 #[command(name = "calliope", about = "differential media QA harness", version)]
@@ -41,6 +41,22 @@ enum Command {
         /// cap the number of imported vectors (0 = all)
         #[arg(long, default_value_t = 0)]
         limit: usize,
+    },
+    /// shrink a crashing / hanging input to a minimal reproducer for one engine
+    Minimize {
+        /// engine that crashes or hangs on the input
+        #[arg(long)]
+        engine: String,
+        /// the failing input file (e.g. a robustness run's input.corrupted)
+        #[arg(long)]
+        input: PathBuf,
+        /// where to write the minimized reproducer (default: <input>.min)
+        #[arg(long)]
+        out: Option<PathBuf>,
+        #[arg(long, default_value_t = 10)]
+        timeout_secs: u64,
+        #[arg(long, default_value = "runs/minimize")]
+        workdir: PathBuf,
     },
     /// run scenarios and compare engines against the reference
     Run {
@@ -73,6 +89,72 @@ fn engine_by_id(id: &str) -> Result<Arc<dyn Engine>> {
         .into_iter()
         .find(|e| e.id() == id)
         .with_context(|| format!("unknown engine '{id}'"))
+}
+
+/// Run `engine` on `input` synchronously and report whether it failed the
+/// robustness bar: crashed on a signal (SIGSEGV / SIGABRT) or hung past
+/// `timeout`. A clean exit (success or graceful error) is not a failure. Used
+/// as the minimizer's predicate.
+fn engine_crashes(
+    engine: &dyn Engine,
+    input: &std::path::Path,
+    workdir: &std::path::Path,
+    timeout: std::time::Duration,
+) -> bool {
+    let scenario = Scenario {
+        id: "minimize".into(),
+        engines: vec![engine.id().into()],
+        reference: engine.id().into(),
+        timeout_secs: timeout.as_secs().max(1),
+        input: Input {
+            corpus: None,
+            path: Some(input.to_path_buf()),
+        },
+        video: None,
+        fault: None,
+        soak: None,
+        golden: false,
+    };
+    let Ok(inv) = engine.plan(&scenario, input, workdir) else {
+        return false;
+    };
+    let mut child = match std::process::Command::new(&inv.program)
+        .args(&inv.args)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+    {
+        Ok(c) => c,
+        Err(_) => return false,
+    };
+    let start = std::time::Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return is_crash(status),
+            Ok(None) => {
+                if start.elapsed() >= timeout {
+                    let _ = child.kill();
+                    let _ = child.wait();
+                    return true; // hang
+                }
+                std::thread::sleep(std::time::Duration::from_millis(20));
+            }
+            Err(_) => return false,
+        }
+    }
+}
+
+/// A process death by signal (not a normal exit code) is a crash.
+#[cfg(unix)]
+fn is_crash(status: std::process::ExitStatus) -> bool {
+    use std::os::unix::process::ExitStatusExt;
+    status.signal().is_some()
+}
+
+#[cfg(not(unix))]
+fn is_crash(_status: std::process::ExitStatus) -> bool {
+    false
 }
 
 #[tokio::main]
@@ -139,6 +221,42 @@ async fn main() -> Result<ExitCode> {
             println!(
                 "imported {added} new vectors ({} total) -> {}",
                 manifest.vector.len(),
+                out.display()
+            );
+            Ok(ExitCode::SUCCESS)
+        }
+        Command::Minimize {
+            engine,
+            input,
+            out,
+            timeout_secs,
+            workdir,
+        } => {
+            let engine = engine_by_id(&engine)?;
+            std::fs::create_dir_all(&workdir)?;
+            let timeout = std::time::Duration::from_secs(timeout_secs);
+            let candidate_path = workdir.join("candidate");
+
+            let mut fails = |bytes: &[u8]| -> bool {
+                std::fs::write(&candidate_path, bytes).is_ok()
+                    && engine_crashes(engine.as_ref(), &candidate_path, &workdir, timeout)
+            };
+
+            let initial = std::fs::read(&input)?;
+            if !fails(&initial) {
+                bail!(
+                    "{} does not crash or hang on {} (nothing to minimize)",
+                    engine.id(),
+                    input.display()
+                );
+            }
+            let minimized = calliope_core::minimize::minimize(&initial, &mut fails);
+            let out = out.unwrap_or_else(|| input.with_extension("min"));
+            std::fs::write(&out, &minimized)?;
+            println!(
+                "minimized {} bytes -> {} bytes, reproducer: {}",
+                initial.len(),
+                minimized.len(),
                 out.display()
             );
             Ok(ExitCode::SUCCESS)

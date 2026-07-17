@@ -40,6 +40,14 @@ cargo run -p calliope-cli -- run scenarios/h264-decode-smoke.toml --report repor
 Non-zero exit on any divergence, crash, or timeout. `--engines ffmpeg,gstreamer`
 restricts a run to installed engines (the scenario's reference must stay).
 
+When a robustness run finds a crash or hang, shrink the offending input to a
+minimal reproducer (ddmin delta-debugging) for the affected engine:
+
+```sh
+calliope minimize --engine g2g --input runs/<scenario>/input.corrupted
+# -> writes input.min, the smallest byte sequence that still crashes/hangs g2g
+```
+
 Engine binaries resolve from PATH; override with `CALLIOPE_FFMPEG`,
 `CALLIOPE_GST_LAUNCH`, `CALLIOPE_G2G_LAUNCH`. Build `g2g-launch` with the codec
 features you want to exercise and point the env var at a stable copy, not
