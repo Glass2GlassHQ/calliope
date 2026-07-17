@@ -26,10 +26,13 @@ impl Engine for G2g {
         )
     }
 
-    fn plan(&self, _scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
+    fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
         let out = workdir.join("out.yuv");
+        // match the scenario's decoded format (from [video] or ffprobe) so the
+        // raw dump lines up with ffmpeg's native framemd5; default I420.
+        let format = scenario.video.map_or("i420", |v| v.format.g2g_format());
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! videoconvert format=i420 ! filesink location={}",
+            "filesrc location={} ! decodebin ! videoconvert format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

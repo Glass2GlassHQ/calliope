@@ -10,6 +10,8 @@ cargo run -p calliope-cli -- engines
 cargo run -p calliope-cli -- run \
     scenarios/h264-decode-smoke.toml \
     scenarios/h264-ts-decode.toml \
+    scenarios/h264-autoprobe.toml \
+    scenarios/h264-422-autoprobe.toml \
     scenarios/h265-decode.toml \
     scenarios/h265-mp4-decode.toml \
     scenarios/h264-ts-bitflip.toml \

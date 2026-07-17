@@ -9,6 +9,7 @@ pub mod engine;
 pub mod fault;
 pub mod fluster;
 pub mod framehash;
+pub mod probe;
 pub mod report;
 pub mod runner;
 pub mod scenario;

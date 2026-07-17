@@ -28,10 +28,14 @@ impl Engine for GStreamer {
         )
     }
 
-    fn plan(&self, _scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
+    fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
         let out = workdir.join("out.yuv");
+        // convert to the scenario's decoded format so the raw dump matches
+        // ffmpeg's native framemd5 layout; a differential run resolves it (from
+        // [video] or ffprobe), robustness / soak default to I420.
+        let format = scenario.video.map_or("I420", |v| v.format.gst_format());
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location={}",
+            "filesrc location={} ! decodebin ! videoconvert ! video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

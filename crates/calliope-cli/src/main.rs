@@ -189,7 +189,11 @@ async fn run_matrix(
     };
     let cache = corpus::cache_dir();
 
-    let mut prepared = Vec::new();
+    // resolve each scenario once (fetch input, corrupt for a fault, probe
+    // geometry when a differential scenario omits [video]); the resolved
+    // scenario is shared across its engines and drives the report.
+    let mut resolved: Vec<Arc<Scenario>> = Vec::new();
+    let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf)> = Vec::new();
     for scenario in scenarios {
         let source = match (&scenario.input.corpus, &scenario.input.path) {
             (Some(id), _) => {
@@ -211,6 +215,14 @@ async fn run_matrix(
             }
             None => source,
         };
+        let mut scenario = scenario.clone();
+        if scenario.judges_frames() && scenario.video.is_none() {
+            scenario.video = Some(
+                calliope_core::probe::probe_geometry(&input)
+                    .with_context(|| format!("{}: auto-probing geometry", scenario.id))?,
+            );
+        }
+        let scenario = Arc::new(scenario);
         let engine_ids: Vec<&String> = scenario
             .engines
             .iter()
@@ -224,8 +236,9 @@ async fn run_matrix(
             );
         }
         for id in engine_ids {
-            prepared.push((scenario, engine_by_id(id)?, input.clone()));
+            prepared.push((Arc::clone(&scenario), engine_by_id(id)?, input.clone()));
         }
+        resolved.push(scenario);
     }
 
     // flat (scenario, engine) matrix with bounded parallelism
@@ -239,9 +252,9 @@ async fn run_matrix(
             };
             pending.push(async move {
                 let result = if scenario.is_soak() {
-                    run_soak(engine.as_ref(), scenario, &input, workdir).await
+                    run_soak(engine.as_ref(), &scenario, &input, workdir).await
                 } else {
-                    run_one(engine.as_ref(), scenario, &input, workdir).await
+                    run_one(engine.as_ref(), &scenario, &input, workdir).await
                 };
                 (scenario.id.clone(), result)
             });
@@ -255,7 +268,7 @@ async fn run_matrix(
     let mut report = Report {
         scenarios: Vec::new(),
     };
-    for scenario in scenarios {
+    for scenario in &resolved {
         let mut runs: Vec<_> = results
             .extract_if(.., |(id, _)| id == &scenario.id)
             .map(|(_, run)| run)

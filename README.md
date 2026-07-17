@@ -54,8 +54,13 @@ One TOML per scenario, see `scenarios/`. Input is a local `path` or a `corpus`
 vector id from `corpus/vectors.toml`; vectors download on demand into
 `~/.cache/calliope` (override: `CALLIOPE_CACHE`) and verify by sha256.
 
-A differential scenario declares `[video]` geometry (raw-dump engines are
-hashed by chunking; wrong geometry fails loudly as a trailing partial frame). A
+A differential scenario needs decoded geometry to chunk the raw-dump engines.
+Give it explicitly as `[video]`, or omit it and calliope probes the input with
+`ffprobe` (`CALLIOPE_FFPROBE` overrides). Supported decoded formats are 8-bit
+planar `yuv420p` / `yuv422p` / `yuv444p`; the raw-dump engines convert to the
+probed format as an identity so the comparison stays bit-exact (a 10-bit or
+packed source is rejected with a clear message, use an explicit `[video]` or a
+robustness/soak scenario). A
 `[soak]` scenario repeats the run `iterations` times and passes only if no
 iteration crashes or hangs (catches intermittent failures; each iteration is a
 fresh process, so this is a stability probe, not a memory-leak endurance test).
