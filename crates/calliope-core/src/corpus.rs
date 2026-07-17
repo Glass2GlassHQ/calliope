@@ -119,20 +119,43 @@ pub fn cache_dir() -> PathBuf {
     PathBuf::from(home).join(".cache/calliope")
 }
 
+/// Download attempts before giving up on a vector. Public conformance mirrors
+/// (itu.int) drop connections and truncate bodies often enough that one flake
+/// would otherwise abort a whole run, so a transient failure is retried with a
+/// linear backoff. A checksum mismatch is not retried (it is deterministic).
+const FETCH_ATTEMPTS: u32 = 5;
+
 /// resolve a vector to a local path, downloading + verifying if missing
 pub async fn fetch(vector: &Vector, cache: &Path) -> Result<PathBuf> {
     let dest = cache.join(&vector.id);
     if dest.exists() {
         return Ok(dest);
     }
-    let body = reqwest::get(&vector.url)
-        .await
-        .and_then(|r| r.error_for_status())
-        .map_err(|e| Error::Corpus(format!("{}: {e}", vector.id)))?
-        .bytes()
-        .await
-        .map_err(|e| Error::Corpus(format!("{}: {e}", vector.id)))?;
-    materialize(vector, &body, &dest)
+    let mut last_err = None;
+    for attempt in 1..=FETCH_ATTEMPTS {
+        match download(&vector.url).await {
+            Ok(body) => return materialize(vector, &body, &dest),
+            Err(e) => {
+                last_err = Some(e);
+                if attempt < FETCH_ATTEMPTS {
+                    tokio::time::sleep(core::time::Duration::from_secs(attempt as u64)).await;
+                }
+            }
+        }
+    }
+    Err(Error::Corpus(format!(
+        "{}: download failed after {FETCH_ATTEMPTS} attempts: {}",
+        vector.id,
+        last_err.expect("loop runs at least once"),
+    )))
+}
+
+/// One download attempt: GET the url, fail on a non-success status, read the
+/// whole body. Any error here is transient (network / truncated body) and drives
+/// a retry in [`fetch`].
+async fn download(url: &str) -> reqwest::Result<Vec<u8>> {
+    let body = reqwest::get(url).await?.error_for_status()?.bytes().await?;
+    Ok(body.to_vec())
 }
 
 /// Verify the downloaded `body` against the vector's checksum, extract the
