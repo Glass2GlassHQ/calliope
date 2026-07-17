@@ -5,22 +5,50 @@ on:
   pull_request:
 
 jobs:
+  # Build, lint, and unit-test on every OS. No media engines needed: the unit
+  # tests run against synthetic data and fake engines.
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: install engines
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: rustfmt
+        if: matrix.os == 'ubuntu-latest'
+        run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets
+      - run: cargo test --workspace
+
+  # End-to-end differential + robustness smoke against real ffmpeg / gstreamer.
+  # Windows is omitted: a working gstreamer install there is impractical in CI;
+  # the test job still builds and unit-tests calliope on Windows.
+  smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: install engines (linux)
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg gstreamer1.0-tools \
             gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
             gstreamer1.0-plugins-bad gstreamer1.0-libav
+      - name: install engines (macos)
+        if: runner.os == 'macOS'
+        run: |
+          brew install ffmpeg gstreamer \
+            gst-plugins-base gst-plugins-good gst-plugins-bad gst-libav
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all --check
-      - run: cargo clippy --workspace --all-targets
-      - run: cargo test --workspace
-      - name: differential smoke (ffmpeg vs gstreamer)
+      - name: differential + robustness smoke (ffmpeg vs gstreamer)
         run: tools/ci-smoke.sh

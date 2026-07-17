@@ -67,10 +67,16 @@ impl Manifest {
 impl Vector {
     fn validate(&self) -> Result<()> {
         if self.id.starts_with('/') || self.id.split('/').any(|c| c == "..") {
-            return Err(Error::Corpus(format!("vector id escapes the cache: {}", self.id)));
+            return Err(Error::Corpus(format!(
+                "vector id escapes the cache: {}",
+                self.id
+            )));
         }
         if self.sha256.is_none() && self.md5.is_none() {
-            return Err(Error::Corpus(format!("vector '{}' has no sha256 / md5 checksum", self.id)));
+            return Err(Error::Corpus(format!(
+                "vector '{}' has no sha256 / md5 checksum",
+                self.id
+            )));
         }
         Ok(())
     }
@@ -79,13 +85,19 @@ impl Vector {
         if let Some(want) = &self.sha256 {
             let got = hex::encode(Sha256::digest(bytes));
             if !got.eq_ignore_ascii_case(want) {
-                return Err(Error::Corpus(format!("{}: sha256 mismatch, want {want} got {got}", self.id)));
+                return Err(Error::Corpus(format!(
+                    "{}: sha256 mismatch, want {want} got {got}",
+                    self.id
+                )));
             }
         }
         if let Some(want) = &self.md5 {
             let got = hex::encode(Md5::digest(bytes));
             if !got.eq_ignore_ascii_case(want) {
-                return Err(Error::Corpus(format!("{}: md5 mismatch, want {want} got {got}", self.id)));
+                return Err(Error::Corpus(format!(
+                    "{}: md5 mismatch, want {want} got {got}",
+                    self.id
+                )));
             }
         }
         Ok(())
@@ -226,8 +238,8 @@ mod tests {
         let mut buf = Vec::new();
         {
             let mut zip = zip::ZipWriter::new(std::io::Cursor::new(&mut buf));
-            let opts: zip::write::FileOptions<'_, ()> =
-                zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+            let opts: zip::write::FileOptions<'_, ()> = zip::write::FileOptions::default()
+                .compression_method(zip::CompressionMethod::Deflated);
             zip.start_file("AUD_MW_E.264", opts).unwrap();
             zip.write_all(b"the real vector bytes").unwrap();
             zip.start_file("readme.txt", opts).unwrap();

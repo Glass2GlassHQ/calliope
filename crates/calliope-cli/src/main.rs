@@ -103,7 +103,11 @@ async fn main() -> Result<ExitCode> {
             }
             Ok(ExitCode::SUCCESS)
         }
-        Command::CorpusImport { fluster, out, limit } => {
+        Command::CorpusImport {
+            fluster,
+            out,
+            limit,
+        } => {
             let mut imported = if fluster.is_dir() {
                 calliope_core::fluster::import_dir(&fluster)?
             } else {
@@ -120,7 +124,10 @@ async fn main() -> Result<ExitCode> {
             };
             let existing: std::collections::HashSet<String> =
                 manifest.vector.iter().map(|v| v.id.clone()).collect();
-            let added = imported.iter().filter(|v| !existing.contains(&v.id)).count();
+            let added = imported
+                .iter()
+                .filter(|v| !existing.contains(&v.id))
+                .count();
             manifest
                 .vector
                 .extend(imported.into_iter().filter(|v| !existing.contains(&v.id)));
@@ -129,7 +136,11 @@ async fn main() -> Result<ExitCode> {
                 std::fs::create_dir_all(parent)?;
             }
             std::fs::write(&out, toml::to_string(&manifest)?)?;
-            println!("imported {added} new vectors ({} total) -> {}", manifest.vector.len(), out.display());
+            println!(
+                "imported {added} new vectors ({} total) -> {}",
+                manifest.vector.len(),
+                out.display()
+            );
             Ok(ExitCode::SUCCESS)
         }
         Command::Run {

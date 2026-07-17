@@ -38,7 +38,11 @@ struct TestVector {
 pub fn import_suite_json(text: &str) -> Result<Vec<Vector>> {
     let suite: Suite =
         serde_json::from_str(text).map_err(|e| Error::Parse(format!("fluster suite: {e}")))?;
-    suite.test_vectors.iter().map(|tv| suite.to_vector(tv)).collect()
+    suite
+        .test_vectors
+        .iter()
+        .map(|tv| suite.to_vector(tv))
+        .collect()
 }
 
 /// Import every `*.json` suite under `dir` (recursively), returning all vectors.
@@ -70,7 +74,12 @@ impl Suite {
             .next()
             .filter(|s| !s.is_empty())
             .ok_or_else(|| Error::Parse(format!("fluster {}: empty input_file", tv.name)))?;
-        let id = format!("fluster/{}/{}/{}", sanitize(&self.name), sanitize(&tv.name), basename);
+        let id = format!(
+            "fluster/{}/{}/{}",
+            sanitize(&self.name),
+            sanitize(&tv.name),
+            basename
+        );
         let is_zip = tv.source.to_ascii_lowercase().ends_with(".zip");
         Ok(Vector {
             id,
@@ -89,9 +98,19 @@ impl Suite {
 fn sanitize(s: &str) -> String {
     let cleaned: String = s
         .chars()
-        .map(|c| if c == '/' || c == '\\' || c.is_whitespace() { '_' } else { c })
+        .map(|c| {
+            if c == '/' || c == '\\' || c.is_whitespace() {
+                '_'
+            } else {
+                c
+            }
+        })
         .collect();
-    if cleaned == ".." { "__".into() } else { cleaned }
+    if cleaned == ".." {
+        "__".into()
+    } else {
+        cleaned
+    }
 }
 
 #[cfg(test)]
@@ -132,7 +151,10 @@ mod tests {
         assert_eq!(zip.md5.as_deref(), Some("7132c9cf7bc85fdde62add5ec25ea532"));
         // .zip source -> extract the member
         assert_eq!(zip.archive_member.as_deref(), Some("AUD_MW_E.264"));
-        assert_eq!(zip.decoded_md5.as_deref(), Some("e96fe5054de0329a8868d06003375cdb"));
+        assert_eq!(
+            zip.decoded_md5.as_deref(),
+            Some("e96fe5054de0329a8868d06003375cdb")
+        );
         assert!(zip.license.contains("H.264 conformance"));
 
         // a direct (non-zip) source needs no archive member
@@ -149,6 +171,10 @@ mod tests {
         let toml = toml::to_string(&manifest).unwrap();
         let reloaded: crate::corpus::Manifest = toml::from_str(&toml).unwrap();
         assert_eq!(reloaded.vector.len(), 2);
-        assert!(reloaded.get("fluster/JVT-AVC_V1/AUD_MW_E/AUD_MW_E.264").is_ok());
+        assert!(
+            reloaded
+                .get("fluster/JVT-AVC_V1/AUD_MW_E/AUD_MW_E.264")
+                .is_ok()
+        );
     }
 }

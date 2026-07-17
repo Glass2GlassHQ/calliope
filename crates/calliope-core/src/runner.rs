@@ -239,7 +239,10 @@ fn read_vm_hwm_kb(pid: u32) -> Option<u64> {
     line.split_whitespace().nth(1)?.parse().ok()
 }
 
-#[cfg(test)]
+// The fixtures drive real subprocesses via Unix shell builtins (sh / sleep /
+// true); the runner logic they exercise is OS-agnostic, so running them on
+// Linux + macOS covers it. Windows CI skips this module.
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
     use crate::engine::{EngineInfo, Invocation};
