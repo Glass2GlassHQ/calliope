@@ -1,0 +1,37 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/calliope-core",
+    "crates/calliope-adapter-ffmpeg",
+    "crates/calliope-adapter-gst",
+    "crates/calliope-adapter-g2g",
+    "crates/calliope-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "LGPL-2.1-or-later"
+repository = "https://github.com/Glass2GlassHQ/calliope"
+
+[workspace.dependencies]
+calliope-core = { path = "crates/calliope-core" }
+calliope-adapter-ffmpeg = { path = "crates/calliope-adapter-ffmpeg" }
+calliope-adapter-gst = { path = "crates/calliope-adapter-gst" }
+calliope-adapter-g2g = { path = "crates/calliope-adapter-g2g" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.9"
+thiserror = "2"
+anyhow = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "process", "time", "fs", "io-util"] }
+futures = "0.3"
+md-5 = "0.10"
+sha2 = "0.10"
+hex = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "http2", "stream"] }
+clap = { version = "4", features = ["derive"] }
+
+[workspace.lints.rust]
+warnings = "deny"
+missing_debug_implementations = "warn"

@@ -1,0 +1,9 @@
+# corpus manifest: content is fetched on demand into the cache, never
+# committed (conformance suites carry per-suite licensing).
+#
+# [[vector]]
+# id = "jvt/AUD_MW_E.264"          # cache-relative path, referenced by scenarios
+# url = "https://example.org/AUD_MW_E.264"
+# sha256 = "..."
+# license = "ITU-T conformance"
+# notes = "H.264 AUD test"

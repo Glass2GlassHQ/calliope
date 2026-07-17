@@ -1,0 +1,25 @@
+[package]
+name = "calliope-cli"
+description = "calliope: differential media QA harness CLI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "calliope"
+path = "src/main.rs"
+
+[dependencies]
+calliope-core.workspace = true
+calliope-adapter-ffmpeg.workspace = true
+calliope-adapter-gst.workspace = true
+calliope-adapter-g2g.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+futures.workspace = true
+
+[lints]
+workspace = true

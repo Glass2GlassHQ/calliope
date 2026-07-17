@@ -1,0 +1,13 @@
+[package]
+name = "calliope-adapter-g2g"
+description = "glass2glass engine adapter for calliope"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+calliope-core.workspace = true
+
+[lints]
+workspace = true
