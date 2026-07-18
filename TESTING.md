@@ -106,7 +106,27 @@ can't run C FFI, so this is scoped to g2g-core.
 tools/miri-g2g.sh
 ```
 Coverage: 202 g2g-core tests (`std` + `multi-thread`). Result: no UB, no data
-races, no leaks.
+races, no leaks. Miri runs one interleaving; loom (technique 11) explores them
+all for the SPSC ring.
+
+### 11. loom (exhaustive concurrency model check)
+Model-check g2g-core's one hand-written cross-thread lock-free primitive, the
+`SpscFrameRing` (an ISR-to-pipeline capture ring using a no-CAS Acquire/Release
+head/tail protocol), under every thread interleaving. Its atomics + `UnsafeCell`
+route through `crate::sync`, which swaps in loom's primitives under `--cfg loom`;
+the normal / no_std build is unchanged (a zero-cost `core` wrapper). A producer
+thread fills the ring while a consumer drains it with backpressure, and loom
+verifies no interleaving lets the two touch a slot concurrently, loses,
+duplicates, or reorders a frame. The other "primitives" (`slot`, channels,
+memory refcounts) delegate to `ArcSwap` / `spin::Mutex` / `Arc`, whose lock-free
+logic is upstream and already model-checked, so they are out of scope.
+```
+tools/loom-g2g.sh
+```
+Coverage: the SPSC producer/consumer handoff at `LOOM_MAX_PREEMPTIONS=3`. A
+negative control (neutering the ring's full check) makes loom report a
+"Concurrent read and write" causality violation, confirming the check has teeth.
+Result: clean, no interleaving violates the protocol.
 
 ### 10. Corrupt-input differential (decode-outcome divergence)
 Corrupt the input (`[fault]`) and, with `outcome-diff = true`, cross-compare each
