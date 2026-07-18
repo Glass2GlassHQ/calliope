@@ -134,6 +134,7 @@ fn engine_crashes(
         golden: false,
         roundtrip: None,
         encode: None,
+        resolution_change: false,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
         return false;
@@ -191,6 +192,7 @@ fn golden_scenarios(
             golden: true,
             roundtrip: None,
             encode: None,
+            resolution_change: false,
         })
         .collect()
 }
@@ -407,7 +409,7 @@ async fn run_matrix(
     // resolve each scenario once (fetch input, corrupt for a fault, probe
     // geometry when a differential scenario omits [video]); the resolved
     // scenario is shared across its engines and drives the report.
-    let mut resolved: Vec<(Arc<Scenario>, Option<String>)> = Vec::new();
+    let mut resolved: Vec<(Arc<Scenario>, Option<String>, Option<u64>)> = Vec::new();
     let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf)> = Vec::new();
     // vectors whose input could not be fetched (dead URL, missing archive
     // member); skipped so one bad download does not abort the whole matrix
@@ -463,7 +465,22 @@ async fn run_matrix(
         };
         let mut scenario = scenario.clone();
         let mut golden_expected = None;
-        if scenario.is_golden() {
+        let mut reschange_expected = None;
+        if scenario.is_resolution_change() {
+            // ffprobe reports the true per-frame geometry across the change
+            // (ffmpeg's CLI can't, it normalizes output size). Sum the packed
+            // per-frame sizes: that byte total is what a correct decode emits.
+            let frames = calliope_core::probe::probe_frame_geometry(&input)
+                .with_context(|| format!("{}: probing per-frame geometry", scenario.id))?;
+            reschange_expected = Some(frames.iter().map(|v| v.frame_size() as u64).sum());
+            // pin the (constant) pixel format for the raw-dump engines; the
+            // width / height vary per frame and stay unset in the caps
+            scenario.video = Some(Video {
+                width: 0,
+                height: 0,
+                format: frames[0].format,
+            });
+        } else if scenario.is_golden() {
             // the corpus vector carries the oracle: its output format and the
             // conformance MD5 every engine's decoded output must match
             let id = scenario.input.corpus.as_ref().expect("golden needs corpus");
@@ -512,7 +529,7 @@ async fn run_matrix(
         for id in engine_ids {
             prepared.push((Arc::clone(&scenario), engine_by_id(id)?, input.clone()));
         }
-        resolved.push((scenario, golden_expected));
+        resolved.push((scenario, golden_expected, reschange_expected));
     }
     if !skipped.is_empty() {
         eprintln!("skipped {} vector(s) that failed to fetch", skipped.len());
@@ -567,7 +584,7 @@ async fn run_matrix(
     let mut report = Report {
         scenarios: Vec::new(),
     };
-    for (scenario, golden_expected) in &resolved {
+    for (scenario, golden_expected, reschange_expected) in &resolved {
         let mut runs: Vec<_> = results
             .extract_if(.., |(id, _)| id == &scenario.id)
             .map(|(_, run)| run)
@@ -611,6 +628,7 @@ async fn run_matrix(
             golden_expected: golden_expected.clone(),
             majority,
             roundtrip_psnr_min: scenario.roundtrip.as_ref().map(|rt| rt.psnr_min),
+            resolution_change_expected_bytes: *reschange_expected,
             runs,
         });
     }
@@ -640,6 +658,18 @@ fn print_summary(report: &Report) {
                     (RunStatus::Signaled { signal }, _) => format!("CRASHED (signal {signal})"),
                     (RunStatus::Timeout, _) => "HUNG".to_string(),
                     _ => "encode / validate failed".to_string(),
+                }
+            } else if let Some(expected) = scenario.resolution_change_expected_bytes {
+                match (&r.run.status, r.run.output_len) {
+                    (RunStatus::Ok, Some(got)) if got == expected => {
+                        format!("res-change ok ({got} bytes)")
+                    }
+                    (RunStatus::Ok, Some(got)) => {
+                        format!("WRONG OUTPUT {got} vs {expected} bytes")
+                    }
+                    (RunStatus::Signaled { signal }, _) => format!("CRASHED (signal {signal})"),
+                    (RunStatus::Timeout, _) => "HUNG".to_string(),
+                    _ => "no output".to_string(),
                 }
             } else if let Some(expected) = &scenario.golden_expected {
                 match &r.run.output_md5 {

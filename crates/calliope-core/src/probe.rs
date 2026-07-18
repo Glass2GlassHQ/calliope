@@ -37,7 +37,47 @@ pub fn probe_geometry(input: &Path) -> Result<Video> {
     parse_ffprobe_csv(&String::from_utf8_lossy(&out.stdout))
 }
 
-/// parse ffprobe `-of csv=p=0` output for `width,height,pix_fmt`
+/// Probe every decoded frame's geometry (a resolution-changing stream yields
+/// several distinct sizes). The resolution-change oracle sums the per-frame
+/// packed sizes to get the expected decoded byte total. Decodes the whole
+/// stream, so keep such vectors small.
+pub fn probe_frame_geometry(input: &Path) -> Result<Vec<Video>> {
+    let program = binary("CALLIOPE_FFPROBE", "ffprobe");
+    let out = std::process::Command::new(&program)
+        .args([
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "frame=width,height,pix_fmt",
+            "-of",
+            "csv=p=0",
+        ])
+        .arg(input)
+        .output()
+        .map_err(|e| Error::Parse(format!("ffprobe ({program}): {e}")))?;
+    if !out.status.success() {
+        return Err(Error::Parse(format!(
+            "ffprobe failed on {}: {}",
+            input.display(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        )));
+    }
+    let frames = String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .map(str::trim)
+        .filter(|l| !l.is_empty())
+        .map(parse_ffprobe_csv)
+        .collect::<Result<Vec<_>>>()?;
+    if frames.is_empty() {
+        return Err(Error::Parse("ffprobe reported no frames".into()));
+    }
+    Ok(frames)
+}
+
+/// parse ffprobe `-of csv=p=0` output for `width,height,pix_fmt` (a single
+/// stream or frame line; any trailing fields, e.g. per-frame side data, ignored)
 fn parse_ffprobe_csv(text: &str) -> Result<Video> {
     let line = text
         .lines()

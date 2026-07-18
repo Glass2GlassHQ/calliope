@@ -175,10 +175,13 @@ async fn exec(
     };
 
     // golden compares the whole decoded output to the conformance hash;
-    // determinism compares the whole output artifact across runs. Either way,
-    // MD5 whatever artifact the engine produced (raw dump or framemd5 file).
+    // determinism compares the whole output artifact across runs; the
+    // resolution-change oracle checks the whole decoded byte count against the
+    // expected per-frame size sum. Each needs the whole-artifact size / hash.
     let (output_md5, output_len) =
-        if (scenario.is_golden() || scenario.is_determinism()) && matches!(status, RunStatus::Ok) {
+        if (scenario.is_golden() || scenario.is_determinism() || scenario.is_resolution_change())
+            && matches!(status, RunStatus::Ok)
+        {
             match &invocation.output {
                 OutputSpec::RawVideoFile(path) | OutputSpec::FrameMd5File(path) => (
                     whole_file_md5(path).ok(),
@@ -462,6 +465,7 @@ mod tests {
             golden: false,
             roundtrip: None,
             encode: None,
+            resolution_change: false,
         }
     }
 

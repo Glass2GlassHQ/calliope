@@ -50,6 +50,14 @@ pub struct Scenario {
     /// decoders on bitstreams the conformance corpus never produced. See
     /// [`Encode`]. Judged as a plain differential run.
     pub encode: Option<Encode>,
+    /// resolution-change scenario: decode a stream whose frame geometry changes
+    /// mid-playback and require each engine to survive (no crash / hang) and emit
+    /// the expected total decoded bytes (the per-frame size sequence from
+    /// ffprobe). Targets the engine's own caps / buffer renegotiation, not the
+    /// codec core. No pixel oracle: ffmpeg's CLI normalizes output geometry on a
+    /// resolution change, so it can't reference the pixels bit-exactly.
+    #[serde(default)]
+    pub resolution_change: bool,
 }
 
 /// Encode-differential config: ffmpeg encodes a lavfi source into an elementary
@@ -155,6 +163,10 @@ impl Scenario {
         self.encode.is_some()
     }
 
+    pub fn is_resolution_change(&self) -> bool {
+        self.resolution_change
+    }
+
     /// A plain differential scenario hashes and compares decoded frames per-frame
     /// against a reference engine. An encode scenario is also differential: it
     /// just generates its input with ffmpeg first, so it judges frames too.
@@ -164,6 +176,7 @@ impl Scenario {
             && !self.golden
             && self.determinism.is_none()
             && self.roundtrip.is_none()
+            && !self.resolution_change
     }
 }
 
@@ -357,10 +370,11 @@ impl Scenario {
             + self.golden as u8
             + self.determinism.is_some() as u8
             + self.roundtrip.is_some() as u8
-            + self.encode.is_some() as u8;
+            + self.encode.is_some() as u8
+            + self.resolution_change as u8;
         if modes > 1 {
             return Err(Error::Parse(format!(
-                "{}: fault / soak / golden / determinism / roundtrip / encode are separate modes, use one",
+                "{}: fault / soak / golden / determinism / roundtrip / encode / resolution-change are separate modes, use one",
                 at()
             )));
         }
@@ -622,6 +636,40 @@ mod tests {
             encoder = "libx264"
         "#;
         let s: Scenario = toml::from_str(no_video).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+    }
+
+    #[test]
+    fn resolution_change_parses_and_is_its_own_mode() {
+        let toml = r#"
+            id = "res"
+            engines = ["g2g"]
+            reference = "g2g"
+            resolution-change = true
+            [input]
+            path = "change.h264"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        s.validate(Path::new("test.toml")).unwrap();
+        assert!(s.is_resolution_change());
+        // judged by survival + byte total, not per-frame comparison
+        assert!(!s.judges_frames());
+        // needs no [video]: geometry varies and is probed from the stream
+        assert!(s.video.is_none());
+    }
+
+    #[test]
+    fn resolution_change_excludes_other_modes() {
+        let toml = r#"
+            id = "res"
+            engines = ["g2g"]
+            reference = "g2g"
+            resolution-change = true
+            golden = true
+            [input]
+            corpus = "x"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
         assert!(s.validate(Path::new("test.toml")).is_err());
     }
 

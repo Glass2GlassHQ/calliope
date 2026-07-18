@@ -32,6 +32,10 @@ pub struct ScenarioReport {
     /// must reach (each engine's actual PSNR rides its `RunResult`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub roundtrip_psnr_min: Option<f64>,
+    /// resolution-change scenario: the expected total decoded byte count (sum of
+    /// the per-frame packed sizes from ffprobe) every engine's output must match.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolution_change_expected_bytes: Option<u64>,
     pub runs: Vec<EngineReport>,
 }
 
@@ -74,6 +78,14 @@ impl ScenarioReport {
         if let Some(min) = self.roundtrip_psnr_min {
             return self.runs.iter().all(|r| {
                 matches!(r.run.status, RunStatus::Ok) && r.run.psnr.is_some_and(|p| p >= min)
+            });
+        }
+        // resolution-change: every engine survived and emitted exactly the
+        // expected decoded byte total (a crash / hang, dropped frames, or a
+        // frozen / wrong resolution all change the count).
+        if let Some(expected) = self.resolution_change_expected_bytes {
+            return self.runs.iter().all(|r| {
+                matches!(r.run.status, RunStatus::Ok) && r.run.output_len == Some(expected)
             });
         }
         // determinism: every engine's output was byte-identical across its runs
@@ -141,6 +153,7 @@ mod tests {
             golden_expected: Some("ABCD".into()),
             majority: None,
             roundtrip_psnr_min: None,
+            resolution_change_expected_bytes: None,
             runs,
         }
     }
@@ -210,6 +223,45 @@ mod tests {
         s.golden_expected = None;
         s.roundtrip_psnr_min = Some(min);
         s
+    }
+
+    fn reschange_run(engine: &str, status: RunStatus, len: Option<u64>) -> EngineReport {
+        let mut r = golden_run_len(engine, None, len);
+        r.run.status = status;
+        r
+    }
+
+    fn reschange_report(expected: u64, runs: Vec<EngineReport>) -> ScenarioReport {
+        let mut s = golden_report(runs);
+        s.golden_expected = None;
+        s.resolution_change_expected_bytes = Some(expected);
+        s
+    }
+
+    #[test]
+    fn resolution_change_passes_on_exact_byte_total_and_fails_otherwise() {
+        assert!(
+            reschange_report(3000, vec![reschange_run("g2g", RunStatus::Ok, Some(3000))]).passed(),
+            "exact expected byte total passes"
+        );
+        // fewer bytes (dropped frames / frozen resolution) fails
+        assert!(
+            !reschange_report(3000, vec![reschange_run("g2g", RunStatus::Ok, Some(1200))]).passed(),
+            "wrong byte total fails"
+        );
+        // a crash during renegotiation fails regardless of bytes
+        assert!(
+            !reschange_report(
+                3000,
+                vec![reschange_run(
+                    "g2g",
+                    RunStatus::Signaled { signal: 6 },
+                    Some(3000)
+                )]
+            )
+            .passed(),
+            "a crash fails"
+        );
     }
 
     #[test]

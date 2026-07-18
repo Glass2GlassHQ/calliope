@@ -45,5 +45,31 @@ if ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libsvtav1; then
         -c:v libsvtav1 -pix_fmt yuv420p local-corpus/testsrc-128x128-av1.ivf
 fi
 
+# Resolution-change streams: several fixed-size h264 segments concatenated at the
+# Annex-B level. Each segment carries its own SPS/IDR, so a compliant decoder
+# switches geometry at the boundary. Exercises the engine's caps / buffer
+# renegotiation (its own code), not the codec core. Args are (size dur content)
+# triples; content varies so frames differ across the switch.
+mk_reschange() {
+    local out="local-corpus/$1"
+    shift
+    : > "$out"
+    local tmp
+    tmp="$(mktemp)"
+    while [ "$#" -ge 3 ]; do
+        ffmpeg -nostdin -hide_banner -loglevel error -y \
+            -f lavfi -i "$3=size=$1:rate=25" -t "$2" \
+            -c:v libx264 -pix_fmt yuv420p -f h264 "$tmp"
+        cat "$tmp" >> "$out"
+        shift 3
+    done
+    rm -f "$tmp"
+}
+mk_reschange res-change-multi.h264 \
+    176x144 0.4 testsrc2 320x240 0.4 mandelbrot 128x96 0.4 testsrc2 352x288 0.4 smptebars
+# ping-pong: return to an earlier size (renegotiate back, not just forward)
+mk_reschange res-change-pingpong.h264 \
+    176x144 0.4 testsrc2 320x240 0.4 mandelbrot 176x144 0.4 smptebars
+
 echo "local-corpus ready:"
 ls -l local-corpus

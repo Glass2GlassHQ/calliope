@@ -34,6 +34,13 @@ Scenario modes:
   are compared bit-exact. Feeds decoders feature combos the conformance corpus
   never produced (profiles / flags chosen via `args`), so a divergence is a real
   decoder bug against a hard oracle.
+- **resolution-change**: decode a stream whose frame geometry changes
+  mid-playback (`resolution-change = true`) and require each engine to survive
+  (no crash / hang) and emit the expected total decoded bytes (the per-frame
+  size sequence from ffprobe). Targets the engine's own caps / buffer
+  renegotiation, not the codec core. No pixel oracle: ffmpeg's CLI normalizes
+  output geometry across a change, so it can't reference the pixels; the byte
+  total catches crashes, dropped frames, and frozen / wrong resolution.
 
 All modes track crash/signal/timeout status and peak RSS. Engine-neutral by
 construction: engine knowledge lives only in `calliope-adapter-*` crates.
@@ -141,6 +148,12 @@ output-ext = "h264"                                   # elementary stream type
 A `[roundtrip]` scenario names the engine's `encoder` (e.g. `x264enc`) and a
 `psnr-min` floor; the engine decodes + re-encodes the input, ffmpeg decodes the
 result and PSNR-compares it to the reference decode.
+
+A `resolution-change = true` scenario needs only an `input` (a stream whose
+geometry switches mid-playback, e.g. the concatenated `res-change-*` vectors
+from `tools/gen-local-corpus.sh`); no `[video]`, the per-frame sizes are probed.
+Run it with the engine under test only (`engines = ["g2g"]`), since ffmpeg's
+normalized output would false-fail the byte-total check.
 
 A `golden = true` scenario needs a `corpus` input; the vector's `decoded-md5`
 and `output-format` (populated by `calliope corpus-import --fluster`) are the
