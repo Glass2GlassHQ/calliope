@@ -89,10 +89,14 @@ Targets, all g2g-owned parsers of untrusted bytes:
 - network / RTP: rtp_depay, flexfec, st2110_dedup, rtcp
 - WebRTC / signalling: sdp (session description), rtcp (control channel)
 - handshake: rtmp_handshake
+- codec bitstream: h264parse, h265parse, av1parse, vp9parse, vp8parse, aacparse,
+  opusparse (SPS / PPS / OBU / ADTS / TOC; the per-frame hand-written bit
+  readers, reached via a `#[cfg(fuzzing)] pub fn fuzz_parse` shim in each module)
 
 `gen-seeds.sh` rebuilds the corpora for the magic-gated formats (demuxers via
-ffmpeg, rtmp C1/S1 via the `seedgen` helper); the rest self-bootstrap. Findings:
-**2 bugs** (see below). Everything else clean over multi-minute-to-15-minute runs.
+ffmpeg, rtmp C1/S1 via the `seedgen` helper) plus real elementary streams for the
+codec parsers; the rest self-bootstrap. Findings: **3 bugs** (see below).
+Everything else clean over multi-minute-to-15-minute runs.
 
 ### 9. Miri (undefined behavior / data races)
 Interpret g2g-core's unsafe (pools, SPSC ring, runtime) under Miri to catch
@@ -111,7 +115,8 @@ compare is meaningless on corrupt input (error concealment is
 implementation-defined), so the signal is structural:
 - **crash / hang**: fails the run, same bar as robustness.
 - **LENIENT**: g2g decoded a stream ffmpeg refused. The too-lenient-parser class
-  where memory bugs hide (both bugs below came from it). The headline finding.
+  where memory bugs hide (the untrusted-input parsing the found bugs live in). The
+  headline finding.
 - **stricter**: g2g refused a stream ffmpeg decoded. Interop, lower value.
 
 Divergences are advisory triage (only crash / hang fails); the driver sweeps
@@ -131,8 +136,8 @@ container inputs where both sides run a real demuxer.
 
 ## Bugs found
 
-Both found by coverage-guided fuzzing (technique 8), fixed in g2g with
-regression tests.
+All found by coverage-guided fuzzing (technique 8), fixed in g2g with regression
+tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -141,6 +146,12 @@ regression tests.
    backward-wrapping RTP sequence number (e.g. 65535 after 0) resolved above the
    window head. A 32-byte packet pair wedged the receiver. Fixed by bounding the
    window advance and resolving the wrap by signed delta.
+3. **HEVC SPS short-term-RPS integer overflow.** `h265parse::parse_h265_short_term_rps`
+   accumulated Exp-Golomb POC deltas (`delta_poc_sX_minus1`, `ue(v)` up to
+   `u32::MAX`) in unchecked `i32`; a malformed SPS overflowed the running POC. It
+   bounded the picture *counts* (> 16) but not the per-delta values. Panics under
+   overflow-checks (a hardened / debug-build DoS on attacker input), silent wrap
+   otherwise. Fixed with checked arithmetic that rejects the malformed SPS.
 
 ## Not a gap
 
