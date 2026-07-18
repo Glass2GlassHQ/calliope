@@ -1,4 +1,5 @@
 /target
 /runs
 /local-corpus
+/fuzz-out
 smoke-report.json

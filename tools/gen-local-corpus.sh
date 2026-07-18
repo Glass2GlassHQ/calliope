@@ -36,5 +36,14 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
     -f lavfi -i "testsrc2=duration=2:size=176x144:rate=25" \
     -c:v libx265 -pix_fmt yuv420p10le -f hevc local-corpus/testsrc-176x144-10bit.h265
 
+# AV1 in IVF: g2g's native dav1d decode path (not ffmpeg), the code a g2g bug
+# actually lives in. Small + short since AV1 encode is slow. Skipped if the
+# encoder is absent, so ci-smoke keeps working without it.
+if ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libsvtav1; then
+    ffmpeg -nostdin -hide_banner -loglevel error -y \
+        -f lavfi -i "testsrc2=duration=1:size=128x128:rate=25" \
+        -c:v libsvtav1 -pix_fmt yuv420p local-corpus/testsrc-128x128-av1.ivf
+fi
+
 echo "local-corpus ready:"
 ls -l local-corpus

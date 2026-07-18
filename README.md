@@ -67,6 +67,21 @@ calliope minimize --engine g2g --input runs/<scenario>/input.corrupted
 # -> writes input.min, the smallest byte sequence that still crashes/hangs g2g
 ```
 
+To hunt g2g decoder crashes at volume, build g2g under AddressSanitizer and fuzz
+it. ASan intercepts malloc process-wide, so a heap overflow / use-after-free in
+g2g's own code or the system libav it calls aborts loudly instead of corrupting
+silently; the fuzz loop feeds seeded corruption to real streams and minimizes any
+crash into `fuzz-out/`:
+
+```sh
+tools/build-g2g-asan.sh                 # -> ~/.local/bin/g2g-launch-asan
+CALLIOPE_G2G_LAUNCH=~/.local/bin/g2g-launch-asan tools/fuzz-g2g.sh
+# FUZZ_SEEDS / FUZZ_MODE / FUZZ_COUNT tune it; add dav1d,mjpeg via G2G_FEATURES
+```
+
+Running the normal differential / golden scenarios against the ASan binary also
+catches memory bugs on well-formed input, not just corrupted streams.
+
 Engine binaries resolve from PATH; override with `CALLIOPE_FFMPEG`,
 `CALLIOPE_GST_LAUNCH`, `CALLIOPE_G2G_LAUNCH`. Build `g2g-launch` with the codec
 features you want to exercise and point the env var at a stable copy, not
