@@ -1,0 +1,13 @@
+# HEVC Main10 (4:2:0 10-bit). Golden-checks g2g's ffmpegdec I420p10 preserve
+# path against the canonical Fluster conformance md5. gstreamer is omitted: its
+# raw high-bit-depth output carries width-dependent stride padding, so its whole
+# -file md5 does not match the tightly-packed reference (a harness limitation,
+# not a g2g bug).
+id = "hevc-main10-golden"
+engines = ["ffmpeg", "g2g"]
+reference = "ffmpeg"
+timeout-secs = 120
+golden = true
+
+[input]
+corpus = "fluster/JCT-VC-HEVC_V1/DBLK_A_MAIN10_VIXS_4/DBLK_A_MAIN10_VIXS_4.bit"
