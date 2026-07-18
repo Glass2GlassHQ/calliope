@@ -62,6 +62,12 @@ pub struct RunResult {
     /// reference decode of the original. Filled by the CLI after ffmpeg validates.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub psnr: Option<f64>,
+    /// outcome-diff only: did this engine actually decode frames from the
+    /// corrupt input (`Some(true)`) or exit clean without producing any
+    /// (`Some(false)`)? `None` outside outcome-diff. A crash / hang / non-zero
+    /// exit is carried by `status`, not here.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decoded: Option<bool>,
 }
 
 /// run one engine on one scenario; never panics on engine failure, every
@@ -92,6 +98,7 @@ fn fail_result(engine: &str, log_dir: PathBuf, message: String) -> RunResult {
         output_len: None,
         determinism_matched: None,
         psnr: None,
+        decoded: None,
     }
 }
 
@@ -195,6 +202,15 @@ async fn exec(
             (None, None)
         };
 
+    // outcome-diff: classify decoded (produced frames) vs rejected (clean exit,
+    // no frames) on the corrupt input. A pixel compare is noise here, so the
+    // cross-engine signal is this structural outcome.
+    let decoded = if scenario.is_outcome_diff() && matches!(status, RunStatus::Ok) {
+        Some(produced_output(&invocation.output))
+    } else {
+        None
+    };
+
     RunResult {
         engine: engine_id.to_string(),
         status,
@@ -207,6 +223,22 @@ async fn exec(
         output_len,
         determinism_matched: None,
         psnr: None,
+        decoded,
+    }
+}
+
+/// Did the engine actually decode any frames? For ffmpeg's framemd5 the file
+/// carries a comment header even on a zero-frame decode, so count real frame
+/// lines; a raw dump has no header, so any bytes mean at least a partial frame.
+fn produced_output(output: &OutputSpec) -> bool {
+    match output {
+        OutputSpec::FrameMd5File(path) => std::fs::read_to_string(path)
+            .map(|t| !framehash::parse_framemd5(&t).is_empty())
+            .unwrap_or(false),
+        OutputSpec::RawVideoFile(path) => std::fs::metadata(path)
+            .map(|m| m.len() > 0)
+            .unwrap_or(false),
+        OutputSpec::EncodedFile(_) => false,
     }
 }
 
@@ -466,6 +498,7 @@ mod tests {
             roundtrip: None,
             encode: None,
             resolution_change: false,
+            outcome_diff: false,
         }
     }
 

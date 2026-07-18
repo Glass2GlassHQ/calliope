@@ -4,6 +4,78 @@
 
 use serde::Serialize;
 
+use crate::runner::{RunResult, RunStatus};
+
+/// One engine's decode outcome on a corrupt input (outcome-diff). Pixels are
+/// noise on corrupt streams, so the comparable signal is whether the stream
+/// decoded at all, plus the hardening outcomes (crash / hang).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum DecodeOutcome {
+    /// clean exit, produced frames
+    Decoded,
+    /// clean exit with no frames, or a graceful non-zero exit
+    Rejected,
+    Crashed,
+    Hung,
+    /// harness could not run / judge this engine; excluded from the verdict
+    HarnessError,
+}
+
+impl DecodeOutcome {
+    pub fn of(run: &RunResult) -> Self {
+        match run.status {
+            RunStatus::Signaled { .. } => Self::Crashed,
+            RunStatus::Timeout => Self::Hung,
+            RunStatus::Error { .. } => Self::HarnessError,
+            RunStatus::ExitFailure { .. } => Self::Rejected,
+            RunStatus::Ok => match run.decoded {
+                Some(true) => Self::Decoded,
+                Some(false) => Self::Rejected,
+                // outcome-diff always sets `decoded` on an Ok run; absent means
+                // this run was not an outcome-diff run, so we cannot judge it
+                None => Self::HarnessError,
+            },
+        }
+    }
+}
+
+/// Candidate-vs-reference decode-outcome verdict for corrupt-input differential.
+/// `Lenient` (the candidate decoded a stream the reference refused) is the
+/// high-value split: the too-lenient-parser class where memory bugs hide. A
+/// candidate crash / hang is a hardening bug regardless of the reference.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum OutcomeVerdict {
+    Agree,
+    Lenient,
+    Stricter,
+    Crashed,
+    Hung,
+    Inconclusive,
+}
+
+pub fn outcome_verdict(reference: DecodeOutcome, candidate: DecodeOutcome) -> OutcomeVerdict {
+    use DecodeOutcome::{Decoded, Rejected};
+    match candidate {
+        DecodeOutcome::Crashed => OutcomeVerdict::Crashed,
+        DecodeOutcome::Hung => OutcomeVerdict::Hung,
+        DecodeOutcome::HarnessError => OutcomeVerdict::Inconclusive,
+        // a decoded / rejected reference is the baseline; a crashed / hung /
+        // errored reference cannot serve as one, so the compare is inconclusive
+        Decoded => match reference {
+            Rejected => OutcomeVerdict::Lenient,
+            Decoded => OutcomeVerdict::Agree,
+            _ => OutcomeVerdict::Inconclusive,
+        },
+        Rejected => match reference {
+            Decoded => OutcomeVerdict::Stricter,
+            Rejected => OutcomeVerdict::Agree,
+            _ => OutcomeVerdict::Inconclusive,
+        },
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Comparison {
     pub matched: bool,
@@ -152,5 +224,61 @@ mod tests {
         ]);
         assert!(same.conclusive);
         assert!(same.outliers.is_empty());
+    }
+
+    fn run(status: RunStatus, decoded: Option<bool>) -> RunResult {
+        RunResult {
+            engine: "x".into(),
+            status,
+            duration_ms: 0,
+            peak_rss_kb: None,
+            frame_hashes: None,
+            log_dir: std::path::PathBuf::new(),
+            iterations_completed: None,
+            output_md5: None,
+            output_len: None,
+            determinism_matched: None,
+            psnr: None,
+            decoded,
+        }
+    }
+
+    #[test]
+    fn decode_outcome_classifies_status_and_decoded_flag() {
+        use DecodeOutcome::*;
+        assert_eq!(DecodeOutcome::of(&run(RunStatus::Ok, Some(true))), Decoded);
+        assert_eq!(
+            DecodeOutcome::of(&run(RunStatus::Ok, Some(false))),
+            Rejected
+        );
+        assert_eq!(
+            DecodeOutcome::of(&run(RunStatus::ExitFailure { code: 1 }, None)),
+            Rejected
+        );
+        assert_eq!(
+            DecodeOutcome::of(&run(RunStatus::Signaled { signal: 11 }, None)),
+            Crashed
+        );
+        assert_eq!(DecodeOutcome::of(&run(RunStatus::Timeout, None)), Hung);
+    }
+
+    #[test]
+    fn outcome_verdict_flags_the_lenient_split() {
+        use DecodeOutcome::*;
+        // candidate decoded what the reference refused: the headline finding
+        assert_eq!(outcome_verdict(Rejected, Decoded), OutcomeVerdict::Lenient);
+        // candidate refused what the reference decoded: stricter, lower value
+        assert_eq!(outcome_verdict(Decoded, Rejected), OutcomeVerdict::Stricter);
+        // agreement either way is not a finding
+        assert_eq!(outcome_verdict(Decoded, Decoded), OutcomeVerdict::Agree);
+        assert_eq!(outcome_verdict(Rejected, Rejected), OutcomeVerdict::Agree);
+        // a candidate crash / hang is a hardening bug regardless of reference
+        assert_eq!(outcome_verdict(Decoded, Crashed), OutcomeVerdict::Crashed);
+        assert_eq!(outcome_verdict(Rejected, Hung), OutcomeVerdict::Hung);
+        // a reference that itself crashed cannot be a baseline
+        assert_eq!(
+            outcome_verdict(Crashed, Decoded),
+            OutcomeVerdict::Inconclusive
+        );
     }
 }

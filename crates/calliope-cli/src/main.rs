@@ -6,7 +6,7 @@ use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
 use futures::stream::{FuturesUnordered, StreamExt};
 
-use calliope_core::compare::compare;
+use calliope_core::compare::{DecodeOutcome, OutcomeVerdict, compare, outcome_verdict};
 use calliope_core::corpus::{self, Manifest};
 use calliope_core::engine::Engine;
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
@@ -135,6 +135,7 @@ fn engine_crashes(
         roundtrip: None,
         encode: None,
         resolution_change: false,
+        outcome_diff: false,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
         return false;
@@ -193,6 +194,7 @@ fn golden_scenarios(
             roundtrip: None,
             encode: None,
             resolution_change: false,
+            outcome_diff: false,
         })
         .collect()
 }
@@ -625,6 +627,7 @@ async fn run_matrix(
             robustness: scenario.is_robustness(),
             soak: scenario.is_soak(),
             determinism: scenario.is_determinism(),
+            outcome_diff: scenario.is_outcome_diff(),
             golden_expected: golden_expected.clone(),
             majority,
             roundtrip_psnr_min: scenario.roundtrip.as_ref().map(|rt| rt.psnr_min),
@@ -633,6 +636,17 @@ async fn run_matrix(
         });
     }
     Ok(report)
+}
+
+/// one-word label for the reference engine's own decode outcome
+fn outcome_label(outcome: DecodeOutcome) -> &'static str {
+    match outcome {
+        DecodeOutcome::Decoded => "decoded",
+        DecodeOutcome::Rejected => "rejected",
+        DecodeOutcome::Crashed => "CRASHED",
+        DecodeOutcome::Hung => "HUNG",
+        DecodeOutcome::HarnessError => "error",
+    }
 }
 
 fn print_summary(report: &Report) {
@@ -697,6 +711,34 @@ fn print_summary(report: &Report) {
                     RunStatus::Timeout => format!("HUNG at run {done}"),
                     s if s.survived_corrupt_input() => format!("stable ({done} runs)"),
                     _ => format!("errored at run {done}"),
+                }
+            } else if scenario.outcome_diff {
+                // corrupt-input differential: the reference row shows its own
+                // outcome; each candidate is judged against it. A crash / hang
+                // still fails the run (robustness bar); the decode-outcome
+                // splits are advisory, with LENIENT (decoded what the reference
+                // refused) the high-value one.
+                let outcome = DecodeOutcome::of(&r.run);
+                if r.run.engine == scenario.reference {
+                    format!("reference: {}", outcome_label(outcome))
+                } else {
+                    let reference = scenario
+                        .runs
+                        .iter()
+                        .find(|x| x.run.engine == scenario.reference)
+                        .map(|x| DecodeOutcome::of(&x.run));
+                    match reference.map(|refo| outcome_verdict(refo, outcome)) {
+                        Some(OutcomeVerdict::Agree) => "agree".to_string(),
+                        Some(OutcomeVerdict::Lenient) => {
+                            format!("LENIENT: decoded input {} rejected", scenario.reference)
+                        }
+                        Some(OutcomeVerdict::Stricter) => {
+                            format!("stricter: rejected input {} decoded", scenario.reference)
+                        }
+                        Some(OutcomeVerdict::Crashed) => "CRASHED".to_string(),
+                        Some(OutcomeVerdict::Hung) => "HUNG".to_string(),
+                        Some(OutcomeVerdict::Inconclusive) | None => "inconclusive".to_string(),
+                    }
                 }
             } else if scenario.robustness {
                 // absolute per engine: a crash / hang is a hardening bug

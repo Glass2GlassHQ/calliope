@@ -21,6 +21,10 @@ pub struct ScenarioReport {
     pub soak: bool,
     /// determinism scenario: judged on byte-identical output across repeated runs
     pub determinism: bool,
+    /// outcome-diff scenario: a robustness run that also cross-compares decode
+    /// outcomes. Judged like robustness (crash / hang fails); the decode-outcome
+    /// divergences it surfaces are advisory triage, not a pass / fail gate.
+    pub outcome_diff: bool,
     /// golden scenario: the conformance hash every engine's output must match
     #[serde(skip_serializing_if = "Option::is_none")]
     pub golden_expected: Option<String>,
@@ -138,6 +142,7 @@ mod tests {
                 output_len: len,
                 determinism_matched: None,
                 psnr: None,
+                decoded: None,
             },
             comparison: None,
         }
@@ -150,6 +155,7 @@ mod tests {
             robustness: false,
             soak: false,
             determinism: false,
+            outcome_diff: false,
             golden_expected: Some("ABCD".into()),
             majority: None,
             roundtrip_psnr_min: None,

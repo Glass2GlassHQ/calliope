@@ -104,6 +104,31 @@ tools/miri-g2g.sh
 Coverage: 202 g2g-core tests (`std` + `multi-thread`). Result: no UB, no data
 races, no leaks.
 
+### 10. Corrupt-input differential (decode-outcome divergence)
+Corrupt the input (`[fault]`) and, with `outcome-diff = true`, cross-compare each
+engine's decode *outcome* against the reference, not just crash / hang. A pixel
+compare is meaningless on corrupt input (error concealment is
+implementation-defined), so the signal is structural:
+- **crash / hang**: fails the run, same bar as robustness.
+- **LENIENT**: g2g decoded a stream ffmpeg refused. The too-lenient-parser class
+  where memory bugs hide (both bugs below came from it). The headline finding.
+- **stricter**: g2g refused a stream ffmpeg decoded. Interop, lower value.
+
+Divergences are advisory triage (only crash / hang fails); the driver sweeps
+seeds / inputs and saves each LENIENT reproducer plus the corrupted bytes.
+```
+calliope run scenarios/h264-outcome-diff.toml
+CALLIOPE_G2G_LAUNCH=~/.local/bin/g2g-launch-asan tools/outcome-diff-g2g.sh
+```
+Volume: 1000 runs (4 fault modes x local corpus x 25 seeds). Result: no crash /
+hang. Two LENIENT splits, both triaged to a false positive: ffmpeg's CLI rejects
+a corrupt raw HEVC elementary stream at its demux probe ("Invalid data found"),
+while g2g's decodebin framer is more permissive, decodes it, and safely skips the
+invalid NALUs. g2g is more robust there, not unsafely lenient. Caveat: for raw
+elementary streams the oracle's accept/reject signal includes this demux-boundary
+strictness gap; it is sharpest on g2g's native parsers (e.g. dav1d AV1) and on
+container inputs where both sides run a real demuxer.
+
 ## Bugs found
 
 Both found by coverage-guided fuzzing (technique 8), fixed in g2g with

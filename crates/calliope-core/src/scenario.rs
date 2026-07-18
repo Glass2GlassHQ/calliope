@@ -28,6 +28,15 @@ pub struct Scenario {
     pub video: Option<Video>,
     /// present for a robustness scenario: corrupt the input before running
     pub fault: Option<Fault>,
+    /// corrupt-input differential: with `[fault]`, also cross-compare each
+    /// engine's decode *outcome* (decoded vs rejected) against the reference,
+    /// not just crash / hang. A pixel compare is meaningless on corrupt input
+    /// (error concealment is implementation-defined), so the signal is
+    /// structural: the high-value split is an engine decoding a stream the
+    /// reference refused (the too-lenient-parser class). Divergences are
+    /// advisory; only a crash / hang fails the run.
+    #[serde(default)]
+    pub outcome_diff: bool,
     /// present for a soak scenario: repeat the run and watch for instability
     pub soak: Option<Soak>,
     /// present for a determinism scenario: run each engine repeatedly (and,
@@ -141,6 +150,12 @@ impl Scenario {
     /// robustness scenarios assert graceful degradation, not frame equality
     pub fn is_robustness(&self) -> bool {
         self.fault.is_some()
+    }
+
+    /// corrupt-input differential: a robustness scenario that also cross-compares
+    /// decode outcomes across engines
+    pub fn is_outcome_diff(&self) -> bool {
+        self.outcome_diff
     }
 
     pub fn is_soak(&self) -> bool {
@@ -411,6 +426,20 @@ impl Scenario {
             fault
                 .validate()
                 .map_err(|e| Error::Parse(format!("{}: {e}", at())))?;
+        }
+        if self.outcome_diff {
+            if self.fault.is_none() {
+                return Err(Error::Parse(format!(
+                    "{}: outcome-diff needs a [fault] to corrupt the input",
+                    at()
+                )));
+            }
+            if self.engines.len() < 2 {
+                return Err(Error::Parse(format!(
+                    "{}: outcome-diff needs >= 2 engines to cross-compare outcomes",
+                    at()
+                )));
+            }
         }
         if let Some(soak) = &self.soak
             && soak.iterations < 2
@@ -691,6 +720,53 @@ mod tests {
             format = "i420"
         "#;
         let s: Scenario = toml::from_str(toml).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+    }
+
+    #[test]
+    fn outcome_diff_needs_fault_and_two_engines() {
+        let ok = r#"
+            id = "od"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            outcome-diff = true
+            [input]
+            path = "clip.h264"
+            [fault]
+            mode = "nal-payload"
+            count = 300
+        "#;
+        let s: Scenario = toml::from_str(ok).unwrap();
+        s.validate(Path::new("test.toml")).unwrap();
+        assert!(s.is_outcome_diff() && s.is_robustness());
+        // still a robustness run: crash / hang judged, no pixel compare
+        assert!(!s.judges_frames());
+
+        // outcome-diff without a [fault] has nothing to corrupt
+        let no_fault = r#"
+            id = "od"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            outcome-diff = true
+            [input]
+            path = "clip.h264"
+        "#;
+        let s: Scenario = toml::from_str(no_fault).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+
+        // one engine cannot cross-compare an outcome
+        let one_engine = r#"
+            id = "od"
+            engines = ["g2g"]
+            reference = "g2g"
+            outcome-diff = true
+            [input]
+            path = "clip.h264"
+            [fault]
+            mode = "bit-flip"
+            count = 100
+        "#;
+        let s: Scenario = toml::from_str(one_engine).unwrap();
         assert!(s.validate(Path::new("test.toml")).is_err());
     }
 

@@ -16,4 +16,5 @@ cargo run -p calliope-cli -- run \
     scenarios/h265-decode.toml \
     scenarios/h265-mp4-decode.toml \
     scenarios/h264-ts-bitflip.toml \
+    scenarios/h264-outcome-diff.toml \
     --engines ffmpeg,gstreamer --report smoke-report.json
