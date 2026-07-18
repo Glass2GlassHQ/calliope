@@ -27,6 +27,9 @@ impl Engine for G2g {
     }
 
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
+        if let Some(rt) = &scenario.roundtrip {
+            return Ok(self.transcode_invocation(input, workdir, rt));
+        }
         Ok(self.invocation(scenario, input, workdir, &[]))
     }
 
@@ -47,6 +50,31 @@ impl Engine for G2g {
 }
 
 impl G2g {
+    /// Build a transcode invocation for an encode round-trip: decode the input
+    /// and re-encode it with the named encoder to an elementary stream that
+    /// ffmpeg then decodes and PSNR-checks. Exercises g2g's encoders.
+    fn transcode_invocation(
+        &self,
+        input: &Path,
+        workdir: &Path,
+        rt: &calliope_core::scenario::Roundtrip,
+    ) -> Invocation {
+        let out = workdir.join(format!("out.{}", rt.output_ext));
+        let pipeline = format!(
+            "filesrc location={} ! decodebin ! {} ! filesink location={}",
+            input.display(),
+            rt.encoder,
+            out.display()
+        );
+        let mut args = vec!["-q".to_string()];
+        args.extend(pipeline.split(' ').map(str::to_string));
+        Invocation {
+            program: binary("CALLIOPE_G2G_LAUNCH", "g2g-launch"),
+            args,
+            output: OutputSpec::EncodedFile(out),
+        }
+    }
+
     /// Build the decode-to-raw invocation, with any leading g2g-launch flags
     /// (e.g. `--threads`) placed before `-q` and the pipeline.
     fn invocation(

@@ -132,6 +132,7 @@ fn engine_crashes(
         soak: None,
         determinism: None,
         golden: false,
+        roundtrip: None,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
         return false;
@@ -187,6 +188,7 @@ fn golden_scenarios(
             soak: None,
             determinism: None,
             golden: true,
+            roundtrip: None,
         })
         .collect()
 }
@@ -462,7 +464,10 @@ async fn run_matrix(
                 height: 0,
                 format,
             });
-        } else if scenario.judges_frames() && scenario.video.is_none() {
+        } else if (scenario.judges_frames() || scenario.is_roundtrip()) && scenario.video.is_none()
+        {
+            // differential chunks by geometry; roundtrip needs it to size the raw
+            // PSNR compare
             scenario.video = Some(
                 calliope_core::probe::probe_geometry(&input)
                     .with_context(|| format!("{}: auto-probing geometry", scenario.id))?,
@@ -504,6 +509,26 @@ async fn run_matrix(
                     run_soak(engine.as_ref(), &scenario, &input, workdir).await
                 } else if scenario.is_determinism() {
                     run_determinism(engine.as_ref(), &scenario, &input, workdir).await
+                } else if scenario.is_roundtrip() {
+                    // the engine transcodes (decode -> re-encode); ffmpeg then
+                    // decodes that stream and PSNR-compares it to the reference.
+                    let mut r = run_one(engine.as_ref(), &scenario, &input, workdir).await;
+                    if matches!(r.status, RunStatus::Ok)
+                        && let (Some(rt), Some(video)) = (&scenario.roundtrip, scenario.video)
+                    {
+                        let encoded = r.log_dir.join(format!("out.{}", rt.output_ext));
+                        let dir = r.log_dir.clone();
+                        match calliope_adapter_ffmpeg::roundtrip_psnr(&input, &encoded, &dir, video)
+                        {
+                            Ok(psnr) => r.psnr = Some(psnr),
+                            Err(e) => {
+                                r.status = RunStatus::Error {
+                                    message: format!("roundtrip validate: {e}"),
+                                }
+                            }
+                        }
+                    }
+                    r
                 } else {
                     run_one(engine.as_ref(), &scenario, &input, workdir).await
                 };
@@ -562,6 +587,7 @@ async fn run_matrix(
             determinism: scenario.is_determinism(),
             golden_expected: golden_expected.clone(),
             majority,
+            roundtrip_psnr_min: scenario.roundtrip.as_ref().map(|rt| rt.psnr_min),
             runs,
         });
     }
@@ -584,7 +610,15 @@ fn print_summary(report: &Report) {
                 .run
                 .peak_rss_kb
                 .map_or("-".into(), |kb| format!("{} MB", kb / 1024));
-            let verdict = if let Some(expected) = &scenario.golden_expected {
+            let verdict = if let Some(min) = scenario.roundtrip_psnr_min {
+                match (&r.run.status, r.run.psnr) {
+                    (RunStatus::Ok, Some(p)) if p >= min => format!("roundtrip ok ({p:.1} dB)"),
+                    (RunStatus::Ok, Some(p)) => format!("PSNR {p:.1} dB < {min}"),
+                    (RunStatus::Signaled { signal }, _) => format!("CRASHED (signal {signal})"),
+                    (RunStatus::Timeout, _) => "HUNG".to_string(),
+                    _ => "encode / validate failed".to_string(),
+                }
+            } else if let Some(expected) = &scenario.golden_expected {
                 match &r.run.output_md5 {
                     Some(got) if got.eq_ignore_ascii_case(expected) => "golden ok".to_string(),
                     Some(got) => format!("GOLDEN MISMATCH ({}…)", &got[..got.len().min(8)]),

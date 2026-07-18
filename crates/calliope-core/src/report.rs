@@ -28,6 +28,10 @@ pub struct ScenarioReport {
     /// when they diverge, so a divergence points at the culprit
     #[serde(skip_serializing_if = "Option::is_none")]
     pub majority: Option<MajorityVote>,
+    /// roundtrip scenario: the minimum PSNR (dB) every engine's re-encoded stream
+    /// must reach (each engine's actual PSNR rides its `RunResult`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub roundtrip_psnr_min: Option<f64>,
     pub runs: Vec<EngineReport>,
 }
 
@@ -64,6 +68,12 @@ impl ScenarioReport {
                             .output_md5
                             .as_ref()
                             .is_some_and(|got| got.eq_ignore_ascii_case(expected)))
+            });
+        }
+        // roundtrip: every engine encoded a decodable stream at >= the PSNR floor
+        if let Some(min) = self.roundtrip_psnr_min {
+            return self.runs.iter().all(|r| {
+                matches!(r.run.status, RunStatus::Ok) && r.run.psnr.is_some_and(|p| p >= min)
             });
         }
         // determinism: every engine's output was byte-identical across its runs
@@ -115,6 +125,7 @@ mod tests {
                 output_md5: md5.map(str::to_string),
                 output_len: len,
                 determinism_matched: None,
+                psnr: None,
             },
             comparison: None,
         }
@@ -129,6 +140,7 @@ mod tests {
             determinism: false,
             golden_expected: Some("ABCD".into()),
             majority: None,
+            roundtrip_psnr_min: None,
             runs,
         }
     }
@@ -184,5 +196,43 @@ mod tests {
             golden_run_len("g2g", Some("dead"), Some(243)),
         ]);
         assert!(!g2g_bug.passed(), "g2g geometry divergence must still fail");
+    }
+
+    fn roundtrip_run(engine: &str, status: RunStatus, psnr: Option<f64>) -> EngineReport {
+        let mut r = golden_run(engine, None);
+        r.run.status = status;
+        r.run.psnr = psnr;
+        r
+    }
+
+    fn roundtrip_report(min: f64, runs: Vec<EngineReport>) -> ScenarioReport {
+        let mut s = golden_report(runs);
+        s.golden_expected = None;
+        s.roundtrip_psnr_min = Some(min);
+        s
+    }
+
+    #[test]
+    fn roundtrip_passes_above_the_psnr_floor_and_fails_below_or_on_crash() {
+        assert!(
+            roundtrip_report(30.0, vec![roundtrip_run("g2g", RunStatus::Ok, Some(45.0))]).passed(),
+            "PSNR above the floor passes"
+        );
+        assert!(
+            !roundtrip_report(30.0, vec![roundtrip_run("g2g", RunStatus::Ok, Some(12.0))]).passed(),
+            "PSNR below the floor fails"
+        );
+        assert!(
+            !roundtrip_report(30.0, vec![roundtrip_run("g2g", RunStatus::Ok, None)]).passed(),
+            "a missing PSNR (undecodable encode) fails"
+        );
+        assert!(
+            !roundtrip_report(
+                30.0,
+                vec![roundtrip_run("g2g", RunStatus::Timeout, Some(99.0))]
+            )
+            .passed(),
+            "a crash / hang fails regardless of PSNR"
+        );
     }
 }

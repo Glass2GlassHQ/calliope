@@ -1,0 +1,16 @@
+# Encode round-trip: g2g decodes the input and re-encodes it with x264enc; ffmpeg
+# then decodes that bitstream and PSNR-compares it to the reference decode of the
+# original. Fails if the encoder crashes, emits an undecodable stream, or drops
+# below psnr-min. Exercises the encoder, which the decode-only modes never touch.
+id = "h264-x264enc-roundtrip"
+engines = ["g2g"]
+reference = "g2g"
+timeout-secs = 120
+
+[input]
+corpus = "fluster/JVT-AVC_V1/AUD_MW_E/AUD_MW_E.264"
+
+[roundtrip]
+encoder = "x264enc"
+psnr-min = 30.0
+output-ext = "h264"

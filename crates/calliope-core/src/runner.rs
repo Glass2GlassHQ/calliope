@@ -58,6 +58,10 @@ pub struct RunResult {
     /// determinism only: whether every run's output was byte-identical
     #[serde(skip_serializing_if = "Option::is_none")]
     pub determinism_matched: Option<bool>,
+    /// roundtrip only: PSNR (dB) of the re-encoded, re-decoded output vs the
+    /// reference decode of the original. Filled by the CLI after ffmpeg validates.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub psnr: Option<f64>,
 }
 
 /// run one engine on one scenario; never panics on engine failure, every
@@ -87,6 +91,7 @@ fn fail_result(engine: &str, log_dir: PathBuf, message: String) -> RunResult {
         output_md5: None,
         output_len: None,
         determinism_matched: None,
+        psnr: None,
     }
 }
 
@@ -179,6 +184,9 @@ async fn exec(
                     whole_file_md5(path).ok(),
                     std::fs::metadata(path).map(|m| m.len()).ok(),
                 ),
+                // a roundtrip's encoded stream is validated by ffmpeg (PSNR), not
+                // hashed here
+                OutputSpec::EncodedFile(_) => (None, None),
             }
         } else {
             (None, None)
@@ -195,6 +203,7 @@ async fn exec(
         output_md5,
         output_len,
         determinism_matched: None,
+        psnr: None,
     }
 }
 
@@ -341,6 +350,8 @@ fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String
                 .ok_or_else(|| Error::Parse("raw-dump engine needs [video] geometry".into()))?;
             framehash::hash_raw_dump(path, video.frame_size())?
         }
+        // a roundtrip encoded stream is never frame-hashed (only golden/diff are)
+        OutputSpec::EncodedFile(_) => Vec::new(),
     };
     if hashes.is_empty() {
         return Err(Error::Parse("engine produced no frames".into()));
@@ -449,6 +460,7 @@ mod tests {
             soak: None,
             determinism: None,
             golden: false,
+            roundtrip: None,
         }
     }
 

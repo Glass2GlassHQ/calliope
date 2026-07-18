@@ -50,6 +50,9 @@ pub enum OutputSpec {
     /// engine wrote concatenated raw frames; the runner hashes per frame
     /// using the scenario's video geometry
     RawVideoFile(PathBuf),
+    /// engine wrote an encoded elementary stream (a roundtrip transcode); the
+    /// runner leaves it for ffmpeg to decode + PSNR, not hashed here
+    EncodedFile(PathBuf),
 }
 
 /// binary override hook: `env_var` (e.g. CALLIOPE_FFMPEG) wins over `default`

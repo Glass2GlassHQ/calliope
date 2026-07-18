@@ -39,6 +39,36 @@ pub struct Scenario {
     /// reference engine; requires a `corpus` input carrying that hash + format.
     #[serde(default)]
     pub golden: bool,
+    /// encode round-trip scenario: the engine transcodes the input (decode ->
+    /// re-encode with a named encoder); ffmpeg then decodes that bitstream and
+    /// PSNR-compares it to the reference decode of the original. Fails if the
+    /// encoder crashes, produces an undecodable stream, or drops below `psnr-min`.
+    pub roundtrip: Option<Roundtrip>,
+}
+
+/// Encode round-trip config: transcode the input through `encoder`, then require
+/// ffmpeg to decode the result at >= `psnr_min` dB versus the reference decode.
+/// Exercises the encoders (undecodable output / crashes / gross corruption),
+/// which the decode-only modes never touch.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Roundtrip {
+    /// The engine's encoder element (e.g. `x264enc`), plugged after `decodebin`.
+    pub encoder: String,
+    /// Minimum acceptable PSNR (dB) of the round-tripped decode vs the reference.
+    #[serde(default = "default_psnr_min")]
+    pub psnr_min: f64,
+    /// The encoded elementary stream's extension so ffmpeg types it (e.g. `h264`).
+    #[serde(default = "default_roundtrip_ext")]
+    pub output_ext: String,
+}
+
+fn default_psnr_min() -> f64 {
+    30.0
+}
+
+fn default_roundtrip_ext() -> String {
+    "h264".into()
 }
 
 /// Repeat the run `iterations` times and assert it never crashes or hangs on
@@ -89,10 +119,18 @@ impl Scenario {
         self.determinism.is_some()
     }
 
+    pub fn is_roundtrip(&self) -> bool {
+        self.roundtrip.is_some()
+    }
+
     /// only a plain differential scenario hashes and compares decoded frames
     /// per-frame against a reference engine
     pub fn judges_frames(&self) -> bool {
-        self.fault.is_none() && self.soak.is_none() && !self.golden && self.determinism.is_none()
+        self.fault.is_none()
+            && self.soak.is_none()
+            && !self.golden
+            && self.determinism.is_none()
+            && self.roundtrip.is_none()
     }
 }
 
@@ -280,10 +318,11 @@ impl Scenario {
         let modes = self.fault.is_some() as u8
             + self.soak.is_some() as u8
             + self.golden as u8
-            + self.determinism.is_some() as u8;
+            + self.determinism.is_some() as u8
+            + self.roundtrip.is_some() as u8;
         if modes > 1 {
             return Err(Error::Parse(format!(
-                "{}: fault / soak / golden / determinism are separate modes, use one",
+                "{}: fault / soak / golden / determinism / roundtrip are separate modes, use one",
                 at()
             )));
         }
