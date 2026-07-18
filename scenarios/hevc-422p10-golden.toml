@@ -1,8 +1,7 @@
-# HEVC RExt 4:2:2 10-bit. Golden-checks g2g's ffmpegdec I422p10 preserve path
-# against the canonical Fluster conformance md5. gstreamer omitted (see
-# hevc-main10-golden for the high-bit-depth stride note).
+# HEVC RExt 4:2:2 10-bit. Golden-checks every engine against the canonical
+# Fluster conformance md5, exercising g2g's ffmpegdec I422p10 preserve path.
 id = "hevc-422p10-golden"
-engines = ["ffmpeg", "g2g"]
+engines = ["ffmpeg", "gstreamer", "g2g"]
 reference = "ffmpeg"
 timeout-secs = 120
 golden = true

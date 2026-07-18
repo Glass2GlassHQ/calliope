@@ -1,10 +1,11 @@
 //! GStreamer adapter: gst-launch-1.0 decodes to a raw I420 dump that the
 //! runner hashes framemd5-style.
 //!
-//! Known caveat: filesink writes buffers as-is, so a decoder that pads
-//! strides would break bit-exactness vs ffmpeg's packed layout. Common
-//! conformance geometries are unpadded; a videoconvert-to-packed guard is a
-//! v2 item.
+//! `decodebin` is pinned to software decoders (`force-sw-decoders=true`): on a
+//! GPU host it otherwise auto-plugs a hardware decoder (e.g. nvh265dec) whose
+//! output is not the conformant libav reference, so golden / differential runs
+//! diverge non-reproducibly. filesink still writes buffers as-is, so a decoder
+//! that pads strides (odd geometries) remains a separate future concern.
 
 use std::path::Path;
 
@@ -35,7 +36,7 @@ impl Engine for GStreamer {
         // [video] or ffprobe), robustness / soak default to I420.
         let format = scenario.video.map_or("I420", |v| v.format.gst_format());
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! videoconvert ! video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin force-sw-decoders=true ! videoconvert ! video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

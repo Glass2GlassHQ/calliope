@@ -1,10 +1,9 @@
-# HEVC RExt 4:4:4 12-bit. Golden-checks g2g's ffmpegdec I444p12 preserve path
-# against the canonical Fluster conformance md5. gstreamer omitted (see
-# hevc-main10-golden for the high-bit-depth stride note). Uses a standard 12-bit
-# 4:4:4 vector: the Bitdepth_* vectors use separate luma/chroma bit depths that
-# libavcodec (hence ffmpeg and g2g) does not decode.
+# HEVC RExt 4:4:4 12-bit. Golden-checks every engine against the canonical
+# Fluster conformance md5, exercising g2g's ffmpegdec I444p12 preserve path.
+# Uses a standard 12-bit 4:4:4 vector: the Bitdepth_* vectors use separate
+# luma/chroma bit depths that libavcodec (hence ffmpeg and g2g) does not decode.
 id = "hevc-444p12-golden"
-engines = ["ffmpeg", "g2g"]
+engines = ["ffmpeg", "gstreamer", "g2g"]
 reference = "ffmpeg"
 timeout-secs = 120
 golden = true
