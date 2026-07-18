@@ -31,5 +31,10 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
     -f lavfi -i "testsrc2=duration=2:size=160x120:rate=25" \
     -c:v libx264 -pix_fmt yuv444p -f h264 local-corpus/testsrc-160x120-444.h264
 
+# 10-bit HEVC Main10: exercise high-bit-depth (2-byte LE samples) decode + chunking.
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "testsrc2=duration=2:size=176x144:rate=25" \
+    -c:v libx265 -pix_fmt yuv420p10le -f hevc local-corpus/testsrc-176x144-10bit.h265
+
 echo "local-corpus ready:"
 ls -l local-corpus

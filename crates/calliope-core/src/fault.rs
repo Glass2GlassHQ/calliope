@@ -35,6 +35,12 @@ pub enum FaultKind {
     BitFlip,
     /// delete `count` bytes at seeded offsets (shifts everything after)
     ByteDrop,
+    /// flip `count` bits, but only inside Annex-B NAL payloads, leaving every
+    /// start code and NAL-header byte intact. The stream still parses and the
+    /// units still route to slice decode, so the corruption reaches the
+    /// reconstruction path instead of dying at the demuxer / framer, where a
+    /// blind bit-flip usually lands.
+    NalPayload,
 }
 
 fn default_seed() -> u64 {
@@ -48,7 +54,7 @@ fn default_keep_percent() -> u8 {
 impl Fault {
     pub fn validate(&self) -> core::result::Result<(), String> {
         match self.mode {
-            FaultKind::BitFlip | FaultKind::ByteDrop if self.count == 0 => {
+            FaultKind::BitFlip | FaultKind::ByteDrop | FaultKind::NalPayload if self.count == 0 => {
                 Err(format!("{:?} fault needs count > 0", self.mode))
             }
             FaultKind::Truncate if !(1..=99).contains(&self.keep_percent) => {
@@ -74,6 +80,20 @@ impl Fault {
                 let mut out = input.to_vec();
                 for _ in 0..self.count {
                     let offset = (splitmix64(&mut rng) as usize) % out.len();
+                    let bit = (splitmix64(&mut rng) % 8) as u8;
+                    out[offset] ^= 1 << bit;
+                }
+                out
+            }
+            FaultKind::NalPayload => {
+                let mut out = input.to_vec();
+                let payload = nal_payload_offsets(input);
+                // no Annex-B start codes: nothing safe to target, leave it be
+                if payload.is_empty() {
+                    return out;
+                }
+                for _ in 0..self.count {
+                    let offset = payload[(splitmix64(&mut rng) as usize) % payload.len()];
                     let bit = (splitmix64(&mut rng) % 8) as u8;
                     out[offset] ^= 1 << bit;
                 }
@@ -112,6 +132,34 @@ impl Fault {
 /// leave at least one byte so a fully-dropped file cannot look like a clean EOF
 fn out_len_floor(len: usize) -> usize {
     len.saturating_sub(1)
+}
+
+/// Byte offsets that lie inside an Annex-B NAL payload: everything except each
+/// three-byte start code (`00 00 01`) and the one NAL-header byte after it.
+/// Protecting the header byte keeps the NAL type, so a corrupted unit still
+/// routes to the right decode path. Empty if the stream has no start codes.
+fn nal_payload_offsets(data: &[u8]) -> Vec<usize> {
+    // positions of every `00 00 01` start-code prefix
+    let mut starts = Vec::new();
+    let mut i = 0;
+    while i + 2 < data.len() {
+        if data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 1 {
+            starts.push(i);
+            i += 3;
+        } else {
+            i += 1;
+        }
+    }
+    let mut offsets = Vec::new();
+    for (n, &start) in starts.iter().enumerate() {
+        // skip the 3-byte code and the 1-byte NAL header
+        let payload_begin = start + 4;
+        // payload runs up to the next start code (or end of stream); stop at the
+        // next prefix so its leading zeros stay intact
+        let payload_end = starts.get(n + 1).copied().unwrap_or(data.len());
+        offsets.extend(payload_begin..payload_end);
+    }
+    offsets
 }
 
 /// splitmix64: a tiny deterministic PRNG, so a scenario's corruption is
@@ -182,5 +230,38 @@ mod tests {
         assert!(fault(FaultKind::Truncate, 0, 0).validate().is_err());
         assert!(fault(FaultKind::Truncate, 0, 50).validate().is_ok());
         assert!(fault(FaultKind::ByteDrop, 5, 0).validate().is_ok());
+        assert!(fault(FaultKind::NalPayload, 0, 0).validate().is_err());
+        assert!(fault(FaultKind::NalPayload, 10, 0).validate().is_ok());
+    }
+
+    #[test]
+    fn nal_payload_offsets_exclude_start_codes_and_headers() {
+        // two Annex-B NALs: 00 00 01 <header> <payload...>
+        let data = [
+            0, 0, 1, 0x65, 0xAA, 0xBB, 0xCC, // NAL 1: payload at 4,5,6
+            0, 0, 1, 0x41, 0xDD, 0xEE, 0xFF, // NAL 2: payload at 11,12,13
+        ];
+        assert_eq!(nal_payload_offsets(&data), vec![4, 5, 6, 11, 12, 13]);
+        // a stream with no start codes offers nothing safe to target
+        assert!(nal_payload_offsets(&[1, 2, 3, 4]).is_empty());
+    }
+
+    #[test]
+    fn nal_payload_flips_only_inside_payloads() {
+        let data = vec![
+            0, 0, 1, 0x65, 0xAA, 0xBB, 0xCC, 0, 0, 1, 0x41, 0xDD, 0xEE, 0xFF,
+        ];
+        let protected = [0usize, 1, 2, 3, 7, 8, 9, 10];
+        let out = fault(FaultKind::NalPayload, 200, 0).corrupt(&data);
+        assert_eq!(out.len(), data.len(), "bit-flips preserve length");
+        for i in protected {
+            assert_eq!(out[i], data[i], "start code / header byte {i} untouched");
+        }
+        assert!(
+            (4..=6).chain(11..=13).any(|i| out[i] != data[i]),
+            "at least one payload byte was flipped"
+        );
+        // same seed reproduces exactly
+        assert_eq!(out, fault(FaultKind::NalPayload, 200, 0).corrupt(&data));
     }
 }

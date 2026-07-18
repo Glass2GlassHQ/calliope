@@ -15,6 +15,19 @@ pub trait Engine: Send + Sync {
 
     /// map a scenario to one subprocess run; outputs go under `workdir`
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation>;
+
+    /// A determinism-mode variant that must produce byte-identical output to
+    /// [`Self::plan`]. `None` (the default) means the engine has no such
+    /// variant, so only the repeated base runs are compared. g2g returns a
+    /// `--threads` build of the same pipeline to catch threading-order bugs.
+    fn threaded_plan(
+        &self,
+        _scenario: &Scenario,
+        _input: &Path,
+        _workdir: &Path,
+    ) -> Result<Option<Invocation>> {
+        Ok(None)
+    }
 }
 
 #[derive(Debug, Clone)]

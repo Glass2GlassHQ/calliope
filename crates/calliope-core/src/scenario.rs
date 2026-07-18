@@ -29,6 +29,11 @@ pub struct Scenario {
     pub fault: Option<Fault>,
     /// present for a soak scenario: repeat the run and watch for instability
     pub soak: Option<Soak>,
+    /// present for a determinism scenario: run each engine repeatedly (and,
+    /// where the engine has one, a threaded variant) and assert every run's
+    /// output is byte-identical. No reference engine; a self-comparison, so it
+    /// isolates nondeterminism / threading bugs without reference-quirk noise.
+    pub determinism: Option<Determinism>,
     /// golden scenario: assert each engine's whole decoded output matches the
     /// corpus vector's `decoded-md5` (the official conformance hash). No
     /// reference engine; requires a `corpus` input carrying that hash + format.
@@ -46,6 +51,26 @@ pub struct Soak {
     pub iterations: usize,
 }
 
+/// Repeat each engine `runs` times and require byte-identical output every
+/// time. With `threads`, also run the engine's threaded variant (if it has
+/// one) and require it to match too, catching threading-order bugs.
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Determinism {
+    #[serde(default = "default_determinism_runs")]
+    pub runs: usize,
+    #[serde(default = "default_true")]
+    pub threads: bool,
+}
+
+fn default_determinism_runs() -> usize {
+    3
+}
+
+fn default_true() -> bool {
+    true
+}
+
 impl Scenario {
     /// robustness scenarios assert graceful degradation, not frame equality
     pub fn is_robustness(&self) -> bool {
@@ -60,10 +85,14 @@ impl Scenario {
         self.golden
     }
 
+    pub fn is_determinism(&self) -> bool {
+        self.determinism.is_some()
+    }
+
     /// only a plain differential scenario hashes and compares decoded frames
     /// per-frame against a reference engine
     pub fn judges_frames(&self) -> bool {
-        self.fault.is_none() && self.soak.is_none() && !self.golden
+        self.fault.is_none() && self.soak.is_none() && !self.golden && self.determinism.is_none()
     }
 }
 
@@ -93,14 +122,30 @@ pub struct Video {
     pub format: PixelFormat,
 }
 
-/// 8-bit planar YUV, the formats we can chunk and cross-check. Others (10-bit,
-/// packed, NV12) are rejected by the probe with a clear message.
+/// Decoded pixel layouts we can chunk into frames and cross-check bit-exactly.
+/// The planar YUV family (I420/I422/I444 at 8/10/12-bit) plus semi-planar NV12
+/// are all identity conversions from a decoder's native output, so a raw dump
+/// stays byte-identical to ffmpeg's. Packed RGB / YUYV are matrix- or
+/// order-dependent (not bit-exact across engines) and stay unsupported.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PixelFormat {
     I420,
     I422,
     I444,
+    Nv12,
+    #[serde(rename = "i420p10")]
+    I420p10,
+    #[serde(rename = "i420p12")]
+    I420p12,
+    #[serde(rename = "i422p10")]
+    I422p10,
+    #[serde(rename = "i422p12")]
+    I422p12,
+    #[serde(rename = "i444p10")]
+    I444p10,
+    #[serde(rename = "i444p12")]
+    I444p12,
 }
 
 impl PixelFormat {
@@ -110,6 +155,13 @@ impl PixelFormat {
             "yuv420p" => Some(Self::I420),
             "yuv422p" => Some(Self::I422),
             "yuv444p" => Some(Self::I444),
+            "nv12" => Some(Self::Nv12),
+            "yuv420p10le" => Some(Self::I420p10),
+            "yuv420p12le" => Some(Self::I420p12),
+            "yuv422p10le" => Some(Self::I422p10),
+            "yuv422p12le" => Some(Self::I422p12),
+            "yuv444p10le" => Some(Self::I444p10),
+            "yuv444p12le" => Some(Self::I444p12),
             _ => None,
         }
     }
@@ -120,6 +172,13 @@ impl PixelFormat {
             Self::I420 => "I420",
             Self::I422 => "Y42B",
             Self::I444 => "Y444",
+            Self::Nv12 => "NV12",
+            Self::I420p10 => "I420_10LE",
+            Self::I420p12 => "I420_12LE",
+            Self::I422p10 => "I422_10LE",
+            Self::I422p12 => "I422_12LE",
+            Self::I444p10 => "Y444_10LE",
+            Self::I444p12 => "Y444_12LE",
         }
     }
 
@@ -129,6 +188,44 @@ impl PixelFormat {
             Self::I420 => "yuv420p",
             Self::I422 => "yuv422p",
             Self::I444 => "yuv444p",
+            Self::Nv12 => "nv12",
+            Self::I420p10 => "yuv420p10le",
+            Self::I420p12 => "yuv420p12le",
+            Self::I422p10 => "yuv422p10le",
+            Self::I422p12 => "yuv422p12le",
+            Self::I444p10 => "yuv444p10le",
+            Self::I444p12 => "yuv444p12le",
+        }
+    }
+
+    /// bytes per sample: 2 for the 10-/12-bit formats (each sample a LE u16), else 1
+    fn bytes_per_sample(self) -> usize {
+        match self {
+            Self::I420p10
+            | Self::I420p12
+            | Self::I422p10
+            | Self::I422p12
+            | Self::I444p10
+            | Self::I444p12 => 2,
+            _ => 1,
+        }
+    }
+
+    /// true for the fully-planar I420/I422/I444 family (three separate Y/U/V
+    /// planes), which the decoders emit directly; false for semi-planar NV12,
+    /// which a planar decode reaches only through a videoconvert.
+    pub fn is_planar_yuv(self) -> bool {
+        !matches!(self, Self::Nv12)
+    }
+
+    /// chroma right-shift from luma dims as (horizontal, vertical): 4:2:0 =
+    /// (1, 1), 4:2:2 = (1, 0), 4:4:4 = (0, 0). NV12 is 4:2:0 subsampled (its
+    /// two chroma samples are interleaved, but the sample count matches I420).
+    fn chroma_shift(self) -> (u32, u32) {
+        match self {
+            Self::I420 | Self::I420p10 | Self::I420p12 | Self::Nv12 => (1, 1),
+            Self::I422 | Self::I422p10 | Self::I422p12 => (1, 0),
+            Self::I444 | Self::I444p10 | Self::I444p12 => (0, 0),
         }
     }
 }
@@ -137,14 +234,12 @@ impl Video {
     /// bytes per frame, matching ffmpeg's tightly packed framemd5 layout
     pub fn frame_size(&self) -> usize {
         let (w, h) = (self.width as usize, self.height as usize);
+        let (sx, sy) = self.format.chroma_shift();
         let luma = w * h;
-        // chroma plane dimensions per subsampling; two planes (U, V)
-        let chroma = match self.format {
-            PixelFormat::I420 => w.div_ceil(2) * h.div_ceil(2),
-            PixelFormat::I422 => w.div_ceil(2) * h,
-            PixelFormat::I444 => w * h,
-        };
-        luma + 2 * chroma
+        // two chroma planes (U, V), each subsampled per the format; NV12
+        // interleaves them but carries the same sample count
+        let chroma = w.div_ceil(1 << sx) * h.div_ceil(1 << sy);
+        (luma + 2 * chroma) * self.format.bytes_per_sample()
     }
 }
 
@@ -182,10 +277,13 @@ impl Scenario {
                 at()
             )));
         }
-        let modes = self.fault.is_some() as u8 + self.soak.is_some() as u8 + self.golden as u8;
+        let modes = self.fault.is_some() as u8
+            + self.soak.is_some() as u8
+            + self.golden as u8
+            + self.determinism.is_some() as u8;
         if modes > 1 {
             return Err(Error::Parse(format!(
-                "{}: fault / soak / golden are separate modes, use one",
+                "{}: fault / soak / golden / determinism are separate modes, use one",
                 at()
             )));
         }
@@ -208,6 +306,14 @@ impl Scenario {
         {
             return Err(Error::Parse(format!(
                 "{}: soak iterations must be >= 2",
+                at()
+            )));
+        }
+        if let Some(det) = &self.determinism
+            && det.runs < 2
+        {
+            return Err(Error::Parse(format!(
+                "{}: determinism runs must be >= 2",
                 at()
             )));
         }
@@ -268,7 +374,42 @@ mod tests {
             PixelFormat::from_pix_fmt("yuv444p"),
             Some(PixelFormat::I444)
         );
-        assert_eq!(PixelFormat::from_pix_fmt("yuv420p10le"), None);
+        assert_eq!(PixelFormat::from_pix_fmt("nv12"), Some(PixelFormat::Nv12));
+        assert_eq!(
+            PixelFormat::from_pix_fmt("yuv420p10le"),
+            Some(PixelFormat::I420p10)
+        );
+        assert_eq!(
+            PixelFormat::from_pix_fmt("yuv444p12le"),
+            Some(PixelFormat::I444p12)
+        );
+        // packed RGB stays unsupported (not bit-exact across engines)
+        assert_eq!(PixelFormat::from_pix_fmt("rgb24"), None);
+    }
+
+    #[test]
+    fn frame_size_nv12_and_high_bit_depth() {
+        // NV12 carries the same byte count as I420 (interleaved chroma, 8-bit)
+        let nv12 = Video {
+            width: 176,
+            height: 144,
+            format: PixelFormat::Nv12,
+        };
+        assert_eq!(nv12.frame_size(), 176 * 144 * 3 / 2);
+        // 10-bit 4:2:0 doubles every sample to a 2-byte word
+        let p10 = Video {
+            width: 176,
+            height: 144,
+            format: PixelFormat::I420p10,
+        };
+        assert_eq!(p10.frame_size(), 176 * 144 * 3 / 2 * 2);
+        // 12-bit 4:4:4: three full-res planes, 2 bytes each
+        let p12 = Video {
+            width: 100,
+            height: 60,
+            format: PixelFormat::I444p12,
+        };
+        assert_eq!(p12.frame_size(), 100 * 60 * 3 * 2);
     }
 
     #[test]

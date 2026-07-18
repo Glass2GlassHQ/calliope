@@ -3,7 +3,7 @@
 
 use serde::Serialize;
 
-use crate::compare::Comparison;
+use crate::compare::{Comparison, MajorityVote};
 use crate::runner::{RunResult, RunStatus};
 
 #[derive(Debug, Serialize)]
@@ -19,9 +19,15 @@ pub struct ScenarioReport {
     pub robustness: bool,
     /// soak scenario: judged on stability across repeated iterations
     pub soak: bool,
+    /// determinism scenario: judged on byte-identical output across repeated runs
+    pub determinism: bool,
     /// golden scenario: the conformance hash every engine's output must match
     #[serde(skip_serializing_if = "Option::is_none")]
     pub golden_expected: Option<String>,
+    /// differential scenario with >=3 engines: which engine(s) are the outlier
+    /// when they diverge, so a divergence points at the culprit
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub majority: Option<MajorityVote>,
     pub runs: Vec<EngineReport>,
 }
 
@@ -40,9 +46,15 @@ impl ScenarioReport {
             return self.runs.iter().all(|r| {
                 matches!(r.run.status, RunStatus::Ok)
                     && r.run
-                        .golden_md5
+                        .output_md5
                         .as_ref()
                         .is_some_and(|got| got.eq_ignore_ascii_case(expected))
+            });
+        }
+        // determinism: every engine's output was byte-identical across its runs
+        if self.determinism {
+            return self.runs.iter().all(|r| {
+                matches!(r.run.status, RunStatus::Ok) && r.run.determinism_matched == Some(true)
             });
         }
         // robustness and soak both pass on graceful survival (no crash / hang),
@@ -81,7 +93,8 @@ mod tests {
                 frame_hashes: None,
                 log_dir: PathBuf::new(),
                 iterations_completed: None,
-                golden_md5: md5.map(str::to_string),
+                output_md5: md5.map(str::to_string),
+                determinism_matched: None,
             },
             comparison: None,
         }
@@ -93,7 +106,9 @@ mod tests {
             reference: "ffmpeg".into(),
             robustness: false,
             soak: false,
+            determinism: false,
             golden_expected: Some("ABCD".into()),
+            majority: None,
             runs,
         }
     }

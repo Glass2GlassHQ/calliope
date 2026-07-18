@@ -42,13 +42,17 @@ pub struct RunResult {
     #[serde(skip)]
     pub frame_hashes: Option<Vec<String>>,
     pub log_dir: PathBuf,
-    /// soak only: how many iterations ran (all of them if it never crashed)
+    /// soak / determinism only: how many iterations ran (all of them if it
+    /// never crashed or diverged)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub iterations_completed: Option<usize>,
-    /// golden only: MD5 of the whole decoded output, compared to the vector's
-    /// conformance `decoded-md5`
+    /// MD5 of the whole output artifact. Golden compares it to the vector's
+    /// conformance `decoded-md5`; determinism compares it across runs.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub golden_md5: Option<String>,
+    pub output_md5: Option<String>,
+    /// determinism only: whether every run's output was byte-identical
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub determinism_matched: Option<bool>,
 }
 
 /// run one engine on one scenario; never panics on engine failure, every
@@ -60,24 +64,40 @@ pub async fn run_one(
     workdir: &Path,
 ) -> RunResult {
     let run_dir = workdir.join(&scenario.id).join(engine.id());
-    let fail = |message: String| RunResult {
-        engine: engine.id().to_string(),
+    match engine.plan(scenario, input, &run_dir) {
+        Ok(invocation) => exec(engine.id(), scenario, invocation, run_dir).await,
+        Err(e) => fail_result(engine.id(), run_dir, e.to_string()),
+    }
+}
+
+fn fail_result(engine: &str, log_dir: PathBuf, message: String) -> RunResult {
+    RunResult {
+        engine: engine.to_string(),
         status: RunStatus::Error { message },
         duration_ms: 0,
         peak_rss_kb: None,
         frame_hashes: None,
-        log_dir: run_dir.clone(),
+        log_dir,
         iterations_completed: None,
-        golden_md5: None,
-    };
+        output_md5: None,
+        determinism_matched: None,
+    }
+}
+
+/// Execute one prepared invocation in `run_dir`: spawn, enforce the timeout,
+/// capture logs and peak RSS, and derive the scenario's output (per-frame
+/// hashes for differential, whole-artifact MD5 for golden / determinism).
+async fn exec(
+    engine_id: &str,
+    scenario: &Scenario,
+    invocation: crate::engine::Invocation,
+    run_dir: PathBuf,
+) -> RunResult {
+    let fail = |message: String| fail_result(engine_id, run_dir.clone(), message);
 
     if let Err(e) = std::fs::create_dir_all(&run_dir) {
         return fail(e.to_string());
     }
-    let invocation = match engine.plan(scenario, input, &run_dir) {
-        Ok(i) => i,
-        Err(e) => return fail(e.to_string()),
-    };
 
     let stdout = match std::fs::File::create(run_dir.join("stdout.log")) {
         Ok(f) => f,
@@ -137,45 +157,36 @@ pub async fn run_one(
     let frame_hashes = if scenario.judges_frames() && matches!(status, RunStatus::Ok) {
         match extract_hashes(&invocation.output, scenario) {
             Ok(h) => Some(h),
-            Err(e) => {
-                return RunResult {
-                    engine: engine.id().to_string(),
-                    status: RunStatus::Error {
-                        message: e.to_string(),
-                    },
-                    duration_ms,
-                    peak_rss_kb,
-                    frame_hashes: None,
-                    log_dir: run_dir,
-                    iterations_completed: None,
-                    golden_md5: None,
-                };
-            }
+            Err(e) => return fail(e.to_string()),
         }
     } else {
         None
     };
 
-    // golden: MD5 the whole decoded output to compare against the conformance
-    // hash (all engines emit a raw-video dump in golden mode)
-    let golden_md5 = if scenario.is_golden() && matches!(status, RunStatus::Ok) {
-        match &invocation.output {
-            OutputSpec::RawVideoFile(path) => whole_file_md5(path).ok(),
-            OutputSpec::FrameMd5File(_) => None,
-        }
-    } else {
-        None
-    };
+    // golden compares the whole decoded output to the conformance hash;
+    // determinism compares the whole output artifact across runs. Either way,
+    // MD5 whatever artifact the engine produced (raw dump or framemd5 file).
+    let output_md5 =
+        if (scenario.is_golden() || scenario.is_determinism()) && matches!(status, RunStatus::Ok) {
+            match &invocation.output {
+                OutputSpec::RawVideoFile(path) | OutputSpec::FrameMd5File(path) => {
+                    whole_file_md5(path).ok()
+                }
+            }
+        } else {
+            None
+        };
 
     RunResult {
-        engine: engine.id().to_string(),
+        engine: engine_id.to_string(),
         status,
         duration_ms,
         peak_rss_kb,
         frame_hashes,
         log_dir: run_dir,
         iterations_completed: None,
-        golden_md5,
+        output_md5,
+        determinism_matched: None,
     }
 }
 
@@ -226,6 +237,88 @@ pub async fn run_soak(
     result.duration_ms = total_ms;
     result.peak_rss_kb = peak_rss_kb;
     result.iterations_completed = Some(completed);
+    result
+}
+
+/// Run an engine repeatedly (a determinism scenario) plus, if requested and the
+/// engine has one, a threaded variant, and assert every run's output artifact
+/// is byte-identical. A crash / hang stops early and is surfaced as-is. The
+/// returned `RunResult` carries `determinism_matched` and the agreed hash in
+/// `output_md5`.
+pub async fn run_determinism(
+    engine: &dyn Engine,
+    scenario: &Scenario,
+    input: &Path,
+    workdir: &Path,
+) -> RunResult {
+    let det = scenario
+        .determinism
+        .expect("determinism scenario has [determinism]");
+    let mut hashes: Vec<String> = Vec::new();
+    let mut total_ms = 0u128;
+    let mut peak_rss_kb: Option<u64> = None;
+    let mut last = None;
+    let mut completed = 0;
+    for _ in 0..det.runs {
+        let r = run_one(engine, scenario, input, workdir).await;
+        completed += 1;
+        total_ms += r.duration_ms;
+        peak_rss_kb = peak_rss_kb.max(r.peak_rss_kb);
+        let ok = matches!(r.status, RunStatus::Ok);
+        if let Some(h) = &r.output_md5 {
+            hashes.push(h.clone());
+        }
+        last = Some(r);
+        // a crash / hang / error is itself a determinism failure worth surfacing
+        if !ok {
+            break;
+        }
+    }
+
+    // threaded variant, when the engine defines one: its own run dir so its
+    // output does not clobber the base runs' artifact
+    if det.threads
+        && last
+            .as_ref()
+            .is_some_and(|r| matches!(r.status, RunStatus::Ok))
+    {
+        let run_dir = workdir
+            .join(&scenario.id)
+            .join(format!("{}-threaded", engine.id()));
+        match engine.threaded_plan(scenario, input, &run_dir) {
+            Ok(Some(invocation)) => {
+                let r = exec(engine.id(), scenario, invocation, run_dir).await;
+                total_ms += r.duration_ms;
+                peak_rss_kb = peak_rss_kb.max(r.peak_rss_kb);
+                match &r.status {
+                    // its output must match the base runs' hash
+                    RunStatus::Ok => {
+                        if let Some(h) = &r.output_md5 {
+                            hashes.push(h.clone());
+                        }
+                    }
+                    // a crash / hang under threading is a real hardening bug
+                    RunStatus::Signaled { .. } | RunStatus::Timeout => last = Some(r),
+                    // a plain non-zero exit / harness error means the threaded
+                    // variant could not run (e.g. g2g built without the
+                    // multi-thread feature); skip it rather than false-fail
+                    RunStatus::ExitFailure { .. } | RunStatus::Error { .. } => {}
+                }
+            }
+            Ok(None) => {}
+            Err(_) => {}
+        }
+    }
+
+    let mut result = last.expect("determinism runs at least once");
+    result.duration_ms = total_ms;
+    result.peak_rss_kb = peak_rss_kb;
+    result.iterations_completed = Some(completed);
+    let matched = !hashes.is_empty()
+        && matches!(result.status, RunStatus::Ok)
+        && hashes.windows(2).all(|w| w[0].eq_ignore_ascii_case(&w[1]));
+    result.determinism_matched = Some(matched);
+    result.output_md5 = hashes.into_iter().next();
     result
 }
 
@@ -286,6 +379,16 @@ mod tests {
     struct FakeEngine {
         program: &'static str,
         args: Vec<String>,
+        /// determinism threaded variant; None means the engine has none
+        threaded: Option<(&'static str, Vec<String>)>,
+    }
+
+    fn fake(program: &'static str, args: Vec<String>) -> FakeEngine {
+        FakeEngine {
+            program,
+            args,
+            threaded: None,
+        }
     }
 
     impl Engine for FakeEngine {
@@ -304,6 +407,18 @@ mod tests {
                 args: self.args.clone(),
                 output: OutputSpec::RawVideoFile(workdir.join("out.yuv")),
             })
+        }
+        fn threaded_plan(
+            &self,
+            _s: &Scenario,
+            _input: &Path,
+            workdir: &Path,
+        ) -> Result<Option<Invocation>> {
+            Ok(self.threaded.as_ref().map(|(program, args)| Invocation {
+                program: (*program).into(),
+                args: args.clone(),
+                output: OutputSpec::RawVideoFile(workdir.join("out.yuv")),
+            }))
         }
     }
 
@@ -324,6 +439,7 @@ mod tests {
             }),
             fault: None,
             soak: None,
+            determinism: None,
             golden: false,
         }
     }
@@ -338,16 +454,16 @@ mod tests {
     async fn captures_success_and_hashes_output() {
         let wd = workdir("ok");
         // 2x2 i420 frame = 6 bytes; emit two frames
-        let engine = FakeEngine {
-            program: "sh",
-            args: vec![
+        let engine = fake(
+            "sh",
+            vec![
                 "-c".into(),
                 format!(
                     "printf 'aaaaaabbbbbb' > {}/runner-test/fake/out.yuv",
                     wd.display()
                 ),
             ],
-        };
+        );
         let result = run_one(&engine, &scenario(30), Path::new("/dev/null"), &wd).await;
         assert!(
             matches!(result.status, RunStatus::Ok),
@@ -360,18 +476,12 @@ mod tests {
     #[tokio::test]
     async fn reports_exit_failure_and_timeout() {
         let wd = workdir("fail");
-        let engine = FakeEngine {
-            program: "sh",
-            args: vec!["-c".into(), "exit 3".into()],
-        };
+        let engine = fake("sh", vec!["-c".into(), "exit 3".into()]);
         let result = run_one(&engine, &scenario(30), Path::new("/dev/null"), &wd).await;
         assert!(matches!(result.status, RunStatus::ExitFailure { code: 3 }));
 
         let wd = workdir("timeout");
-        let engine = FakeEngine {
-            program: "sleep",
-            args: vec!["10".into()],
-        };
+        let engine = fake("sleep", vec!["10".into()]);
         let result = run_one(&engine, &scenario(1), Path::new("/dev/null"), &wd).await;
         assert!(matches!(result.status, RunStatus::Timeout));
     }
@@ -385,10 +495,7 @@ mod tests {
     #[tokio::test]
     async fn soak_runs_all_iterations_when_stable() {
         let wd = workdir("soak-ok");
-        let engine = FakeEngine {
-            program: "true",
-            args: vec![],
-        };
+        let engine = fake("true", vec![]);
         let result = run_soak(&engine, &soak_scenario(5, 30), Path::new("/dev/null"), &wd).await;
         assert!(result.status.survived_corrupt_input());
         assert_eq!(result.iterations_completed, Some(5));
@@ -397,13 +504,89 @@ mod tests {
     #[tokio::test]
     async fn soak_stops_at_first_hang() {
         let wd = workdir("soak-hang");
-        let engine = FakeEngine {
-            program: "sleep",
-            args: vec!["10".into()],
-        };
+        let engine = fake("sleep", vec!["10".into()]);
         let result = run_soak(&engine, &soak_scenario(5, 1), Path::new("/dev/null"), &wd).await;
         assert!(matches!(result.status, RunStatus::Timeout));
         // stopped on the very first iteration's hang, not all five
         assert_eq!(result.iterations_completed, Some(1));
+    }
+
+    fn determinism_scenario(runs: usize, threads: bool) -> Scenario {
+        let mut s = scenario(30);
+        s.determinism = Some(crate::scenario::Determinism { runs, threads });
+        s
+    }
+
+    // write `count` distinct random bytes to the fake engine's output; each run
+    // differs, so the determinism verdict must be a mismatch
+    fn write_random(wd: &Path, count: usize) -> Vec<String> {
+        vec![
+            "-c".into(),
+            format!(
+                "head -c {count} /dev/urandom > {}/runner-test/fake/out.yuv",
+                wd.display()
+            ),
+        ]
+    }
+
+    #[tokio::test]
+    async fn determinism_matches_identical_output_and_flags_variation() {
+        // fixed output every run -> byte-identical -> matched
+        let wd = workdir("det-ok");
+        let args = vec![
+            "-c".into(),
+            format!(
+                "printf 'aaaaaabbbbbb' > {}/runner-test/fake/out.yuv",
+                wd.display()
+            ),
+        ];
+        let engine = fake("sh", args);
+        let result = run_determinism(
+            &engine,
+            &determinism_scenario(3, false),
+            Path::new("/dev/null"),
+            &wd,
+        )
+        .await;
+        assert_eq!(result.determinism_matched, Some(true));
+        assert_eq!(result.iterations_completed, Some(3));
+
+        // random output each run -> divergent hashes -> not matched
+        let wd = workdir("det-bad");
+        let engine = fake("sh", write_random(&wd, 12));
+        let result = run_determinism(
+            &engine,
+            &determinism_scenario(3, false),
+            Path::new("/dev/null"),
+            &wd,
+        )
+        .await;
+        assert_eq!(result.determinism_matched, Some(false));
+    }
+
+    #[tokio::test]
+    async fn determinism_skips_unavailable_threaded_variant() {
+        // base runs are stable; the threaded variant exits non-zero (as a build
+        // lacking the feature would), so it is skipped, not treated as a failure
+        let wd = workdir("det-threaded-skip");
+        let mut engine = fake(
+            "sh",
+            vec![
+                "-c".into(),
+                format!(
+                    "printf 'aaaaaabbbbbb' > {}/runner-test/fake/out.yuv",
+                    wd.display()
+                ),
+            ],
+        );
+        engine.threaded = Some(("sh", vec!["-c".into(), "exit 1".into()]));
+        let result = run_determinism(
+            &engine,
+            &determinism_scenario(2, true),
+            Path::new("/dev/null"),
+            &wd,
+        )
+        .await;
+        assert_eq!(result.determinism_matched, Some(true));
     }
 }

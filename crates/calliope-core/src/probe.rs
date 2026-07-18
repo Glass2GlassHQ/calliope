@@ -89,9 +89,20 @@ mod tests {
     }
 
     #[test]
+    fn probes_nv12_and_high_bit_depth() {
+        let v = parse_ffprobe_csv("1920,1080,yuv420p10le").unwrap();
+        assert_eq!(
+            (v.width, v.height, v.format),
+            (1920, 1080, PixelFormat::I420p10)
+        );
+        let v = parse_ffprobe_csv("176,144,nv12").unwrap();
+        assert_eq!((v.width, v.height, v.format), (176, 144, PixelFormat::Nv12));
+    }
+
+    #[test]
     fn rejects_unsupported_or_malformed() {
-        // 10-bit is not chunkable by our 8-bit planar frame sizes
-        assert!(parse_ffprobe_csv("1920,1080,yuv420p10le").is_err());
+        // packed RGB is not bit-exact across engines, so it stays unsupported
+        assert!(parse_ffprobe_csv("1920,1080,rgb24").is_err());
         assert!(parse_ffprobe_csv("").is_err());
         assert!(parse_ffprobe_csv("176,,yuv420p").is_err());
         assert!(parse_ffprobe_csv("wide,144,yuv420p").is_err());

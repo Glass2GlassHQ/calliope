@@ -10,7 +10,7 @@ use calliope_core::compare::compare;
 use calliope_core::corpus::{self, Manifest};
 use calliope_core::engine::Engine;
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
-use calliope_core::runner::{RunStatus, run_one, run_soak};
+use calliope_core::runner::{RunStatus, run_determinism, run_one, run_soak};
 use calliope_core::scenario::{Input, Scenario, Video};
 
 #[derive(Parser)]
@@ -130,6 +130,7 @@ fn engine_crashes(
         video: None,
         fault: None,
         soak: None,
+        determinism: None,
         golden: false,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
@@ -184,6 +185,7 @@ fn golden_scenarios(
             video: None,
             fault: None,
             soak: None,
+            determinism: None,
             golden: true,
         })
         .collect()
@@ -487,6 +489,8 @@ async fn run_matrix(
             pending.push(async move {
                 let result = if scenario.is_soak() {
                     run_soak(engine.as_ref(), &scenario, &input, workdir).await
+                } else if scenario.is_determinism() {
+                    run_determinism(engine.as_ref(), &scenario, &input, workdir).await
                 } else {
                     run_one(engine.as_ref(), &scenario, &input, workdir).await
                 };
@@ -514,6 +518,13 @@ async fn run_matrix(
                 scenario.engines.iter().position(|e| *e == r.engine),
             )
         });
+        // majority vote across every engine that produced frame hashes, so a
+        // divergence names the outlier instead of blaming the reference's peers
+        let voters: Vec<(String, Vec<String>)> = runs
+            .iter()
+            .filter_map(|r| r.frame_hashes.clone().map(|h| (r.engine.clone(), h)))
+            .collect();
+        let majority = (voters.len() >= 3).then(|| calliope_core::compare::majority_vote(&voters));
         let reference_hashes = runs
             .iter()
             .find(|r| r.engine == scenario.reference)
@@ -535,7 +546,9 @@ async fn run_matrix(
             reference: scenario.reference.clone(),
             robustness: scenario.is_robustness(),
             soak: scenario.is_soak(),
+            determinism: scenario.is_determinism(),
             golden_expected: golden_expected.clone(),
+            majority,
             runs,
         });
     }
@@ -559,9 +572,20 @@ fn print_summary(report: &Report) {
                 .peak_rss_kb
                 .map_or("-".into(), |kb| format!("{} MB", kb / 1024));
             let verdict = if let Some(expected) = &scenario.golden_expected {
-                match &r.run.golden_md5 {
+                match &r.run.output_md5 {
                     Some(got) if got.eq_ignore_ascii_case(expected) => "golden ok".to_string(),
                     Some(got) => format!("GOLDEN MISMATCH ({}…)", &got[..got.len().min(8)]),
+                    None => "no output".to_string(),
+                }
+            } else if scenario.determinism {
+                let runs = r.run.iterations_completed.unwrap_or(0);
+                match r.run.determinism_matched {
+                    Some(true) => format!("deterministic ({runs} runs)"),
+                    Some(false) => match &r.run.status {
+                        RunStatus::Signaled { signal } => format!("CRASHED (signal {signal})"),
+                        RunStatus::Timeout => "HUNG".to_string(),
+                        _ => "NONDETERMINISTIC".to_string(),
+                    },
                     None => "no output".to_string(),
                 }
             } else if scenario.soak {
@@ -581,6 +605,23 @@ fn print_summary(report: &Report) {
                     RunStatus::Timeout => "HUNG".to_string(),
                     s if s.survived_corrupt_input() => "survived".to_string(),
                     _ => "errored".to_string(),
+                }
+            } else if let Some(vote) = scenario
+                .majority
+                .as_ref()
+                .filter(|v| v.conclusive && !v.outliers.is_empty())
+            {
+                // a real divergence with a clear majority: name the culprit
+                // (even when it is the reference) instead of blaming its peers
+                if vote.is_outlier(&r.run.engine) {
+                    let tag = if r.run.engine == scenario.reference {
+                        " [reference]"
+                    } else {
+                        ""
+                    };
+                    format!("OUTLIER vs {}-engine majority{tag}", vote.majority.len())
+                } else {
+                    "majority ok".to_string()
                 }
             } else if r.run.engine == scenario.reference {
                 "(reference)".to_string()

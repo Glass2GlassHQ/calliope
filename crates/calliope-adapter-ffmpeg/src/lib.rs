@@ -50,6 +50,16 @@ impl Engine for Ffmpeg {
             ]);
             OutputSpec::RawVideoFile(out)
         } else {
+            // Pin framemd5 to the scenario's target format so the reference
+            // hashes the same layout the raw-dump engines convert to. Without
+            // this, ffmpeg would hash its native decode (e.g. I420) while the
+            // others emit NV12, and every frame would falsely diverge.
+            if let Some(video) = scenario.video {
+                args.extend([
+                    "-vf".into(),
+                    format!("format={}", video.format.ffmpeg_pix_fmt()),
+                ]);
+            }
             let out = workdir.join("out.framemd5");
             args.extend(["-f".into(), "framemd5".into(), out.display().to_string()]);
             OutputSpec::FrameMd5File(out)

@@ -7,14 +7,21 @@ divergence is a real bug in one of them.
 
 Scenario modes:
 - **differential**: decode and compare per-frame MD5 (ffmpeg's framemd5
-  format) against a reference engine; a divergence is a real bug.
+  format) against a reference engine; a divergence is a real bug. With three or
+  more engines, a majority vote names the outlier when they diverge (even if
+  that outlier is the reference), so a reference quirk cannot mask a real bug.
 - **golden**: decode a conformance vector and assert every engine's whole
   decoded output matches the vector's official MD5 (`decoded-md5`), reproducing
   the Fluster oracle. No reference engine, an absolute correctness check.
-- **robustness**: corrupt the input (`[fault]`: bit-flip, truncate, byte-drop)
-  and require every engine to degrade gracefully (clean exit or error), never
-  crash or hang. Targets parser / demuxer hardening against malformed input.
+- **robustness**: corrupt the input (`[fault]`: bit-flip, truncate, byte-drop,
+  nal-payload) and require every engine to degrade gracefully (clean exit or
+  error), never crash or hang. Targets parser / demuxer hardening against
+  malformed input; nal-payload drives corruption past the framer into decode.
 - **soak**: repeat a run (`[soak]`) and fail on any crash or hang.
+- **determinism**: run each engine repeatedly (`[determinism]`) and require
+  byte-identical output every time. No reference engine, a self-comparison that
+  isolates nondeterminism. `threads = true` also runs g2g's `--threads` variant
+  (needs a multi-thread build; skipped otherwise) and requires it to match.
 
 All modes track crash/signal/timeout status and peak RSS. Engine-neutral by
 construction: engine knowledge lives only in `calliope-adapter-*` crates.
@@ -68,21 +75,25 @@ vector id from `corpus/vectors.toml`; vectors download on demand into
 
 A differential scenario needs decoded geometry to chunk the raw-dump engines.
 Give it explicitly as `[video]`, or omit it and calliope probes the input with
-`ffprobe` (`CALLIOPE_FFPROBE` overrides). Supported decoded formats are 8-bit
-planar `yuv420p` / `yuv422p` / `yuv444p`; the raw-dump engines convert to the
-probed format as an identity so the comparison stays bit-exact (a 10-bit or
-packed source is rejected with a clear message, use an explicit `[video]` or a
-robustness/soak scenario). A
+`ffprobe` (`CALLIOPE_FFPROBE` overrides). Supported decoded formats are the
+planar `i420` / `i422` / `i444` family at 8-, 10-, and 12-bit
+(`yuv4xxp[10|12]le`) plus semi-planar `nv12`; the raw-dump engines convert to
+the probed format as an identity so the comparison stays bit-exact. Packed RGB
+/ YUYV is matrix- or order-dependent across engines and stays unsupported (use
+an explicit `[video]` or a robustness/soak scenario). A
 `[soak]` scenario repeats the run `iterations` times and passes only if no
 iteration crashes or hangs (catches intermittent failures; each iteration is a
 fresh process, so this is a stability probe, not a memory-leak endurance test).
-A robustness scenario declares `[fault]` instead and needs no geometry:
+A `[determinism]` scenario repeats each engine `runs` times and passes only if
+its output is byte-identical every time (`threads = true` also checks g2g's
+`--threads` variant, which needs a multi-thread build). A robustness scenario
+declares `[fault]` instead and needs no geometry:
 
 ```toml
 [fault]
-mode = "bit-flip"   # or truncate | byte-drop
+mode = "bit-flip"   # or truncate | byte-drop | nal-payload
 seed = 1            # reproducible corruption
-count = 500         # bit-flip / byte-drop operations
+count = 500         # bit-flip / byte-drop / nal-payload operations
 keep-percent = 50   # truncate: front fraction kept
 ```
 
