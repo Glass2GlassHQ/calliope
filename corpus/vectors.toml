@@ -1,9 +1,1214 @@
-# corpus manifest: content is fetched on demand into the cache, never
-# committed (conformance suites carry per-suite licensing).
-#
-# [[vector]]
-# id = "jvt/AUD_MW_E.264"          # cache-relative path, referenced by scenarios
-# url = "https://example.org/AUD_MW_E.264"
-# sha256 = "..."
-# license = "ITU-T conformance"
-# notes = "H.264 AUD test"
+[[vector]]
+id = "fluster/JVT-AVC_V1/AUD_MW_E/AUD_MW_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/AUD_MW_E.zip"
+md5 = "7132c9cf7bc85fdde62add5ec25ea532"
+archive-member = "AUD_MW_E.264"
+decoded-md5 = "f6c8fb7d64b2fe85d87ae8e322258a5c"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BA1_FT_C/BA1_FT_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BA1_FT_C.zip"
+md5 = "1de5194e1c030948a60cdc1d0de9285a"
+archive-member = "BA1_FT_C.264"
+decoded-md5 = "3fb40f96635248eebe556b9a52aca1e3"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BA1_Sony_D/BA1_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BA1_Sony_D.zip"
+md5 = "afa9e2d49d589f631ceb65695d25b69f"
+archive-member = "BA1_Sony_D.jsv"
+decoded-md5 = "ceb3fa0064ab7d1f00913f1ec4a82dc7"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BA2_Sony_F/BA2_Sony_F.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BA2_Sony_F.zip"
+md5 = "39a5c8fab1fa9fdea76add5c4879f67e"
+archive-member = "BA2_Sony_F.jsv"
+decoded-md5 = "3425d377e5be1c5e06869ec8c6bd5163"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BA3_SVA_C/BA3_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BA3_SVA_C.zip"
+md5 = "6db22f9357baa51e2757fbdd4cd327de"
+archive-member = "BA3_SVA_C.264"
+decoded-md5 = "a4d127c6bc01693ce5fecf4016fa639f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BAMQ1_JVC_C/BAMQ1_JVC_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BAMQ1_JVC_C.zip"
+md5 = "4999b321178e425986ac4d33133c08b4"
+archive-member = "BAMQ1_JVC_C.264"
+decoded-md5 = "2f28090a948c11c0648421a86881c17e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BAMQ2_JVC_C/BAMQ2_JVC_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BAMQ2_JVC_C.zip"
+md5 = "15f5a3091b68633299e9e5bf08de3f5d"
+archive-member = "BAMQ2_JVC_C.264"
+decoded-md5 = "2f28090a948c11c0648421a86881c17e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BANM_MW_D/BANM_MW_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BANM_MW_D.zip"
+md5 = "bfab5baee947e086ff5d7047211933fa"
+archive-member = "BANM_MW_D.264"
+decoded-md5 = "f6c8fb7d64b2fe85d87ae8e322258a5c"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BASQP1_Sony_C/BASQP1_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BASQP1_Sony_C.zip"
+md5 = "6de7545618e229fb8bb0f4ab03742966"
+archive-member = "BASQP1_Sony_C.jsv"
+decoded-md5 = "ca1c523ac2d3ce4ff47f29b6955dc780"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/BA_MW_D/BA_MW_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/BA_MW_D.zip"
+md5 = "848e640bcf309bc8d4d71992d25488bd"
+archive-member = "BA_MW_D.264"
+decoded-md5 = "f6c8fb7d64b2fe85d87ae8e322258a5c"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA1_SVA_B/CABA1_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA1_SVA_B.zip"
+md5 = "36794ebfaa463982dc38072ff3b75943"
+archive-member = "CABA1_SVA_B.264"
+decoded-md5 = "c5a1eac2699ea0d26e06ff119491c4cc"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA1_Sony_D/CABA1_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA1_Sony_D.zip"
+md5 = "e172aa0ddb58d96e81bffd881025263c"
+archive-member = "CABA1_Sony_D.jsv"
+decoded-md5 = "9132d42b69dbbeb9df883964a734530f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA2_SVA_B/CABA2_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA2_SVA_B.zip"
+md5 = "5754cfb913156693f6b0f85c170e7b46"
+archive-member = "CABA2_SVA_B.264"
+decoded-md5 = "c5a1eac2699ea0d26e06ff119491c4cc"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA2_Sony_E/CABA2_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA2_Sony_E.zip"
+md5 = "81efd316b49ad9ad3985a57aa0593362"
+archive-member = "CABA2_Sony_E.jsv"
+decoded-md5 = "3425d377e5be1c5e06869ec8c6bd5163"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA3_SVA_B/CABA3_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA3_SVA_B.zip"
+md5 = "2079cb2a3b73a33bde38fbf281d70fd8"
+archive-member = "CABA3_SVA_B.264"
+decoded-md5 = "a4d127c6bc01693ce5fecf4016fa639f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA3_Sony_C/CABA3_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA3_Sony_C.zip"
+md5 = "6eda0e9dcfc5a39d044375124cbcde45"
+archive-member = "CABA3_Sony_C.jsv"
+decoded-md5 = "23f222913f53a2ca1434db0c2b709b5a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABA3_TOSHIBA_E/CABA3_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABA3_TOSHIBA_E.zip"
+md5 = "0b92eed51bce2b92278d6619a29a8854"
+archive-member = "CABA3_TOSHIBA_E.264"
+decoded-md5 = "4e1a3d06ecddf8e8866c8764093a9e87"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABACI3_Sony_B/CABACI3_Sony_B.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABACI3_Sony_B.zip"
+md5 = "9f215fe71bcd7edd88395290d8e2f20e"
+archive-member = "CABACI3_Sony_B.jsv"
+decoded-md5 = "cf5b31476ba9dd2ebfba2dbd90062327"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABAST3_Sony_E/CABAST3_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABAST3_Sony_E.zip"
+md5 = "0aa3c231850d34e160f539c0e4dc3907"
+archive-member = "CABAST3_Sony_E.jsv"
+decoded-md5 = "43e40d46df1aefcd39e91dee240c6a80"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABASTBR3_Sony_B/CABASTBR3_Sony_B.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABASTBR3_Sony_B.zip"
+md5 = "8ef5c7dc1b7813ce9ee10b34da2b3843"
+archive-member = "CABASTBR3_Sony_B.jsv"
+decoded-md5 = "43e40d46df1aefcd39e91dee240c6a80"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CABREF3_Sand_D/CABREF3_Sand_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CABREF3_Sand_D.zip"
+md5 = "03d635baff50ccd55217bddcdec4bd3a"
+archive-member = "CABREF3_Sand_D.264"
+decoded-md5 = "0ee21fd8c3701c3d4132107cd37c37bd"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CACQP3_Sony_D/CACQP3_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CACQP3_Sony_D.zip"
+md5 = "ab8fe2fdcfba464782c5b336573a7612"
+archive-member = "CACQP3_Sony_D.jsv"
+decoded-md5 = "f36c708a9701fd77dec068027b78a56f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAFI1_SVA_C/CAFI1_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAFI1_SVA_C.zip"
+md5 = "0e38d2569bf991ae51f6bf69f7698bf4"
+archive-member = "CAFI1_SVA_C.264"
+decoded-md5 = "09342f616ea34dd3f828cf09cdb971b8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMA1_Sony_C/CAMA1_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMA1_Sony_C.zip"
+md5 = "33e187a192c248aa0ec8592547f2d58f"
+archive-member = "CAMA1_Sony_C.jsv"
+decoded-md5 = "c15aee204a800f9cac7ef6317358d92d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMA1_TOSHIBA_B/CAMA1_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMA1_TOSHIBA_B.zip"
+md5 = "7ae208a47893ae598e0336a7402d99bf"
+archive-member = "CAMA1_TOSHIBA_B.264"
+decoded-md5 = "b8329945aecc1e788296d802ab783e90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMA3_Sand_E/CAMA3_Sand_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMA3_Sand_E.zip"
+md5 = "538943a87152b06139c28d6547e2067d"
+archive-member = "CAMA3_Sand_E.264"
+decoded-md5 = "35ffdd736ec824ea282bad582d99bbb8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMACI3_Sony_C/CAMACI3_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMACI3_Sony_C.zip"
+md5 = "2f024594dc72fad8602be179d8b1290b"
+archive-member = "CAMACI3_Sony_C.jsv"
+decoded-md5 = "a1ca88ce533c9f00a54e4f7a55fe8226"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMANL1_TOSHIBA_B/CAMANL1_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMANL1_TOSHIBA_B.zip"
+md5 = "de6b53b71c25b7d53dbefc8d598e045b"
+archive-member = "CAMANL1_TOSHIBA_B.264"
+decoded-md5 = "b8329945aecc1e788296d802ab783e90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMANL2_TOSHIBA_B/CAMANL2_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMANL2_TOSHIBA_B.zip"
+md5 = "af4772d7b23009717f3c7a6c58ea4c40"
+archive-member = "CAMANL2_TOSHIBA_B.264"
+decoded-md5 = "b8329945aecc1e788296d802ab783e90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMANL3_Sand_E/CAMANL3_Sand_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMANL3_Sand_E.zip"
+md5 = "c62b501d559927a9257bae892cb6a64d"
+archive-member = "CAMANL3_Sand_E.264"
+decoded-md5 = "35ffdd736ec824ea282bad582d99bbb8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMASL3_Sony_B/CAMASL3_Sony_B.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMASL3_Sony_B.zip"
+md5 = "d0b3203d783c8e3a556279ac3c8b0a18"
+archive-member = "CAMASL3_Sony_B.jsv"
+decoded-md5 = "1a86fcc0ca955858102ae16cf6bfcad9"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMP_MOT_MBAFF_L30/CAMP_MOT_MBAFF_L30.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMP_MOT_MBAFF_L30.zip"
+md5 = "6f03e6e0fbb4e89ce8c6ddb62804f58b"
+archive-member = "CAMP_MOT_MBAFF_L30.26l"
+decoded-md5 = "e0af3ddd05100fa5295f88d52ed4cfde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAMP_MOT_MBAFF_L31/CAMP_MOT_MBAFF_L31.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAMP_MOT_MBAFF_L31.zip"
+md5 = "58875831f97a414bde478a15cac5c595"
+archive-member = "CAMP_MOT_MBAFF_L31.26l"
+decoded-md5 = "e0af3ddd05100fa5295f88d52ed4cfde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL1_SVA_B/CANL1_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL1_SVA_B.zip"
+md5 = "4218b5581b6c0d9af99ae9c1046277c5"
+archive-member = "CANL1_SVA_B.264"
+decoded-md5 = "397a33f55b5f27cbe95f2d8e356face1"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL1_Sony_E/CANL1_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL1_Sony_E.zip"
+md5 = "11df3f4c91367550239c550ff2ecd265"
+archive-member = "CANL1_Sony_E.jsv"
+decoded-md5 = "9132d42b69dbbeb9df883964a734530f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL1_TOSHIBA_G/CANL1_TOSHIBA_G.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL1_TOSHIBA_G.zip"
+md5 = "b250b5a2734922097489d665cc992913"
+archive-member = "CANL1_TOSHIBA_G.264"
+decoded-md5 = "4e1a3d06ecddf8e8866c8764093a9e87"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL2_SVA_B/CANL2_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL2_SVA_B.zip"
+md5 = "560172a4fcdd3fdab09067f83c1570fa"
+archive-member = "CANL2_SVA_B.264"
+decoded-md5 = "c5a1eac2699ea0d26e06ff119491c4cc"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL2_Sony_E/CANL2_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL2_Sony_E.zip"
+md5 = "1a6b35357d0c00b3fd31746c5b153bb0"
+archive-member = "CANL2_Sony_E.jsv"
+decoded-md5 = "3425d377e5be1c5e06869ec8c6bd5163"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL3_SVA_B/CANL3_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL3_SVA_B.zip"
+md5 = "9beb491ac879072f69c6d45f62cdebb9"
+archive-member = "CANL3_SVA_B.264"
+decoded-md5 = "c5a1eac2699ea0d26e06ff119491c4cc"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL3_Sony_C/CANL3_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL3_Sony_C.zip"
+md5 = "93c6f3dd659fd43f6e909007e6e7ca78"
+archive-member = "CANL3_Sony_C.jsv"
+decoded-md5 = "23f222913f53a2ca1434db0c2b709b5a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANL4_SVA_B/CANL4_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANL4_SVA_B.zip"
+md5 = "27680cd7c1602aa9929113dd6bad95b1"
+archive-member = "CANL4_SVA_B.264"
+decoded-md5 = "a4d127c6bc01693ce5fecf4016fa639f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANLMA2_Sony_C/CANLMA2_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANLMA2_Sony_C.zip"
+md5 = "0a799b12924e2cfbba716ef5e6951d28"
+archive-member = "CANLMA2_Sony_C.jsv"
+decoded-md5 = "c3b69fa7d15340162d290661684ea489"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CANLMA3_Sony_C/CANLMA3_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CANLMA3_Sony_C.zip"
+md5 = "3d9e81574df71a3bf9486aecf112e6c0"
+archive-member = "CANLMA3_Sony_C.jsv"
+decoded-md5 = "c3b69fa7d15340162d290661684ea489"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAPA1_TOSHIBA_B/CAPA1_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAPA1_TOSHIBA_B.zip"
+md5 = "6d59058789ee067605cf15a51eff8eac"
+archive-member = "CAPA1_TOSHIBA_B.264"
+decoded-md5 = "bfb883f3129893e4f3cad50a10bbc5e8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAPAMA3_Sand_F/CAPAMA3_Sand_F.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAPAMA3_Sand_F.zip"
+md5 = "5d29009c25444bcb46a538b00f3435e7"
+archive-member = "CAPAMA3_Sand_F.264"
+decoded-md5 = "6d9722d15fc2142fb0d306c61e615425"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAPCM1_Sand_E/CAPCM1_Sand_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAPCM1_Sand_E.zip"
+md5 = "0ab00c4eba1bc20f7a79e8a9f0ffa3ec"
+archive-member = "CAPCM1_Sand_E.264"
+decoded-md5 = "f60359b5485ce8c97a3deabc776daa24"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAPCMNL1_Sand_E/CAPCMNL1_Sand_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAPCMNL1_Sand_E.zip"
+md5 = "439f71b4a4497b32e2b4fd78eb68dedc"
+archive-member = "CAPCMNL1_Sand_E.264"
+decoded-md5 = "f60359b5485ce8c97a3deabc776daa24"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAPM3_Sony_D/CAPM3_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAPM3_Sony_D.zip"
+md5 = "a8d32cd25d21d47f9a29e689e8ee07f6"
+archive-member = "CAPM3_Sony_D.jsv"
+decoded-md5 = "23f222913f53a2ca1434db0c2b709b5a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAQP1_Sony_B/CAQP1_Sony_B.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAQP1_Sony_B.zip"
+md5 = "1106b7e8688be9665d1dd5131e8c4239"
+archive-member = "CAQP1_Sony_B.jsv"
+decoded-md5 = "9132d42b69dbbeb9df883964a734530f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAWP1_TOSHIBA_E/CAWP1_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAWP1_TOSHIBA_E.zip"
+md5 = "1af2954658942650e5189644445768ae"
+archive-member = "CAWP1_TOSHIBA_E/CAWP1_TOSHIBA_E.264"
+decoded-md5 = "3a59899ca02e11352e40264140801c2d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CAWP5_TOSHIBA_E/CAWP5_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CAWP5_TOSHIBA_E.zip"
+md5 = "4de19be6b83d45d33fde061bd76860b4"
+archive-member = "CAWP5_TOSHIBA_E/CAWP5_TOSHIBA_E.264"
+decoded-md5 = "3a59899ca02e11352e40264140801c2d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CI1_FT_B/CI1_FT_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CI1_FT_B.zip"
+md5 = "64ea92172ae5d514b63505906f9a1e23"
+archive-member = "CI1_FT_B.264"
+decoded-md5 = "4fadd714cd9b3cee42d1fe524babae87"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CI_MW_D/CI_MW_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CI_MW_D.zip"
+md5 = "48ebbcfca8ee3a64bb77968270198c24"
+archive-member = "CI_MW_D.264"
+decoded-md5 = "f6c8fb7d64b2fe85d87ae8e322258a5c"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVBS3_Sony_C/CVBS3_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVBS3_Sony_C.zip"
+md5 = "77ef6fd4ad2a9941b2b6cf66c4095512"
+archive-member = "CVBS3_Sony_C.jsv"
+decoded-md5 = "23f222913f53a2ca1434db0c2b709b5a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVCANLMA2_Sony_C/CVCANLMA2_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVCANLMA2_Sony_C.zip"
+md5 = "919cff8f5040d1c0b0a59bceecf71013"
+archive-member = "CVCANLMA2_Sony_C.jsv"
+decoded-md5 = "c3b69fa7d15340162d290661684ea489"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVFC1_Sony_C/CVFC1_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVFC1_Sony_C.zip"
+md5 = "fa863d521768ea4654b51f8025213f43"
+archive-member = "CVFC1_Sony_C.jsv"
+decoded-md5 = "3878c47bb8179bc796f4554c57d7b674"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVFI1_SVA_C/CVFI1_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVFI1_SVA_C.zip"
+md5 = "3c95b3f134db61cdf20a060d84eade2d"
+archive-member = "CVFI1_SVA_C.264"
+decoded-md5 = "161501d5e71f0ab6f73fd62210adf0e2"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVFI1_Sony_D/CVFI1_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVFI1_Sony_D.zip"
+md5 = "72e03210357929343e5095bde738d3be"
+archive-member = "CVFI1_Sony_D.jsv"
+decoded-md5 = "89697e91e7c5fe61c9d2f186b3652c64"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVFI2_SVA_C/CVFI2_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVFI2_SVA_C.zip"
+md5 = "afe041091c98010b6130cd713c7a7161"
+archive-member = "CVFI2_SVA_C.264"
+decoded-md5 = "a6cac6f529b73bc02cd60613f01f64fa"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVFI2_Sony_H/CVFI2_Sony_H.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVFI2_Sony_H.zip"
+md5 = "88686a5a93b9b25ac79e005a7d9386bf"
+archive-member = "CVFI2_Sony_H.jsv"
+decoded-md5 = "29939515954e70a59f9a6d363ad1c5f9"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMA1_Sony_D/CVMA1_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMA1_Sony_D.zip"
+md5 = "ad0a2d293d7d2b4a283af1c9ad4ddcf5"
+archive-member = "CVMA1_Sony_D.jsv"
+decoded-md5 = "c15aee204a800f9cac7ef6317358d92d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMA1_TOSHIBA_B/CVMA1_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMA1_TOSHIBA_B.zip"
+md5 = "09053ea094b5a6ef429e0a7233d6895e"
+archive-member = "CVMA1_TOSHIBA_B.264"
+decoded-md5 = "b8329945aecc1e788296d802ab783e90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMANL1_TOSHIBA_B/CVMANL1_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMANL1_TOSHIBA_B.zip"
+md5 = "bcaf4824a09d9d729c3e9c502accea82"
+archive-member = "CVMANL1_TOSHIBA_B.264"
+decoded-md5 = "b8329945aecc1e788296d802ab783e90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMANL2_TOSHIBA_B/CVMANL2_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMANL2_TOSHIBA_B.zip"
+md5 = "650777518e0f642a420f54c2289c6145"
+archive-member = "CVMANL2_TOSHIBA_B.264"
+decoded-md5 = "b8329945aecc1e788296d802ab783e90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMAPAQP3_Sony_E/CVMAPAQP3_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMAPAQP3_Sony_E.zip"
+md5 = "d524dc4660481aa9c6af2a4fd3015d91"
+archive-member = "CVMAPAQP3_Sony_E.jsv"
+decoded-md5 = "518227eb40478f7f36cc9344c0d31839"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMAQP2_Sony_G/CVMAQP2_Sony_G.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMAQP2_Sony_G.zip"
+md5 = "df3c1256585ca16054c868ac3abf5981"
+archive-member = "CVMAQP2_Sony_G.jsv"
+decoded-md5 = "9689303514325230b91cf3ff395135c1"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMAQP3_Sony_D/CVMAQP3_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMAQP3_Sony_D.zip"
+md5 = "7be0637efa56ebac059fc480b3045b4f"
+archive-member = "CVMAQP3_Sony_D.jsv"
+decoded-md5 = "a1ca88ce533c9f00a54e4f7a55fe8226"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMP_MOT_FLD_L30_B/CVMP_MOT_FLD_L30_B.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMP_MOT_FLD_L30_B.zip"
+md5 = "b77be505335f504b854a0c6b8e3e1974"
+archive-member = "CVMP_MOT_FLD_L30_B.26l"
+decoded-md5 = "5687c24fac43a758704fa47bfdd4bcba"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVMP_MOT_FRM_L31_B/CVMP_MOT_FRM_L31_B.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVMP_MOT_FRM_L31_B.zip"
+md5 = "b55e858fbc17a1587aa2ba6f5e1e091c"
+archive-member = "CVMP_MOT_FRM_L31_B.26l"
+decoded-md5 = "5687c24fac43a758704fa47bfdd4bcba"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVNLFI1_Sony_C/CVNLFI1_Sony_C.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVNLFI1_Sony_C.zip"
+md5 = "70d89a93f27cd840af0ec30cf52e9477"
+archive-member = "CVNLFI1_Sony_C.jsv"
+decoded-md5 = "89697e91e7c5fe61c9d2f186b3652c64"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVNLFI2_Sony_H/CVNLFI2_Sony_H.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVNLFI2_Sony_H.zip"
+md5 = "edb23aa4582278818d4e8fb968b88967"
+archive-member = "CVNLFI2_Sony_H.jsv"
+decoded-md5 = "29939515954e70a59f9a6d363ad1c5f9"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVPA1_TOSHIBA_B/CVPA1_TOSHIBA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVPA1_TOSHIBA_B.zip"
+md5 = "8973aff7dbf3a2b2ba0d61d4400d2a2a"
+archive-member = "CVPA1_TOSHIBA_B.264"
+decoded-md5 = "bfb883f3129893e4f3cad50a10bbc5e8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVPCMNL1_SVA_C/CVPCMNL1_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVPCMNL1_SVA_C.zip"
+md5 = "7a446d7fab82cb91e56fe8853c98000c"
+archive-member = "CVPCMNL1_SVA_C.264"
+decoded-md5 = "a9e081bffbb0b74a6c7d3a6426f2d8aa"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVPCMNL2_SVA_C/CVPCMNL2_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVPCMNL2_SVA_C.zip"
+md5 = "88748eb136dbbddad7d750feb2cfdca7"
+archive-member = "CVPCMNL2_SVA_C.264"
+decoded-md5 = "a93d5a865fd11b99b1420c6478cddf4e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVSE2_Sony_B/CVSE2_Sony_B.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVSE2_Sony_B.zip"
+md5 = "c628cb879b504a3a712adfcb974cb7d2"
+archive-member = "CVSE2_Sony_B.jsv"
+decoded-md5 = "2fccdb3a42f5f0ff6cdae23a08f6c25d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVSE3_Sony_H/CVSE3_Sony_H.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVSE3_Sony_H.zip"
+md5 = "066de9699dc5f858014a2af2094ed578"
+archive-member = "CVSE3_Sony_H.jsv"
+decoded-md5 = "ee748389267f088bd8383bacef708dc8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVSEFDFT3_Sony_E/CVSEFDFT3_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVSEFDFT3_Sony_E.zip"
+md5 = "fc4a8c6f27fdbd264308e75c8d818542"
+archive-member = "CVSEFDFT3_Sony_E.jsv"
+decoded-md5 = "0dcf8666e811c14e87903bd1170f1613"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVWP1_TOSHIBA_E/CVWP1_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVWP1_TOSHIBA_E.zip"
+md5 = "929a73d33a914d3ff2a52c552b7bb0d5"
+archive-member = "CVWP1_TOSHIBA_E/CVWP1_TOSHIBA_E.264"
+decoded-md5 = "3a59899ca02e11352e40264140801c2d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVWP2_TOSHIBA_E/CVWP2_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVWP2_TOSHIBA_E.zip"
+md5 = "22a5c6aa043f9545acd6dfbba6fb5ea9"
+archive-member = "CVWP2_TOSHIBA_E/CVWP2_TOSHIBA_E.264"
+decoded-md5 = "34d3e1f9a16b949d4c979a538ae8408e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVWP3_TOSHIBA_E/CVWP3_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVWP3_TOSHIBA_E.zip"
+md5 = "8ac3de6d4154f8b6593c23a301ffbfe0"
+archive-member = "CVWP3_TOSHIBA_E/CVWP3_TOSHIBA_E.264"
+decoded-md5 = "34d3e1f9a16b949d4c979a538ae8408e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/CVWP5_TOSHIBA_E/CVWP5_TOSHIBA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/CVWP5_TOSHIBA_E.zip"
+md5 = "5a1999f11e047b6caeaf18faf48dec2a"
+archive-member = "CVWP5_TOSHIBA_E/CVWP5_TOSHIBA_E.264"
+decoded-md5 = "3a59899ca02e11352e40264140801c2d"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/FI1_Sony_E/FI1_Sony_E.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/FI1_Sony_E.zip"
+md5 = "49555315fca952578ddf7918c706f833"
+archive-member = "FI1_Sony_E.jsv"
+decoded-md5 = "47665b1d942c65798e28b63069dfcfc1"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/FM1_BT_B/FM1_BT_B.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/FM1_BT_B.zip"
+md5 = "43da4cb7e244219d4ca423419d27cde8"
+archive-member = "FM1_BT_B.h264"
+decoded-md5 = "f21ad956409cfa237099f7ac28390614"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/FM1_FT_E/FM1_FT_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/FM1_FT_E.zip"
+md5 = "3644489dab877ffbf5497594098f63e2"
+archive-member = "FM1_FT_E.264"
+decoded-md5 = "de3efddc727557b89ad9b09edcfb7365"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/FM2_SVA_C/FM2_SVA_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/FM2_SVA_C.zip"
+md5 = "b3081d2ddd3ae7b5fbf5fc6e113703c1"
+archive-member = "FM2_SVA_C.264"
+decoded-md5 = "2ca2331ff02689d0cc036935a7f0d4bf"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/HCBP1_HHI_A/HCBP1_HHI_A.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/HCBP1_HHI_A.zip"
+md5 = "71d413cdd406c30df18ffcf8856573b5"
+archive-member = "HCBP1_HHI_A.264"
+decoded-md5 = "e2316ce9ee6d5ac3d9d87f7b076006ee"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/HCBP2_HHI_A/HCBP2_HHI_A.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/HCBP2_HHI_A.zip"
+md5 = "5614b31c2720aa25f3880e0a339e90a8"
+archive-member = "HCBP2_HHI_A.264"
+decoded-md5 = "e2316ce9ee6d5ac3d9d87f7b076006ee"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/HCMP1_HHI_A/HCMP1_HHI_A.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/HCMP1_HHI_A.zip"
+md5 = "e10ce6bd382720ebfe3480a49bf3fbb8"
+archive-member = "HCMP1_HHI_A.264"
+decoded-md5 = "e2316ce9ee6d5ac3d9d87f7b076006ee"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/LS_SVA_D/LS_SVA_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/LS_SVA_D.zip"
+md5 = "77b96ac457125d453b45a2ee172ba2c5"
+archive-member = "LS_SVA_D.264"
+decoded-md5 = "12e9f0e6a8ba188250d37b8c5ab549df"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MIDR_MW_D/MIDR_MW_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MIDR_MW_D.zip"
+md5 = "8091eb5e8e7487424e42b43e60e2d08a"
+archive-member = "MIDR_MW_D.264"
+decoded-md5 = "8aa5106e2bcee6771994cc8400080c1a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MPS_MW_A/MPS_MW_A.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MPS_MW_A.zip"
+md5 = "78c0d3b815df95efb71c774a799530a5"
+archive-member = "MPS_MW_A.264"
+decoded-md5 = "498a477d101d283287aa78a562f97f0b"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR1_BT_A/MR1_BT_A.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR1_BT_A.zip"
+md5 = "777d1495dd44bf61315e14ce791cc911"
+archive-member = "MR1_BT_A.h264"
+decoded-md5 = "e6363e581a9734c9e8b098024e5a82b2"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR1_MW_A/MR1_MW_A.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR1_MW_A.zip"
+md5 = "12b97c959ee3a80b3a4861dd7d7b429e"
+archive-member = "MR1_MW_A.264"
+decoded-md5 = "a2e28cfd22cad700222fa16c9da562e5"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR2_MW_A/MR2_MW_A.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR2_MW_A.zip"
+md5 = "af272969268ef2da76a3d2c27d16ae35"
+archive-member = "MR2_MW_A.264"
+decoded-md5 = "0d7ae19659235318b57e07ca41728beb"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR2_TANDBERG_E/MR2_TANDBERG_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR2_TANDBERG_E.zip"
+md5 = "1190405746a7d916a1a8e3a88050933b"
+archive-member = "MR2_TANDBERG_E.264"
+decoded-md5 = "4e1a3d06ecddf8e8866c8764093a9e87"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR3_TANDBERG_B/MR3_TANDBERG_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR3_TANDBERG_B.zip"
+md5 = "143a1d8b36918dc1b3425cd49ebf856d"
+archive-member = "MR3_TANDBERG_B.264"
+decoded-md5 = "4e1a3d06ecddf8e8866c8764093a9e87"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR4_TANDBERG_C/MR4_TANDBERG_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR4_TANDBERG_C.zip"
+md5 = "8c651e2557feb22cc6828cd72cad58a0"
+archive-member = "MR4_TANDBERG_C.264"
+decoded-md5 = "c030ca62ebd3fcf265a4d77fc9cca0f7"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR5_TANDBERG_C/MR5_TANDBERG_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR5_TANDBERG_C.zip"
+md5 = "b02455a119c1ca187718b5771e4c93b1"
+archive-member = "MR5_TANDBERG_C.264"
+decoded-md5 = "47397e8b507d1c45b0619ab644a43560"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR6_BT_B/MR6_BT_B.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR6_BT_B.zip"
+md5 = "f680279a4cb28173359c0ae232e550c5"
+archive-member = "MR6_BT_B.h264"
+decoded-md5 = "cad4af241a86b98efa4d5b62f871acde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR7_BT_B/MR7_BT_B.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR7_BT_B.zip"
+md5 = "8eb9e11a436d7c37a555d54b521c28f5"
+archive-member = "MR7_BT_B.h264"
+decoded-md5 = "484706d6359d06126cf86eac48621636"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR8_BT_B/MR8_BT_B.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR8_BT_B.zip"
+md5 = "a5a4c8ea4ca9379734695a4a8ec93f2a"
+archive-member = "MR8_BT_B.h264"
+decoded-md5 = "1d0d9c868c0f95b45b05e9f5239d9ada"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MR9_BT_B/MR9_BT_B.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MR9_BT_B.zip"
+md5 = "90efbbd00f6bac598012097e22e96c18"
+archive-member = "MR9_BT_B.h264"
+decoded-md5 = "611f4ebbfec3a204b2f9e24b3b9d5317"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/MV1_BRCM_D/src19td.IBP.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/MV1_BRCM_D.zip"
+md5 = "168d590631159296f3d8ed457e08903b"
+archive-member = "src19td.IBP.264"
+decoded-md5 = "6400ce1f0114cfa25ff949cd8b70c311"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/NL1_Sony_D/NL1_Sony_D.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/NL1_Sony_D.zip"
+md5 = "8d55f3b997ed89a667c0a5599a9904ff"
+archive-member = "NL1_Sony_D.jsv"
+decoded-md5 = "ceb3fa0064ab7d1f00913f1ec4a82dc7"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/NL2_Sony_H/NL2_Sony_H.jsv"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/NL2_Sony_H.zip"
+md5 = "226a79c550a188893b0770e4e96a4a67"
+archive-member = "NL2_Sony_H.jsv"
+decoded-md5 = "3425d377e5be1c5e06869ec8c6bd5163"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/NL3_SVA_E/NL3_SVA_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/NL3_SVA_E.zip"
+md5 = "88f13d1c9ea4b6073a131cdec822f566"
+archive-member = "NL3_SVA_E.264"
+decoded-md5 = "a4d127c6bc01693ce5fecf4016fa639f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/NLMQ1_JVC_C/NLMQ1_JVC_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/NLMQ1_JVC_C.zip"
+md5 = "d165d58446bd0cecbb8d5864a634e811"
+archive-member = "NLMQ1_JVC_C.264"
+decoded-md5 = "2f28090a948c11c0648421a86881c17e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/NLMQ2_JVC_C/NLMQ2_JVC_C.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/NLMQ2_JVC_C.zip"
+md5 = "c0f5b7d9baff28d811ae6cc9aa5f3443"
+archive-member = "NLMQ2_JVC_C.264"
+decoded-md5 = "2f28090a948c11c0648421a86881c17e"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/NRF_MW_E/NRF_MW_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/NRF_MW_E.zip"
+md5 = "d4223b4fae1f06f6f2053556298e84f1"
+archive-member = "NRF_MW_E.264"
+decoded-md5 = "f6c8fb7d64b2fe85d87ae8e322258a5c"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SL1_SVA_B/SL1_SVA_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SL1_SVA_B.zip"
+md5 = "00aca6047265e9f042c6500374140688"
+archive-member = "SL1_SVA_B.264"
+decoded-md5 = "af0fd7345e9db2a679e7a3b3705d625a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SP1_BT_A/sp1_bt_a.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SP1_BT_A.zip"
+md5 = "23c47c4535e838cb2ac4e98eb05c9238"
+archive-member = "sp1_bt_a.h264"
+decoded-md5 = "a1dcd78035a6bd5b58445f1b4a8b727f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_BA1_B/SVA_BA1_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_BA1_B.zip"
+md5 = "9b8dbf8d53c5c86d0fdb7f562d48a8bc"
+archive-member = "SVA_BA1_B.264"
+decoded-md5 = "397a33f55b5f27cbe95f2d8e356face1"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_BA2_D/SVA_BA2_D.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_BA2_D.zip"
+md5 = "2e19bf8fdc75ae5b3d3024a7fe0b627a"
+archive-member = "SVA_BA2_D.264"
+decoded-md5 = "397a33f55b5f27cbe95f2d8e356face1"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_Base_B/SVA_Base_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_Base_B.zip"
+md5 = "b142d2416e72b16d6db435a4f0d45ebb"
+archive-member = "SVA_Base_B.264"
+decoded-md5 = "f7d27ffb1212166868653017d9411a90"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_CL1_E/SVA_CL1_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_CL1_E.zip"
+md5 = "6f88f5b3a4855602f2ff294e028bfee9"
+archive-member = "SVA_CL1_E.264"
+decoded-md5 = "dae67a2a5e8029676b48577e3dd1ed39"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_FM1_E/SVA_FM1_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_FM1_E.zip"
+md5 = "281237b3e2943f1854b5e50340581ca9"
+archive-member = "SVA_FM1_E.264"
+decoded-md5 = "5389f6e62a2d01befc08f11c46f1bd9c"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_NL1_B/SVA_NL1_B.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_NL1_B.zip"
+md5 = "c2cd660149c09fb90f6f0761bdca7a06"
+archive-member = "SVA_NL1_B.264"
+decoded-md5 = "c5a1eac2699ea0d26e06ff119491c4cc"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/SVA_NL2_E/SVA_NL2_E.264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/SVA_NL2_E.zip"
+md5 = "c8664c867e1c607349b508ec4f18a6e3"
+archive-member = "SVA_NL2_E.264"
+decoded-md5 = "c5a1eac2699ea0d26e06ff119491c4cc"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/Sharp_MP_Field_1_B/Sharp_MP_Field_1_B.jvt"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/Sharp_MP_Field_1_B.zip"
+md5 = "b1095ff29ad6a3feeef73e20757c3f76"
+archive-member = "Sharp_MP_Field_1_B.jvt"
+decoded-md5 = "4c6feaa0c01ca252ba062f101c4ea5e8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/Sharp_MP_Field_2_B/Sharp_MP_Field_2_B.jvt"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/Sharp_MP_Field_2_B.zip"
+md5 = "b992383697fd0e34de9f374dc661443e"
+archive-member = "Sharp_MP_Field_2_B.jvt"
+decoded-md5 = "4c6feaa0c01ca252ba062f101c4ea5e8"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/Sharp_MP_Field_3_B/Sharp_MP_Field_3_B.jvt"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/Sharp_MP_Field_3_B.zip"
+md5 = "3f26557fda6e85e7e0f04f4b926ed800"
+archive-member = "Sharp_MP_Field_3_B.jvt"
+decoded-md5 = "65b32a0976c85b3234e13d236fbac46f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/Sharp_MP_PAFF_1r2/Sharp_MP_PAFF_1r2.jvt"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/Sharp_MP_PAFF_1r2.zip"
+md5 = "1422bbedf0c98ceb703d6ca514260783"
+archive-member = "Sharp_MP_PAFF_1r2.jvt"
+decoded-md5 = "f9275fe1cfeb9fa6ca3b641710bdb529"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/Sharp_MP_PAFF_2r/Sharp_MP_PAFF_2.jvt"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/Sharp_MP_PAFF_2r.zip"
+md5 = "b9a2f52d0fc6c45e8040dc5bf654826f"
+archive-member = "Sharp_MP_PAFF_2.jvt"
+decoded-md5 = "f9275fe1cfeb9fa6ca3b641710bdb529"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cabac_mot_fld0_full/camp_mot_fld0_full.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cabac_mot_fld0_full.zip"
+md5 = "14fc0427e00bfeb617b9ce9213833a55"
+archive-member = "camp_mot_fld0_full.26l"
+decoded-md5 = "5687c24fac43a758704fa47bfdd4bcba"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cabac_mot_frm0_full/camp_mot_frm0_full.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cabac_mot_frm0_full.zip"
+md5 = "7eaf257582542ea6ae5c0c0140e7c0ea"
+archive-member = "camp_mot_frm0_full.26l"
+decoded-md5 = "e0af3ddd05100fa5295f88d52ed4cfde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cabac_mot_mbaff0_full/camp_mot_mbaff0_full.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cabac_mot_mbaff0_full.zip"
+md5 = "c2abf195c9a792757643f52bb2ddc220"
+archive-member = "camp_mot_mbaff0_full.26l"
+decoded-md5 = "e0af3ddd05100fa5295f88d52ed4cfde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cabac_mot_picaff0_full/camp_mot_picaff0_full.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cabac_mot_picaff0_full.zip"
+md5 = "c003d30c0f2313349b2723d482cb3831"
+archive-member = "camp_mot_picaff0_full.26l"
+decoded-md5 = "931e1f11171d2b27241bae8f89c1f19a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cama1_vtc_c/cama1_vtc_c.avc"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cama1_vtc_c.zip"
+md5 = "9c135b46fdff831726602c662ce25d6a"
+archive-member = "cama1_vtc_c.avc"
+decoded-md5 = "acba0fd532fcb30fd26a840d4dd395fb"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cama2_vtc_b/cama2_vtc_b.avc"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cama2_vtc_b.zip"
+md5 = "eea0358149d68a7084941f9501f29a20"
+archive-member = "cama2_vtc_b.avc"
+decoded-md5 = "120871127c7a778760390beff101d1c3"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cama3_vtc_b/cama3_vtc_b.avc"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cama3_vtc_b.zip"
+md5 = "87becd4962e4c5fd8f2f706d01a5241d"
+archive-member = "cama3_vtc_b.avc"
+decoded-md5 = "120871127c7a778760390beff101d1c3"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cavlc_mot_fld0_full_B/cvmp_mot_fld0_full_B.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cavlc_mot_fld0_full_B.zip"
+md5 = "3991b434ca939b8c4b638724dd8af77b"
+archive-member = "cvmp_mot_fld0_full_B.26l"
+decoded-md5 = "5687c24fac43a758704fa47bfdd4bcba"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cavlc_mot_frm0_full_B/cvmp_mot_frm0_full_B.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cavlc_mot_frm0_full_B.zip"
+md5 = "4be102088846abca8af5da51c066386b"
+archive-member = "cvmp_mot_frm0_full_B.26l"
+decoded-md5 = "e0af3ddd05100fa5295f88d52ed4cfde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cavlc_mot_mbaff0_full_B/cvmp_mot_mbaff0_full_B.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cavlc_mot_mbaff0_full_B.zip"
+md5 = "ce6a2e2ed9d0ab5d3094ad7cf8f41b4f"
+archive-member = "cvmp_mot_mbaff0_full_B.26l"
+decoded-md5 = "e0af3ddd05100fa5295f88d52ed4cfde"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/cavlc_mot_picaff0_full_B/cvmp_mot_picaff0_full_B.26l"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/cavlc_mot_picaff0_full_B.zip"
+md5 = "4373f1bdde46f56ca1a35a837a000923"
+archive-member = "cvmp_mot_picaff0_full_B.26l"
+decoded-md5 = "931e1f11171d2b27241bae8f89c1f19a"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
+
+[[vector]]
+id = "fluster/JVT-AVC_V1/sp2_bt_b/sp2_bt_b.h264"
+url = "https://www.itu.int/wftp3/av-arch/jvt-site/draft_conformance/AVCv1/sp2_bt_b.zip"
+md5 = "c1601a80dabffd65a1c3416635b6e862"
+archive-member = "H26L/BitstreamExchange/sp2_bt_b.h264"
+decoded-md5 = "a1dcd78035a6bd5b58445f1b4a8b727f"
+output-format = "i420"
+license = "H.264 conformance (Fluster suite JVT-AVC_V1)"
