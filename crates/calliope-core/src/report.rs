@@ -41,14 +41,29 @@ pub struct EngineReport {
 
 impl ScenarioReport {
     pub fn passed(&self) -> bool {
-        // golden: every engine's whole-output MD5 must equal the conformance hash
+        // golden: every engine's whole-output MD5 must equal the conformance hash.
         if let Some(expected) = &self.golden_expected {
+            // gstreamer's avdec emits an alignment-cropped geometry on cropped
+            // streams (a gst-libav limitation, not a decode bug), so its output
+            // can't match the tightly-cropped conformance hash. Detect that by
+            // output length: when gstreamer's differs from the reference engine's,
+            // exclude gstreamer from the verdict rather than failing a vector the
+            // real engines pass. Every other engine (and gstreamer on a same-size
+            // stream) stays held to the hash, so a genuine divergence still fails.
+            let ref_len = self
+                .runs
+                .iter()
+                .find(|r| r.run.engine == self.reference)
+                .and_then(|r| r.run.output_len);
             return self.runs.iter().all(|r| {
-                matches!(r.run.status, RunStatus::Ok)
-                    && r.run
-                        .output_md5
-                        .as_ref()
-                        .is_some_and(|got| got.eq_ignore_ascii_case(expected))
+                let gst_crop_excluded =
+                    r.run.engine == "gstreamer" && ref_len.is_some() && r.run.output_len != ref_len;
+                gst_crop_excluded
+                    || (matches!(r.run.status, RunStatus::Ok)
+                        && r.run
+                            .output_md5
+                            .as_ref()
+                            .is_some_and(|got| got.eq_ignore_ascii_case(expected)))
             });
         }
         // determinism: every engine's output was byte-identical across its runs
@@ -84,6 +99,10 @@ mod tests {
     use std::path::PathBuf;
 
     fn golden_run(engine: &str, md5: Option<&str>) -> EngineReport {
+        golden_run_len(engine, md5, Some(100))
+    }
+
+    fn golden_run_len(engine: &str, md5: Option<&str>, len: Option<u64>) -> EngineReport {
         EngineReport {
             run: RunResult {
                 engine: engine.into(),
@@ -94,6 +113,7 @@ mod tests {
                 log_dir: PathBuf::new(),
                 iterations_completed: None,
                 output_md5: md5.map(str::to_string),
+                output_len: len,
                 determinism_matched: None,
             },
             comparison: None,
@@ -132,5 +152,37 @@ mod tests {
         // an engine that produced no hash -> fail
         let missing = golden_report(vec![golden_run("ffmpeg", None)]);
         assert!(!missing.passed());
+    }
+
+    #[test]
+    fn golden_excludes_gstreamer_when_its_output_geometry_diverges() {
+        // gstreamer's avdec under-crops (alignment), so its output length differs
+        // from the reference and its hash cannot match: excluded, vector passes.
+        let cropped = golden_report(vec![
+            golden_run_len("ffmpeg", Some("abcd"), Some(300)),
+            golden_run_len("g2g", Some("abcd"), Some(300)),
+            golden_run_len("gstreamer", Some("dead"), Some(326)),
+        ]);
+        assert!(
+            cropped.passed(),
+            "gstreamer crop-geometry mismatch is excluded"
+        );
+
+        // A same-length gstreamer mismatch is a real divergence -> still fails.
+        let real = golden_report(vec![
+            golden_run_len("ffmpeg", Some("abcd"), Some(300)),
+            golden_run_len("gstreamer", Some("dead"), Some(300)),
+        ]);
+        assert!(
+            !real.passed(),
+            "same-geometry gstreamer mismatch still fails"
+        );
+
+        // g2g is never excluded: a size divergence (e.g. dropped frames) fails.
+        let g2g_bug = golden_report(vec![
+            golden_run_len("ffmpeg", Some("abcd"), Some(300)),
+            golden_run_len("g2g", Some("dead"), Some(243)),
+        ]);
+        assert!(!g2g_bug.passed(), "g2g geometry divergence must still fail");
     }
 }

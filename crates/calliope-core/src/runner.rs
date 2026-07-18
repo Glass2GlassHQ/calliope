@@ -50,6 +50,11 @@ pub struct RunResult {
     /// conformance `decoded-md5`; determinism compares it across runs.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_md5: Option<String>,
+    /// Byte length of the whole output artifact. Lets golden tell a geometry
+    /// divergence (an engine decoding to a different size) from a same-size hash
+    /// mismatch, used to exclude gstreamer's alignment-cropped output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output_len: Option<u64>,
     /// determinism only: whether every run's output was byte-identical
     #[serde(skip_serializing_if = "Option::is_none")]
     pub determinism_matched: Option<bool>,
@@ -80,6 +85,7 @@ fn fail_result(engine: &str, log_dir: PathBuf, message: String) -> RunResult {
         log_dir,
         iterations_completed: None,
         output_md5: None,
+        output_len: None,
         determinism_matched: None,
     }
 }
@@ -166,15 +172,16 @@ async fn exec(
     // golden compares the whole decoded output to the conformance hash;
     // determinism compares the whole output artifact across runs. Either way,
     // MD5 whatever artifact the engine produced (raw dump or framemd5 file).
-    let output_md5 =
+    let (output_md5, output_len) =
         if (scenario.is_golden() || scenario.is_determinism()) && matches!(status, RunStatus::Ok) {
             match &invocation.output {
-                OutputSpec::RawVideoFile(path) | OutputSpec::FrameMd5File(path) => {
-                    whole_file_md5(path).ok()
-                }
+                OutputSpec::RawVideoFile(path) | OutputSpec::FrameMd5File(path) => (
+                    whole_file_md5(path).ok(),
+                    std::fs::metadata(path).map(|m| m.len()).ok(),
+                ),
             }
         } else {
-            None
+            (None, None)
         };
 
     RunResult {
@@ -186,6 +193,7 @@ async fn exec(
         log_dir: run_dir,
         iterations_completed: None,
         output_md5,
+        output_len,
         determinism_matched: None,
     }
 }
