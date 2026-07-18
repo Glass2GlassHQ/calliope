@@ -1,0 +1,10 @@
+# av1-decode-golden conformance: golden-check every engine against the canonical Fluster md5.
+# g2g decodes the IVF container via ivfdemux + ffmpegdec.
+id = "av1-decode-golden"
+engines = ["ffmpeg", "gstreamer", "g2g"]
+reference = "ffmpeg"
+timeout-secs = 120
+golden = true
+
+[input]
+corpus = "fluster/AV1-TEST-VECTORS/av1-1-b8-00-quantizer-00/av1-1-b8-00-quantizer-00.ivf"

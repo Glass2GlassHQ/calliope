@@ -1,0 +1,10 @@
+# vp8-decode-golden conformance: golden-check every engine against the canonical Fluster md5.
+# g2g decodes the IVF container via ivfdemux + ffmpegdec.
+id = "vp8-decode-golden"
+engines = ["ffmpeg", "gstreamer", "g2g"]
+reference = "ffmpeg"
+timeout-secs = 120
+golden = true
+
+[input]
+corpus = "fluster/VP8-TEST-VECTORS/vp80-00-comprehensive-001/vp80-00-comprehensive-001.ivf"
