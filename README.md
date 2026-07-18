@@ -183,3 +183,10 @@ meaningless).
 
 CI runs the file-corpus subset with ffmpeg + GStreamer. g2g, GPU, and
 live-stream scenarios run on a dev host with the same harness.
+
+## Test campaign
+
+[`TESTING.md`](TESTING.md) is the system-of-record for everything thrown at g2g:
+the scenario modes above plus the ASan build + fuzz loop (`tools/build-g2g-asan.sh`,
+`tools/fuzz-g2g.sh`), the cargo-fuzz targets (in the g2g repo), and Miri
+(`tools/miri-g2g.sh`), each with how to reproduce it and what it found.
