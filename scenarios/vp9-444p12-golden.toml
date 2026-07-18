@@ -1,0 +1,10 @@
+# VP9 conformance: golden-check every engine's decoded output against the
+# canonical Fluster md5. Exercises g2g's ffmpegdec VP9 path.
+id = "vp9-444p12-golden"
+engines = ["ffmpeg", "gstreamer", "g2g"]
+reference = "ffmpeg"
+timeout-secs = 120
+golden = true
+
+[input]
+corpus = "fluster/VP9-TEST-VECTORS-HIGH/vp93-2-20-12bit-yuv444.webm/vp93-2-20-12bit-yuv444.webm"
