@@ -80,11 +80,19 @@ Result: clean.
 In-process libFuzzer + ASan on g2g's own pure-Rust parsers of untrusted input.
 Targets live in the g2g repo at `g2g-plugins/fuzz/`.
 ```
+cd <g2g>/g2g-plugins/fuzz && ./gen-seeds.sh      # seed corpora (once)
 cd <g2g>/g2g-plugins && cargo +nightly fuzz run <target> -- -max_total_time=600
 ```
-Targets: mp4_streams, matroska, flv, ogg, cea_cdp, mpegts, rtp_depay, flexfec,
-rtmp_handshake, st2110_dedup. Seed corpora bootstrap the magic-gated formats.
-Findings: **2 bugs** (see below). Everything else clean over multi-minute runs.
+Targets, all g2g-owned parsers of untrusted bytes:
+- containers: mp4_streams, matroska, flv, ogg, mpegts
+- captions: cea_cdp
+- network / RTP: rtp_depay, flexfec, st2110_dedup, rtcp
+- WebRTC / signalling: sdp (session description), rtcp (control channel)
+- handshake: rtmp_handshake
+
+`gen-seeds.sh` rebuilds the corpora for the magic-gated formats (demuxers via
+ffmpeg, rtmp C1/S1 via the `seedgen` helper); the rest self-bootstrap. Findings:
+**2 bugs** (see below). Everything else clean over multi-minute-to-15-minute runs.
 
 ### 9. Miri (undefined behavior / data races)
 Interpret g2g-core's unsafe (pools, SPSC ring, runtime) under Miri to catch
