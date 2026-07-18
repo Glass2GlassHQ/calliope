@@ -405,11 +405,21 @@ async fn run_matrix(
     // scenario is shared across its engines and drives the report.
     let mut resolved: Vec<(Arc<Scenario>, Option<String>)> = Vec::new();
     let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf)> = Vec::new();
+    // vectors whose input could not be fetched (dead URL, missing archive
+    // member); skipped so one bad download does not abort the whole matrix
+    let mut skipped: Vec<(String, String)> = Vec::new();
     for scenario in scenarios {
         let source = match (&scenario.input.corpus, &scenario.input.path) {
             (Some(id), _) => {
                 let vector = manifest.as_ref().unwrap().get(id)?;
-                corpus::fetch(vector, &cache).await?
+                match corpus::fetch(vector, &cache).await {
+                    Ok(path) => path,
+                    Err(e) => {
+                        eprintln!("  skip {}: fetch failed: {e}", scenario.id);
+                        skipped.push((scenario.id.clone(), e.to_string()));
+                        continue;
+                    }
+                }
             }
             (None, Some(path)) => path.clone(),
             _ => unreachable!("validated at load"),
@@ -475,6 +485,9 @@ async fn run_matrix(
             prepared.push((Arc::clone(&scenario), engine_by_id(id)?, input.clone()));
         }
         resolved.push((scenario, golden_expected));
+    }
+    if !skipped.is_empty() {
+        eprintln!("skipped {} vector(s) that failed to fetch", skipped.len());
     }
 
     // flat (scenario, engine) matrix with bounded parallelism
