@@ -22,6 +22,18 @@ Scenario modes:
   byte-identical output every time. No reference engine, a self-comparison that
   isolates nondeterminism. `threads = true` also runs g2g's `--threads` variant
   (needs a multi-thread build; skipped otherwise) and requires it to match.
+- **roundtrip**: the engine transcodes the input (`[roundtrip]`: decode ->
+  re-encode with a named encoder); ffmpeg then decodes that bitstream and
+  PSNR-compares it to the reference decode of the original. Exercises the
+  encoder (undecodable output, crashes, gross corruption), which the decode-only
+  modes never touch. A blunt smoke test: lossy encode has no bit-exact oracle,
+  so it catches catastrophic encoder failure, not subtle quality regressions.
+- **encode**: ffmpeg encodes a synthetic lavfi source (`[encode]`) into an
+  elementary stream, which then feeds the differential decode compare. ffmpeg
+  goes forward (encode), the other engines go reverse (decode), and the frames
+  are compared bit-exact. Feeds decoders feature combos the conformance corpus
+  never produced (profiles / flags chosen via `args`), so a divergence is a real
+  decoder bug against a hard oracle.
 
 All modes track crash/signal/timeout status and peak RSS. Engine-neutral by
 construction: engine knowledge lives only in `calliope-adapter-*` crates.
@@ -98,6 +110,22 @@ keep-percent = 50   # truncate: front fraction kept
 ```
 
 The corrupted input is generated once and fed to every engine identically.
+
+An `[encode]` scenario has no `[input]`: ffmpeg generates the differential input
+by encoding a lavfi source, then every engine decodes it and the frames are
+compared bit-exact. `[video]` must match the source geometry.
+
+```toml
+[encode]
+source = "testsrc2=size=352x288:rate=30:duration=2"   # ffmpeg lavfi source
+encoder = "libx264"
+args = ["-profile:v", "high", "-x264-params", "cabac=1:bframes=3"]
+output-ext = "h264"                                   # elementary stream type
+```
+
+A `[roundtrip]` scenario names the engine's `encoder` (e.g. `x264enc`) and a
+`psnr-min` floor; the engine decodes + re-encodes the input, ffmpeg decodes the
+result and PSNR-compares it to the reference decode.
 
 A `golden = true` scenario needs a `corpus` input; the vector's `decoded-md5`
 and `output-format` (populated by `calliope corpus-import --fluster`) are the

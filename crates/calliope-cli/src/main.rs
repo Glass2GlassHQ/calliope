@@ -133,6 +133,7 @@ fn engine_crashes(
         determinism: None,
         golden: false,
         roundtrip: None,
+        encode: None,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
         return false;
@@ -189,6 +190,7 @@ fn golden_scenarios(
             determinism: None,
             golden: true,
             roundtrip: None,
+            encode: None,
         })
         .collect()
 }
@@ -411,32 +413,53 @@ async fn run_matrix(
     // member); skipped so one bad download does not abort the whole matrix
     let mut skipped: Vec<(String, String)> = Vec::new();
     for scenario in scenarios {
-        let source = match (&scenario.input.corpus, &scenario.input.path) {
-            (Some(id), _) => {
-                let vector = manifest.as_ref().unwrap().get(id)?;
-                match corpus::fetch(vector, &cache).await {
-                    Ok(path) => path,
-                    Err(e) => {
-                        eprintln!("  skip {}: fetch failed: {e}", scenario.id);
-                        skipped.push((scenario.id.clone(), e.to_string()));
-                        continue;
+        // an encode scenario has no input to fetch: ffmpeg generates the
+        // differential input by encoding a lavfi source, then every engine
+        // decodes that stream and the frames are compared bit-exact.
+        let input = if let Some(enc) = &scenario.encode {
+            let video = scenario
+                .video
+                .expect("encode scenario has [video] (validated)");
+            let dir = workdir.join(&scenario.id);
+            std::fs::create_dir_all(&dir)?;
+            let out = dir.join(format!("encoded.{}", enc.output_ext));
+            calliope_adapter_ffmpeg::encode_source(
+                &enc.source,
+                &enc.encoder,
+                &enc.args,
+                video,
+                &out,
+            )
+            .with_context(|| format!("{}: generating encode-differential input", scenario.id))?;
+            out
+        } else {
+            let source = match (&scenario.input.corpus, &scenario.input.path) {
+                (Some(id), _) => {
+                    let vector = manifest.as_ref().unwrap().get(id)?;
+                    match corpus::fetch(vector, &cache).await {
+                        Ok(path) => path,
+                        Err(e) => {
+                            eprintln!("  skip {}: fetch failed: {e}", scenario.id);
+                            skipped.push((scenario.id.clone(), e.to_string()));
+                            continue;
+                        }
                     }
                 }
+                (None, Some(path)) => path.clone(),
+                _ => unreachable!("validated at load"),
+            };
+            // a robustness scenario corrupts the input once, then feeds the
+            // mangled file to every engine (all engines see identical corruption)
+            match &scenario.fault {
+                Some(fault) => {
+                    let dir = workdir.join(&scenario.id);
+                    std::fs::create_dir_all(&dir)?;
+                    let corrupted = dir.join("input.corrupted");
+                    fault.corrupt_file(&source, &corrupted)?;
+                    corrupted
+                }
+                None => source,
             }
-            (None, Some(path)) => path.clone(),
-            _ => unreachable!("validated at load"),
-        };
-        // a robustness scenario corrupts the input once, then feeds the mangled
-        // file to every engine (all engines see the identical corruption)
-        let input = match &scenario.fault {
-            Some(fault) => {
-                let dir = workdir.join(&scenario.id);
-                std::fs::create_dir_all(&dir)?;
-                let corrupted = dir.join("input.corrupted");
-                fault.corrupt_file(&source, &corrupted)?;
-                corrupted
-            }
-            None => source,
         };
         let mut scenario = scenario.clone();
         let mut golden_expected = None;

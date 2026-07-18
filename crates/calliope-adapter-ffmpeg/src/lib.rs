@@ -36,6 +36,33 @@ pub fn roundtrip_psnr(
         .ok_or_else(|| Error::Parse("ffmpeg reported no PSNR (streams incomparable?)".into()))
 }
 
+/// Generate an encode-differential input: ffmpeg encodes a lavfi `source` with
+/// `encoder` (plus `extra_args` selecting profiles / features) into an elementary
+/// stream at `out`. That stream then feeds the normal differential decode compare,
+/// so a decode divergence across engines is a real bug against a hard oracle.
+pub fn encode_source(
+    source: &str,
+    encoder: &str,
+    extra_args: &[String],
+    video: Video,
+    out: &Path,
+) -> Result<()> {
+    let ffmpeg = binary("CALLIOPE_FFMPEG", "ffmpeg");
+    let status = Command::new(&ffmpeg)
+        .args(["-nostdin", "-hide_banner", "-loglevel", "error", "-y"])
+        .args(["-f", "lavfi", "-i", source])
+        .args(["-c:v", encoder, "-pix_fmt", video.format.ffmpeg_pix_fmt()])
+        .args(extra_args)
+        .arg(out)
+        .status()?;
+    if !status.success() {
+        return Err(Error::Parse(format!(
+            "ffmpeg could not encode lavfi source '{source}' with {encoder}"
+        )));
+    }
+    Ok(())
+}
+
 fn decode_to_raw(ffmpeg: &str, input: &Path, out: &Path) -> Result<()> {
     let status = Command::new(ffmpeg)
         .args(["-nostdin", "-hide_banner", "-loglevel", "error", "-y", "-i"])

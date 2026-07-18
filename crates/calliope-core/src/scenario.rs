@@ -22,6 +22,7 @@ pub struct Scenario {
     pub reference: String,
     #[serde(default = "default_timeout")]
     pub timeout_secs: u64,
+    #[serde(default)]
     pub input: Input,
     /// decoded geometry for a differential scenario; omit to probe it (ffprobe)
     pub video: Option<Video>,
@@ -44,6 +45,33 @@ pub struct Scenario {
     /// PSNR-compares it to the reference decode of the original. Fails if the
     /// encoder crashes, produces an undecodable stream, or drops below `psnr-min`.
     pub roundtrip: Option<Roundtrip>,
+    /// encode-differential scenario: ffmpeg encodes a synthetic lavfi source,
+    /// then the engines differential-decode the result (bit-exact). Exercises
+    /// decoders on bitstreams the conformance corpus never produced. See
+    /// [`Encode`]. Judged as a plain differential run.
+    pub encode: Option<Encode>,
+}
+
+/// Encode-differential config: ffmpeg encodes a lavfi source into an elementary
+/// stream that then feeds the normal differential decode compare. ffmpeg goes
+/// forward (encode), the other engines go reverse (decode), and the per-frame
+/// compare is bit-exact. The `args` select profiles / features the Fluster
+/// vectors lack, so a decode divergence here is a real decoder bug against a
+/// hard oracle (unlike the PSNR round-trip, which only smoke-tests an encoder).
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Encode {
+    /// ffmpeg lavfi source spec (e.g. `testsrc2=size=352x288:rate=30:duration=2`);
+    /// its size must match `[video]`.
+    pub source: String,
+    /// ffmpeg encoder that generates the stream (e.g. `libx264`).
+    pub encoder: String,
+    /// extra ffmpeg args selecting profile / features (e.g. `-profile:v high`).
+    #[serde(default)]
+    pub args: Vec<String>,
+    /// the elementary stream's extension so ffmpeg / decodebin type it (e.g. `h264`).
+    #[serde(default = "default_roundtrip_ext")]
+    pub output_ext: String,
 }
 
 /// Encode round-trip config: transcode the input through `encoder`, then require
@@ -123,8 +151,13 @@ impl Scenario {
         self.roundtrip.is_some()
     }
 
-    /// only a plain differential scenario hashes and compares decoded frames
-    /// per-frame against a reference engine
+    pub fn is_encode(&self) -> bool {
+        self.encode.is_some()
+    }
+
+    /// A plain differential scenario hashes and compares decoded frames per-frame
+    /// against a reference engine. An encode scenario is also differential: it
+    /// just generates its input with ffmpeg first, so it judges frames too.
     pub fn judges_frames(&self) -> bool {
         self.fault.is_none()
             && self.soak.is_none()
@@ -138,7 +171,7 @@ fn default_timeout() -> u64 {
     120
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct Input {
     /// corpus vector id, resolved and fetched through the manifest
@@ -306,10 +339,14 @@ impl Scenario {
                 self.reference
             )));
         }
-        if !matches!(
-            (&self.input.corpus, &self.input.path),
-            (Some(_), None) | (None, Some(_))
-        ) {
+        // an encode scenario generates its input from a lavfi source, so it has
+        // no corpus / path; every other scenario needs exactly one.
+        if self.encode.is_none()
+            && !matches!(
+                (&self.input.corpus, &self.input.path),
+                (Some(_), None) | (None, Some(_))
+            )
+        {
             return Err(Error::Parse(format!(
                 "{}: input needs exactly one of corpus / path",
                 at()
@@ -319,12 +356,33 @@ impl Scenario {
             + self.soak.is_some() as u8
             + self.golden as u8
             + self.determinism.is_some() as u8
-            + self.roundtrip.is_some() as u8;
+            + self.roundtrip.is_some() as u8
+            + self.encode.is_some() as u8;
         if modes > 1 {
             return Err(Error::Parse(format!(
-                "{}: fault / soak / golden / determinism / roundtrip are separate modes, use one",
+                "{}: fault / soak / golden / determinism / roundtrip / encode are separate modes, use one",
                 at()
             )));
+        }
+        if let Some(enc) = &self.encode {
+            if self.video.is_none() {
+                return Err(Error::Parse(format!(
+                    "{}: an encode scenario needs [video] geometry (it decodes to it)",
+                    at()
+                )));
+            }
+            if self.input.corpus.is_some() || self.input.path.is_some() {
+                return Err(Error::Parse(format!(
+                    "{}: an encode scenario generates its input from a lavfi source; omit [input]",
+                    at()
+                )));
+            }
+            if enc.source.trim().is_empty() || enc.encoder.trim().is_empty() {
+                return Err(Error::Parse(format!(
+                    "{}: an encode scenario needs a non-empty source and encoder",
+                    at()
+                )));
+            }
         }
         // golden reads the expected hash from the corpus vector, so it needs one
         if self.golden && self.input.corpus.is_none() {
@@ -505,6 +563,87 @@ mod tests {
         let s: Scenario = toml::from_str(toml).unwrap();
         s.validate(Path::new("test.toml")).unwrap();
         assert!(s.is_robustness());
+    }
+
+    #[test]
+    fn encode_scenario_parses_is_differential_and_needs_video_but_no_input() {
+        let toml = r#"
+            id = "enc"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+
+            [encode]
+            source = "testsrc2=size=352x288:rate=30:duration=2"
+            encoder = "libx264"
+            args = ["-profile:v", "high"]
+
+            [video]
+            width = 352
+            height = 288
+            format = "i420"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        s.validate(Path::new("test.toml")).unwrap();
+        assert!(s.is_encode());
+        // an encode run is judged as a plain differential (bit-exact frames)
+        assert!(s.judges_frames());
+        let enc = s.encode.unwrap();
+        assert_eq!(enc.encoder, "libx264");
+        assert_eq!(enc.output_ext, "h264");
+    }
+
+    #[test]
+    fn encode_scenario_rejects_input_and_requires_video() {
+        // [input] is generated, so declaring one is an error
+        let with_input = r#"
+            id = "enc"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            [encode]
+            source = "testsrc2=size=16x16:rate=1:duration=1"
+            encoder = "libx264"
+            [input]
+            path = "clip.h264"
+            [video]
+            width = 16
+            height = 16
+            format = "i420"
+        "#;
+        let s: Scenario = toml::from_str(with_input).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+
+        // no [video] geometry -> error (the decode target is unknown)
+        let no_video = r#"
+            id = "enc"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            [encode]
+            source = "testsrc2=size=16x16:rate=1:duration=1"
+            encoder = "libx264"
+        "#;
+        let s: Scenario = toml::from_str(no_video).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+    }
+
+    #[test]
+    fn encode_and_fault_are_mutually_exclusive() {
+        let toml = r#"
+            id = "enc"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            [encode]
+            source = "testsrc2=size=16x16:rate=1:duration=1"
+            encoder = "libx264"
+            [fault]
+            mode = "bit-flip"
+            count = 10
+            [video]
+            width = 16
+            height = 16
+            format = "i420"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
     }
 
     #[test]

@@ -461,6 +461,7 @@ mod tests {
             determinism: None,
             golden: false,
             roundtrip: None,
+            encode: None,
         }
     }
 

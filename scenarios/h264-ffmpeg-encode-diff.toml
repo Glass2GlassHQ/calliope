@@ -1,0 +1,20 @@
+# Encode-differential: ffmpeg encodes a synthetic lavfi source with libx264 (high
+# profile, CABAC, B-frames), then every engine decodes that stream and the frames
+# are compared bit-exact against ffmpeg. ffmpeg goes forward (encode), g2g goes
+# reverse (decode). Feeds g2g's decoder feature combos the conformance corpus
+# never produced, so a divergence is a real decoder bug against a hard oracle.
+id = "h264-ffmpeg-encode-diff"
+engines = ["ffmpeg", "g2g"]
+reference = "ffmpeg"
+timeout-secs = 120
+
+[encode]
+source = "testsrc2=size=352x288:rate=30:duration=2"
+encoder = "libx264"
+args = ["-profile:v", "high", "-x264-params", "cabac=1:bframes=3", "-g", "12"]
+output-ext = "h264"
+
+[video]
+width = 352
+height = 288
+format = "i420"
