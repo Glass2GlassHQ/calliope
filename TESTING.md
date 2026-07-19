@@ -96,6 +96,9 @@ Targets, all g2g-owned parsers of untrusted bytes:
 - codec bitstream: h264parse, h265parse, av1parse, vp9parse, vp8parse, aacparse,
   opusparse (SPS / PPS / OBU / ADTS / TOC; the per-frame hand-written bit
   readers, reached via a `#[cfg(fuzzing)] pub fn fuzz_parse` shim in each module)
+- text / manifest: subparse (SRT / WebVTT / SSA-ASS / TTML subtitle text, byte vs
+  char-boundary slicing), hls (m3u8 playlist tags / attributes). Attacker text fed
+  as `from_utf8_lossy`; the fuzzer reached every format from an empty corpus.
 
 `gen-seeds.sh` rebuilds the corpora for the magic-gated formats (demuxers via
 ffmpeg, rtmp C1/S1 via the `seedgen` helper) plus real elementary streams for the
