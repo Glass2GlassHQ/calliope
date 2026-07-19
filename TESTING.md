@@ -92,7 +92,9 @@ Targets, all g2g-owned parsers of untrusted bytes:
 - WebRTC / signalling: sdp (session description), rtcp (control channel)
 - streaming protocol: rtmp_handshake, rtmp_chunk (server-side chunk-stream
   reassembly + AMF0 command parsing a malicious publisher reaches post-handshake,
-  via a `#[cfg(fuzzing)]` shim that forces the Streaming state)
+  via a `#[cfg(fuzzing)]` shim that forces the Streaming state), srt (SRT control /
+  handshake CIF / NAK range-list + data-packet headers), rtsp (RTSP request line +
+  headers + content-length framing)
 - codec bitstream: h264parse, h265parse, av1parse, vp9parse, vp8parse, aacparse,
   opusparse (SPS / PPS / OBU / ADTS / TOC; the per-frame hand-written bit
   readers, reached via a `#[cfg(fuzzing)] pub fn fuzz_parse` shim in each module)
