@@ -101,6 +101,9 @@ Targets, all g2g-owned parsers of untrusted bytes:
 - text / manifest: subparse (SRT / WebVTT / SSA-ASS / TTML subtitle text, byte vs
   char-boundary slicing), hls (m3u8 playlist tags / attributes). Attacker text fed
   as `from_utf8_lossy`; the fuzzer reached every format from an empty corpus.
+- pipeline description: parse_launch (the gst-launch-style element / property /
+  caps / link / bin text parser the g2g-capi `g2g_pipeline_launch` C entry
+  forwards after its NUL / UTF-8 checks; parse only, no execution)
 
 `gen-seeds.sh` rebuilds the corpora for the magic-gated formats (demuxers via
 ffmpeg, rtmp C1/S1 via the `seedgen` helper) plus real elementary streams for the
@@ -188,3 +191,14 @@ tests.
   (`m291_mp4mux` ffmpeg-validated, `m120_flvmux` roundtrip, `m294`/`m296`/`m114`/
   `m115`). Their input is trusted encoder output, not attacker-controlled, so
   they are low-yield for a differential / fuzz harness.
+- The g2g-capi C ABI wrapper was read end to end: every `extern "C"` fn NUL-checks
+  its handles via `ptr::as_ref` / `as_mut`, validates C strings as UTF-8, guards
+  `data.is_null() && len != 0`, and returns error codes instead of panicking
+  across the boundary. The pointer / lifetime discipline is caller-contract (a
+  fuzzer passing garbage pointers only reproduces caller misuse), so the fuzzable
+  surface it adds is the launch-string parser it forwards (`parse_launch`, fuzzed
+  above). No wrapper-level gap found.
+- Feature-gated parsers behind the HTTP stack (`mpd` / DASH via `roxmltree` +
+  http-src, `onvif` via `reqwest`) are a poor fit for the in-process ASan
+  libFuzzer rig (network runtime, huge build); fuzzing them needs a harness that
+  extracts the pure parse fn or mocks the transport. Deferred, not covered.
