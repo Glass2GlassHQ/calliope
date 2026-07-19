@@ -86,9 +86,13 @@ cd <g2g>/g2g-plugins && cargo +nightly fuzz run <target> -- -max_total_time=600
 Targets, all g2g-owned parsers of untrusted bytes:
 - containers: mp4_streams, matroska, flv, ogg, mpegts
 - captions: cea_cdp
-- network / RTP: rtp_depay, flexfec, st2110_dedup, rtcp
+- network / RTP: rtp_depay, flexfec, st2110_dedup, rtcp, st2110anc (ST 2110-40 /
+  SMPTE 291 ancillary depacketization: the 10-bit-word bit reader + parity /
+  checksum over an RFC 8331 datagram)
 - WebRTC / signalling: sdp (session description), rtcp (control channel)
-- handshake: rtmp_handshake
+- streaming protocol: rtmp_handshake, rtmp_chunk (server-side chunk-stream
+  reassembly + AMF0 command parsing a malicious publisher reaches post-handshake,
+  via a `#[cfg(fuzzing)]` shim that forces the Streaming state)
 - codec bitstream: h264parse, h265parse, av1parse, vp9parse, vp8parse, aacparse,
   opusparse (SPS / PPS / OBU / ADTS / TOC; the per-frame hand-written bit
   readers, reached via a `#[cfg(fuzzing)] pub fn fuzz_parse` shim in each module)
