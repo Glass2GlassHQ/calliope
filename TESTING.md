@@ -76,6 +76,16 @@ ASAN_OPTIONS=abort_on_error=1:detect_leaks=0 \
 Coverage: 150 AV1 vectors (incl. 10-bit, exercising g2g's native dav1d path).
 Result: clean.
 
+### 7b. LeakSanitizer over the conformance corpus
+The ASan runs above set `detect_leaks=0` (a decoder that exits mid-stream on a
+fault leaves expected allocations). A clean whole-stream conformance decode
+should free everything, so run the corpus once with leak detection ON: any
+report is a real leak in g2g's own code or the libav it drives.
+```
+tools/build-g2g-asan.sh
+tools/lsan-g2g.sh              # runs conformance with ASAN_OPTIONS=detect_leaks=1
+```
+
 ### 8. Coverage-guided fuzzing (cargo-fuzz)
 In-process libFuzzer + ASan on g2g's own pure-Rust parsers of untrusted input.
 Targets live in the g2g repo at `g2g-plugins/fuzz/`.
@@ -86,10 +96,18 @@ cd <g2g>/g2g-plugins && cargo +nightly fuzz run <target> -- -max_total_time=600
 Targets, all g2g-owned parsers of untrusted bytes:
 - containers: mp4_streams, matroska, flv, ogg, mpegts
 - captions: cea_cdp
-- network / RTP: rtp_depay, flexfec, st2110_dedup, rtcp, st2110anc (ST 2110-40 /
-  SMPTE 291 ancillary depacketization: the 10-bit-word bit reader + parity /
-  checksum over an RFC 8331 datagram)
-- WebRTC / signalling: sdp (session description), rtcp (control channel)
+- network / RTP: rtp_depay, flexfec, ulpfec (ULPFEC single-loss recovery over a
+  decoder fed length-prefixed media / repair packets), rtx (RFC 4588 retransmit:
+  header-offset walk + OSN unwrap / re-wrap), rtpjitter (reorder buffer: RTP
+  header parse + deadline bookkeeping over a monotonic clock), st2110_dedup,
+  rtcp, st2110anc (ST 2110-40 / SMPTE 291 ancillary depacketization: the 10-bit-
+  word bit reader + parity / checksum over an RFC 8331 datagram)
+- WebRTC / signalling: sdp (session description), rtcp (control channel),
+  turn_stun (hand-rolled TURN / STUN over untrusted UDP: ChannelData + DATA-
+  INDICATION framing and the XOR-PEER / XOR-MAPPED-ADDRESS + ERROR-CODE attribute
+  walk the relay data plane runs on inbound datagrams, RFC 5766 / 8489)
+- ST 2110 SDP: st2110sdp (the media / rtpmap / fmtp / ptp session-description
+  text a -20/-30/-40 receiver configures from)
 - streaming protocol: rtmp_handshake, rtmp_chunk (server-side chunk-stream
   reassembly + AMF0 command parsing a malicious publisher reaches post-handshake,
   via a `#[cfg(fuzzing)]` shim that forces the Streaming state), srt (SRT control /
@@ -98,6 +116,17 @@ Targets, all g2g-owned parsers of untrusted bytes:
 - codec bitstream: h264parse, h265parse, av1parse, vp9parse, vp8parse, aacparse,
   opusparse (SPS / PPS / OBU / ADTS / TOC; the per-frame hand-written bit
   readers, reached via a `#[cfg(fuzzing)] pub fn fuzz_parse` shim in each module)
+- containers (element-driven): ivfdemux (DKIF header + 12-byte frame headers),
+  fmp4 (fragmented-MP4 / CMAF: moof / traf / trun / senc box parsing the HLS-
+  fMP4 path runs, distinct from the progressive mp4_streams box parser). Both are
+  async demux elements, so a `#[cfg(fuzzing)] fuzz_parse` shim drives the real
+  `process` path over a no-op sink via a spin `block_on` (they parse buffered
+  bytes into a synchronous sink, never awaiting real IO).
+- content sniffing: typefind (container magic probes + Annex-B / text detection
+  FileSrc runs on any input's leading bytes)
+- crypto keying: srtcrypto (SRT KM control-message parse: header layout, wrapped-
+  key length, salt, unwrapped under a fixed passphrase; gates hard on the KM
+  magic / version, so it wants a valid-KM seed for depth)
 - text / manifest: subparse (SRT / WebVTT / SSA-ASS / TTML subtitle text, byte vs
   char-boundary slicing), hls (m3u8 playlist tags / attributes). Attacker text fed
   as `from_utf8_lossy`; the fuzzer reached every format from an empty corpus.
@@ -107,8 +136,17 @@ Targets, all g2g-owned parsers of untrusted bytes:
 
 `gen-seeds.sh` rebuilds the corpora for the magic-gated formats (demuxers via
 ffmpeg, rtmp C1/S1 via the `seedgen` helper) plus real elementary streams for the
-codec parsers; the rest self-bootstrap. Findings: **3 bugs** (see below).
-Everything else clean over multi-minute-to-15-minute runs.
+codec parsers; the rest self-bootstrap. `ivfdemux` / `fmp4` / `srtcrypto` gate on
+a magic / box structure, so `gen-seeds.sh` builds a real IVF, a fragmented MP4,
+and a structurally valid KM message (garbage wrapped key, clears every header
+gate into PBKDF2 + AES-KW). The fuzz crate builds with `std, rtmp, srt, webrtc`
+so `srtcrypto` and `turn_stun` compile; the `webrtc` set pulls str0m + reqwest, a
+heavier one-time build. Findings: **3 bugs** (see below). Everything else clean
+over multi-minute-to-15-minute runs. The targets added in this pass (ulpfec, rtx,
+rtpjitter, turn_stun, st2110sdp, ivfdemux, fmp4, typefind, srtcrypto) each ran a
+full 600 s campaign, all clean, no crash / panic / leak, no artifacts. Final
+coverage: fmp4 768, st2110sdp 634, ulpfec 594, turn_stun 572, typefind 278,
+rtpjitter 247, srtcrypto 222, ivfdemux 168, rtx 78.
 
 ### 9. Miri (undefined behavior / data races)
 Interpret g2g-core's unsafe (pools, SPSC ring, runtime) under Miri to catch
@@ -139,6 +177,16 @@ Coverage: the SPSC producer/consumer handoff at `LOOM_MAX_PREEMPTIONS=3`. A
 negative control (neutering the ring's full check) makes loom report a
 "Concurrent read and write" causality violation, confirming the check has teeth.
 Result: clean, no interleaving violates the protocol.
+
+### 12. ThreadSanitizer (data races in the running pipeline)
+Miri and loom cover g2g-core in isolation (one interleaving; the SPSC ring
+exhaustively). TSan closes the gap they leave: the whole process under real
+threads, including the C libav g2g calls. Build g2g-launch with
+`-Zsanitizer=thread` (+ `-Zbuild-std` so std is instrumented) and run g2g's
+`--threads` decode (one OS thread per element) over real streams.
+```
+tools/tsan-g2g.sh              # builds g2g-launch-tsan, runs the threaded determinism scenario
+```
 
 ### 10. Corrupt-input differential (decode-outcome divergence)
 Corrupt the input (`[fault]`) and, with `outcome-diff = true`, cross-compare each
@@ -202,3 +250,12 @@ tests.
   http-src, `onvif` via `reqwest`) are a poor fit for the in-process ASan
   libFuzzer rig (network runtime, huge build); fuzzing them needs a harness that
   extracts the pure parse fn or mocks the transport. Deferred, not covered.
+- **Audio decode differential.** The aac / opus *parsers* are fuzzed (technique
+  8), but no scenario compares decoded audio output: the calliope adapters build
+  a video pipeline (`decodebin ! video/x-raw,format=... ! filesink`) and the
+  frame hashing chunks by YUV geometry, so audio can't run. Closing it is an
+  adapter feature, not a scenario: an `audio/x-raw` decode path in all three
+  adapters, PCM frame-hashing (fixed bytes/sample x channels, or ffmpeg's
+  `framemd5` on the audio stream as the oracle), and audio geometry in the
+  scenario schema. Deferred; would give aac / opus a decode-output oracle, not
+  just a parse oracle.

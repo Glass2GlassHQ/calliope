@@ -188,5 +188,7 @@ live-stream scenarios run on a dev host with the same harness.
 
 [`TESTING.md`](TESTING.md) is the system-of-record for everything thrown at g2g:
 the scenario modes above plus the ASan build + fuzz loop (`tools/build-g2g-asan.sh`,
-`tools/fuzz-g2g.sh`), the cargo-fuzz targets (in the g2g repo), and Miri
-(`tools/miri-g2g.sh`), each with how to reproduce it and what it found.
+`tools/fuzz-g2g.sh`), the leak + data-race passes (`tools/lsan-g2g.sh`,
+`tools/tsan-g2g.sh`), the cargo-fuzz targets (in the g2g repo), Miri
+(`tools/miri-g2g.sh`), and loom (`tools/loom-g2g.sh`), each with how to reproduce
+it and what it found.
