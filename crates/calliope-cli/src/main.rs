@@ -41,6 +41,9 @@ enum Command {
         /// cap the number of imported vectors (0 = all)
         #[arg(long, default_value_t = 0)]
         limit: usize,
+        /// import even when the source looks like a driver-fork reference set
+        #[arg(long)]
+        allow_driver_fork: bool,
     },
     /// shrink a crashing / hanging input to a minimal reproducer for one engine
     Minimize {
@@ -245,7 +248,15 @@ async fn main() -> Result<ExitCode> {
             fluster,
             out,
             limit,
+            allow_driver_fork,
         } => {
+            if let Some(warning) = calliope_core::fluster::driver_fork_warning(&fluster) {
+                if allow_driver_fork {
+                    eprintln!("warning: {warning}");
+                } else {
+                    bail!("{warning}\n(pass --allow-driver-fork to import anyway)");
+                }
+            }
             let mut imported = if fluster.is_dir() {
                 calliope_core::fluster::import_dir(&fluster)?
             } else {
@@ -631,6 +642,7 @@ async fn run_matrix(
             robustness: scenario.is_robustness(),
             soak: scenario.is_soak(),
             determinism: scenario.is_determinism(),
+            audio: scenario.is_audio(),
             outcome_diff: scenario.is_outcome_diff(),
             golden_expected: golden_expected.clone(),
             majority,
@@ -665,6 +677,9 @@ fn print_summary(report: &Report) {
                 RunStatus::Error { message } => format!("error: {message}"),
             };
             let frames = r.run.frame_hashes.as_ref().map_or(0, Vec::len);
+            // audio hashes the whole PCM stream as one hash, so "frames" would
+            // misreport it; count streams instead.
+            let unit = if scenario.audio { "stream" } else { "frames" };
             let rss = r
                 .run
                 .peak_rss_kb
@@ -782,7 +797,7 @@ fn print_summary(report: &Report) {
                 }
             };
             println!(
-                "  {:<12} {:<10} {:>5} frames  {:>6.1}s  {:>8}  {verdict}",
+                "  {:<12} {:<10} {:>5} {unit}  {:>6.1}s  {:>8}  {verdict}",
                 r.run.engine,
                 status,
                 frames,

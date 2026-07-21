@@ -24,6 +24,25 @@ calliope conformance --corpus corpus/vectors.toml
 ```
 Corpus: 945 vectors (AV1 242, VP9 305, HEVC 196, AVC 135, VP8 61). Result: clean.
 
+Method: Fluster's `result` is a plain MD5 of the whole raw decoded file
+(`utils.py::file_checksum`, 64KiB chunks) from the codec's software reference
+decoder (H.264 = `ldecod` JM, `h264_jct_vt.py`; AV1 = `aomdec`), written as
+`-f rawvideo` in `output-format`. calliope reproduces this exactly: decode with
+`-vf format=<fmt> -f rawvideo`, MD5 the file. The method is identical, so no
+recalibration was needed beyond the import source.
+
+Import only from canonical Fluster (github.com/fluendo/fluster); its H.264 JM
+hashes reproduce under ffmpeg. Do NOT import the gstreamer-CI `visl_references`
+fork: those are VISL V4L2-stateless driver hashes, not reproducible by a plain
+rawvideo md5 (a full JVT-AVC_V1 import once scored 0/135). The suite JSON names
+no reference decoder, so `corpus-import` guards on the source path: any component
+containing `visl` errors out (override with `--allow-driver-fork`).
+
+Validated (canonical JVT-AVC_V1, 5 cached vectors, all engines golden ok):
+AUD_MW_E, BA1_Sony_D, CABA1_Sony_D, CVWP1_TOSHIBA_E, MR1_BT_A. ffmpeg 5/5,
+gstreamer 5/5, g2g 5/5. A fresh canonical re-import showed zero hash drift from
+the committed corpus.
+
 ### 3. Robustness fuzzing + minimizer
 Corrupt input (`[fault]`: bit-flip / truncate / byte-drop / nal-payload) and
 require every engine to degrade gracefully (no crash / hang). Shrink any crash

@@ -21,6 +21,9 @@ pub struct ScenarioReport {
     pub soak: bool,
     /// determinism scenario: judged on byte-identical output across repeated runs
     pub determinism: bool,
+    /// audio scenario: the whole PCM stream is one hash, so the summary counts
+    /// streams, not frames (frame boundaries differ across decoders)
+    pub audio: bool,
     /// outcome-diff scenario: a robustness run that also cross-compares decode
     /// outcomes. Judged like robustness (crash / hang fails); the decode-outcome
     /// divergences it surfaces are advisory triage, not a pass / fail gate.
@@ -155,6 +158,7 @@ mod tests {
             robustness: false,
             soak: false,
             determinism: false,
+            audio: false,
             outcome_diff: false,
             golden_expected: Some("ABCD".into()),
             majority: None,
