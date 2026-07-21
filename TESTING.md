@@ -85,6 +85,7 @@ report is a real leak in g2g's own code or the libav it drives.
 tools/build-g2g-asan.sh
 tools/lsan-g2g.sh              # runs conformance with ASAN_OPTIONS=detect_leaks=1
 ```
+Result: clean (60 AV1 vectors, no leak reported).
 
 ### 8. Coverage-guided fuzzing (cargo-fuzz)
 In-process libFuzzer + ASan on g2g's own pure-Rust parsers of untrusted input.
@@ -178,15 +179,19 @@ negative control (neutering the ring's full check) makes loom report a
 "Concurrent read and write" causality violation, confirming the check has teeth.
 Result: clean, no interleaving violates the protocol.
 
-### 12. ThreadSanitizer (data races in the running pipeline)
-Miri and loom cover g2g-core in isolation (one interleaving; the SPSC ring
-exhaustively). TSan closes the gap they leave: the whole process under real
-threads, including the C libav g2g calls. Build g2g-launch with
-`-Zsanitizer=thread` (+ `-Zbuild-std` so std is instrumented) and run g2g's
-`--threads` decode (one OS thread per element) over real streams.
+### 12. ThreadSanitizer (data races under real threads)
+Miri and loom never run true parallel code: Miri interprets one interleaving,
+loom model-checks the SPSC ring exhaustively but abstractly. TSan runs g2g-core's
+`multi-thread` tests (which spawn the real producer / consumer threads) natively
+under `-Zsanitizer=thread` (+ `-Zbuild-std` so std is instrumented), catching
+races at runtime. Scoped to g2g-core: TSan can't instrument the C libav, so the
+whole-pipeline race surface stays with loom + Miri + the deterministic
+differential runs.
 ```
-tools/tsan-g2g.sh              # builds g2g-launch-tsan, runs the threaded determinism scenario
+tools/tsan-g2g.sh
 ```
+Coverage: 202 g2g-core tests (`std` + `multi-thread`) under TSan. Result: clean,
+no data race reported.
 
 ### 10. Corrupt-input differential (decode-outcome divergence)
 Corrupt the input (`[fault]`) and, with `outcome-diff = true`, cross-compare each
@@ -251,11 +256,15 @@ tests.
   libFuzzer rig (network runtime, huge build); fuzzing them needs a harness that
   extracts the pure parse fn or mocks the transport. Deferred, not covered.
 - **Audio decode differential.** The aac / opus *parsers* are fuzzed (technique
-  8), but no scenario compares decoded audio output: the calliope adapters build
-  a video pipeline (`decodebin ! video/x-raw,format=... ! filesink`) and the
-  frame hashing chunks by YUV geometry, so audio can't run. Closing it is an
-  adapter feature, not a scenario: an `audio/x-raw` decode path in all three
-  adapters, PCM frame-hashing (fixed bytes/sample x channels, or ffmpeg's
-  `framemd5` on the audio stream as the oracle), and audio geometry in the
-  scenario schema. Deferred; would give aac / opus a decode-output oracle, not
-  just a parse oracle.
+  8), but no scenario compares decoded audio output. Two blockers, the first
+  upstream in g2g: a `g2g-launch` built with `ffmpeg,opus` still won't negotiate
+  a decode-to-PCM pipeline from the CLI (`OpusDec -> AudioConvert: unconstrained`;
+  aac `decodebin ! filesink` is a `CapsMismatch`; no raw-audio file sink is
+  registered), so there is no way to dump comparable PCM yet. Second, even once
+  that works, only Opus is defined to be bit-exact across decoders; lossy AAC is
+  not, so an AAC cross-engine differential would false-fail and must use golden
+  (vs a reference vector) or determinism (self-comparison) instead. The calliope
+  side then needs an `audio/x-raw` path in all three adapters, whole-stream PCM
+  hashing (audio frame boundaries differ across decoders, so per-frame md5 is
+  wrong), and an `[audio]` spec. Deferred: the g2g audio pipeline has to
+  decode-to-PCM from the CLI before the harness work is worth doing.
