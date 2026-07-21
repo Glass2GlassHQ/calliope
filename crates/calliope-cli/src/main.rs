@@ -128,6 +128,7 @@ fn engine_crashes(
             path: Some(input.to_path_buf()),
         },
         video: None,
+        audio: None,
         fault: None,
         soak: None,
         determinism: None,
@@ -187,6 +188,7 @@ fn golden_scenarios(
                 path: None,
             },
             video: None,
+            audio: None,
             fault: None,
             soak: None,
             determinism: None,
@@ -506,10 +508,12 @@ async fn run_matrix(
                 height: 0,
                 format,
             });
-        } else if (scenario.judges_frames() || scenario.is_roundtrip()) && scenario.video.is_none()
+        } else if (scenario.judges_frames() || scenario.is_roundtrip())
+            && scenario.video.is_none()
+            && !scenario.is_audio()
         {
             // differential chunks by geometry; roundtrip needs it to size the raw
-            // PSNR compare
+            // PSNR compare. Audio has no video geometry, so it skips the probe.
             scenario.video = Some(
                 calliope_core::probe::probe_geometry(&input)
                     .with_context(|| format!("{}: auto-probing geometry", scenario.id))?,

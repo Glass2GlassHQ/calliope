@@ -106,6 +106,35 @@ impl Engine for Ffmpeg {
 
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
         let program = binary("CALLIOPE_FFMPEG", "ffmpeg");
+        // audio: decode to normalized interleaved PCM. The decoder is forced to
+        // the codec's reference library (`-c:a libopus` for opus) so ffmpeg
+        // matches the other libopus-backed engines; the decoder flag must precede
+        // `-i`. The whole PCM stream is hashed by the runner.
+        if let Some(audio) = scenario.audio {
+            let out = workdir.join("out.pcm");
+            let mut args = vec!["-nostdin".into(), "-hide_banner".into(), "-y".into()];
+            if let Some(dec) = audio.codec.ffmpeg_decoder() {
+                args.push("-c:a".into());
+                args.push(dec.into());
+            }
+            args.push("-i".into());
+            args.push(input.display().to_string());
+            args.extend([
+                "-vn".into(),
+                "-f".into(),
+                audio.format.ffmpeg_fmt().into(),
+                "-ar".into(),
+                audio.rate.to_string(),
+                "-ac".into(),
+                audio.channels.to_string(),
+                out.display().to_string(),
+            ]);
+            return Ok(Invocation {
+                program,
+                args,
+                output: OutputSpec::RawAudioFile(out),
+            });
+        }
         let mut args = vec![
             "-nostdin".into(),
             "-hide_banner".into(),

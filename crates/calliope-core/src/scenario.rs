@@ -26,6 +26,12 @@ pub struct Scenario {
     pub input: Input,
     /// decoded geometry for a differential scenario; omit to probe it (ffprobe)
     pub video: Option<Video>,
+    /// decoded audio target for an audio scenario. Mutually exclusive with
+    /// `[video]`: a scenario decodes video or audio, not both. Audio is
+    /// whole-stream hashed (frame boundaries differ across decoders), so it
+    /// wires into the differential / determinism modes, not the video-geometry
+    /// ones (encode / roundtrip / resolution-change).
+    pub audio: Option<Audio>,
     /// present for a robustness scenario: corrupt the input before running
     pub fault: Option<Fault>,
     /// corrupt-input differential: with `[fault]`, also cross-compare each
@@ -164,6 +170,11 @@ impl Scenario {
 
     pub fn is_golden(&self) -> bool {
         self.golden
+    }
+
+    /// an audio scenario decodes to PCM and hashes the whole stream
+    pub fn is_audio(&self) -> bool {
+        self.audio.is_some()
     }
 
     pub fn is_determinism(&self) -> bool {
@@ -342,6 +353,90 @@ impl Video {
     }
 }
 
+/// PCM sample format for the normalized audio comparison. S16LE (interleaved
+/// 16-bit little-endian) is the default: it is the format every libopus-backed
+/// decoder emits identically, so a whole-stream hash stays bit-exact.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Deserialize, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SampleFormat {
+    #[default]
+    #[serde(rename = "s16le")]
+    S16le,
+    #[serde(rename = "f32le")]
+    F32le,
+}
+
+impl SampleFormat {
+    /// ffmpeg `-f <fmt>` raw output name
+    pub fn ffmpeg_fmt(self) -> &'static str {
+        match self {
+            Self::S16le => "s16le",
+            Self::F32le => "f32le",
+        }
+    }
+
+    /// GStreamer / g2g `audio/x-raw,format=` name
+    pub fn gst_format(self) -> &'static str {
+        match self {
+            Self::S16le => "S16LE",
+            Self::F32le => "F32LE",
+        }
+    }
+}
+
+/// Input audio codec. Drives the ffmpeg decoder choice and records the
+/// bit-exact policy: Opus decodes identically across libopus-backed engines, so
+/// it is eligible for the cross-engine differential; AAC is not bit-exact
+/// across decoders and must use determinism (self-comparison) only.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, serde::Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum AudioCodec {
+    Opus,
+    Aac,
+}
+
+impl AudioCodec {
+    /// ffmpeg decoder to force so ffmpeg matches the other engines' reference
+    /// library. Opus pins libopus (ffmpeg's native opus decoder differs by ~1
+    /// LSB in the float->s16 path); AAC uses ffmpeg's default (it is never
+    /// cross-compared, so the choice is free).
+    pub fn ffmpeg_decoder(self) -> Option<&'static str> {
+        match self {
+            Self::Opus => Some("libopus"),
+            Self::Aac => None,
+        }
+    }
+
+    /// Opus is bit-exact across libopus-backed decoders, so it is the only codec
+    /// eligible for the cross-engine differential. AAC is not.
+    pub fn differential_eligible(self) -> bool {
+        matches!(self, Self::Opus)
+    }
+}
+
+/// Decoded audio target for an `[audio]` scenario. Every engine decodes to this
+/// interleaved PCM format / rate / channel count, and the whole stream is
+/// hashed for comparison.
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Audio {
+    pub codec: AudioCodec,
+    #[serde(default = "default_rate")]
+    pub rate: u32,
+    #[serde(default = "default_channels")]
+    pub channels: u32,
+    #[serde(default)]
+    pub format: SampleFormat,
+}
+
+fn default_rate() -> u32 {
+    48000
+}
+
+fn default_channels() -> u32 {
+    1
+}
+
 impl Scenario {
     pub fn load(path: &Path) -> Result<Self> {
         let text = std::fs::read_to_string(path)?;
@@ -419,6 +514,38 @@ impl Scenario {
                 "{}: a golden scenario needs a corpus input (its decoded-md5 is the oracle)",
                 at()
             )));
+        }
+        // audio is an output target, not a mode: it wires into differential /
+        // determinism, but never the video-geometry modes.
+        if let Some(audio) = &self.audio {
+            if self.video.is_some() {
+                return Err(Error::Parse(format!(
+                    "{}: [video] and [audio] are separate decode targets, use one",
+                    at()
+                )));
+            }
+            if self.golden
+                || self.encode.is_some()
+                || self.roundtrip.is_some()
+                || self.resolution_change
+            {
+                return Err(Error::Parse(format!(
+                    "{}: an audio scenario supports the differential / determinism modes, not golden / encode / roundtrip / resolution-change",
+                    at()
+                )));
+            }
+            // a cross-engine differential is bit-exact only for codecs defined
+            // to decode identically. AAC is not, so it must self-compare
+            // (determinism), never differential.
+            let differential =
+                self.fault.is_none() && self.soak.is_none() && self.determinism.is_none();
+            if differential && !audio.codec.differential_eligible() {
+                return Err(Error::Parse(format!(
+                    "{}: {:?} is not bit-exact across decoders; use a [determinism] scenario, not a cross-engine differential",
+                    at(),
+                    audio.codec
+                )));
+            }
         }
         // a differential scenario needs decoded geometry, but it may be probed
         // from the input at run time (ffprobe), so `[video]` is optional here.
@@ -768,6 +895,109 @@ mod tests {
         "#;
         let s: Scenario = toml::from_str(one_engine).unwrap();
         assert!(s.validate(Path::new("test.toml")).is_err());
+    }
+
+    #[test]
+    fn audio_differential_parses_with_defaults() {
+        let toml = r#"
+            id = "opus-diff"
+            engines = ["ffmpeg", "gstreamer", "g2g"]
+            reference = "ffmpeg"
+            [input]
+            path = "sine.opus"
+            [audio]
+            codec = "opus"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        s.validate(Path::new("test.toml")).unwrap();
+        assert!(s.is_audio());
+        // a plain audio scenario is a differential (judges hashes)
+        assert!(s.judges_frames());
+        let a = s.audio.unwrap();
+        assert_eq!(a.codec, AudioCodec::Opus);
+        assert_eq!(a.rate, 48000);
+        assert_eq!(a.channels, 1);
+        assert_eq!(a.format, SampleFormat::S16le);
+    }
+
+    #[test]
+    fn audio_determinism_parses_with_explicit_caps() {
+        let toml = r#"
+            id = "aac-det"
+            engines = ["g2g"]
+            reference = "g2g"
+            [input]
+            path = "tone.ts"
+            [audio]
+            codec = "aac"
+            rate = 44100
+            channels = 2
+            [determinism]
+            runs = 3
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        s.validate(Path::new("test.toml")).unwrap();
+        assert!(s.is_audio() && s.is_determinism());
+        let a = s.audio.unwrap();
+        assert_eq!((a.codec, a.rate, a.channels), (AudioCodec::Aac, 44100, 2));
+    }
+
+    #[test]
+    fn aac_cross_engine_differential_is_rejected() {
+        // AAC is not bit-exact across decoders, so a plain (differential) audio
+        // scenario on it must fail validation.
+        let toml = r#"
+            id = "aac-diff"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            [input]
+            path = "tone.ts"
+            [audio]
+            codec = "aac"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        assert!(s.validate(Path::new("test.toml")).is_err());
+    }
+
+    #[test]
+    fn audio_rejects_video_and_video_modes() {
+        // video + audio together
+        let both = r#"
+            id = "x"
+            engines = ["ffmpeg"]
+            reference = "ffmpeg"
+            [input]
+            path = "c.opus"
+            [audio]
+            codec = "opus"
+            [video]
+            width = 16
+            height = 16
+            format = "i420"
+        "#;
+        assert!(
+            toml::from_str::<Scenario>(both)
+                .unwrap()
+                .validate(Path::new("t.toml"))
+                .is_err()
+        );
+        // audio + a video-geometry mode
+        let with_golden = r#"
+            id = "x"
+            engines = ["ffmpeg"]
+            reference = "ffmpeg"
+            golden = true
+            [input]
+            corpus = "c"
+            [audio]
+            codec = "opus"
+        "#;
+        assert!(
+            toml::from_str::<Scenario>(with_golden)
+                .unwrap()
+                .validate(Path::new("t.toml"))
+                .is_err()
+        );
     }
 
     #[test]

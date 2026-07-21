@@ -75,6 +75,35 @@ impl G2g {
         }
     }
 
+    /// Build the decode-to-PCM invocation for an audio scenario. audioresample
+    /// normalizes the rate (identity when it already matches); the whole PCM
+    /// stream is hashed by the runner.
+    fn audio_invocation(
+        &self,
+        audio: &calliope_core::scenario::Audio,
+        input: &Path,
+        workdir: &Path,
+        flags: &[&str],
+    ) -> Invocation {
+        let out = workdir.join("out.pcm");
+        let pipeline = format!(
+            "filesrc location={} ! decodebin ! audioconvert ! audioresample ! audio/x-raw,format={},rate={},channels={} ! filesink location={}",
+            input.display(),
+            audio.format.gst_format(),
+            audio.rate,
+            audio.channels,
+            out.display()
+        );
+        let mut args: Vec<String> = flags.iter().map(|s| s.to_string()).collect();
+        args.push("-q".to_string());
+        args.extend(pipeline.split(' ').map(str::to_string));
+        Invocation {
+            program: binary("CALLIOPE_G2G_LAUNCH", "g2g-launch"),
+            args,
+            output: OutputSpec::RawAudioFile(out),
+        }
+    }
+
     /// Build the decode-to-raw invocation, with any leading g2g-launch flags
     /// (e.g. `--threads`) placed before `-q` and the pipeline.
     fn invocation(
@@ -84,6 +113,9 @@ impl G2g {
         workdir: &Path,
         flags: &[&str],
     ) -> Invocation {
+        if let Some(audio) = &scenario.audio {
+            return self.audio_invocation(audio, input, workdir, flags);
+        }
         let out = workdir.join("out.yuv");
         // Pin the decoded format with a capsfilter (GStreamer fourcc names) so
         // ffmpegdec's Auto output resolves to it and the raw dump matches

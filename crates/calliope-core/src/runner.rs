@@ -190,7 +190,9 @@ async fn exec(
             && matches!(status, RunStatus::Ok)
         {
             match &invocation.output {
-                OutputSpec::RawVideoFile(path) | OutputSpec::FrameMd5File(path) => (
+                OutputSpec::RawVideoFile(path)
+                | OutputSpec::RawAudioFile(path)
+                | OutputSpec::FrameMd5File(path) => (
                     whole_file_md5(path).ok(),
                     std::fs::metadata(path).map(|m| m.len()).ok(),
                 ),
@@ -235,7 +237,7 @@ fn produced_output(output: &OutputSpec) -> bool {
         OutputSpec::FrameMd5File(path) => std::fs::read_to_string(path)
             .map(|t| !framehash::parse_framemd5(&t).is_empty())
             .unwrap_or(false),
-        OutputSpec::RawVideoFile(path) => std::fs::metadata(path)
+        OutputSpec::RawVideoFile(path) | OutputSpec::RawAudioFile(path) => std::fs::metadata(path)
             .map(|m| m.len() > 0)
             .unwrap_or(false),
         OutputSpec::EncodedFile(_) => false,
@@ -385,6 +387,15 @@ fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String
                 .ok_or_else(|| Error::Parse("raw-dump engine needs [video] geometry".into()))?;
             framehash::hash_raw_dump(path, video.frame_size())?
         }
+        // audio compares the whole decoded PCM stream as a single hash (frame
+        // boundaries differ across decoders); a divergence means the streams
+        // are not byte-identical.
+        OutputSpec::RawAudioFile(path) => {
+            if std::fs::metadata(path).map(|m| m.len()).unwrap_or(0) == 0 {
+                return Err(Error::Parse("engine produced no audio".into()));
+            }
+            vec![whole_file_md5(path)?]
+        }
         // a roundtrip encoded stream is never frame-hashed (only golden/diff are)
         OutputSpec::EncodedFile(_) => Vec::new(),
     };
@@ -491,6 +502,7 @@ mod tests {
                 height: 2,
                 format: PixelFormat::I420,
             }),
+            audio: None,
             fault: None,
             soak: None,
             determinism: None,

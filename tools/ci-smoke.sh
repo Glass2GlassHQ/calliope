@@ -17,4 +17,6 @@ cargo run -p calliope-cli -- run \
     scenarios/h265-mp4-decode.toml \
     scenarios/h264-ts-bitflip.toml \
     scenarios/h264-outcome-diff.toml \
+    scenarios/opus-decode-diff.toml \
+    scenarios/aac-determinism.toml \
     --engines ffmpeg,gstreamer --report smoke-report.json

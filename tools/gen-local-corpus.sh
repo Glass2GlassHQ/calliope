@@ -71,5 +71,27 @@ mk_reschange res-change-multi.h264 \
 mk_reschange res-change-pingpong.h264 \
     176x144 0.4 testsrc2 320x240 0.4 mandelbrot 176x144 0.4 smptebars
 
+# --- audio ---
+# Opus decodes bit-exactly across libopus-backed engines, so it feeds the
+# cross-engine differential. sine (mono) + a two-tone (stereo) less-trivial
+# case; opus always decodes at 48k.
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "sine=frequency=440:duration=2:sample_rate=48000" \
+    -c:a libopus -ac 1 local-corpus/tone-mono-48k.opus
+
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "aevalsrc=exprs='0.4*sin(440*2*PI*t)|0.4*sin(660*2*PI*t)':s=48000:d=2" \
+    -c:a libopus -ac 2 local-corpus/twotone-stereo-48k.opus
+
+# AAC is not bit-exact across decoders, so it is determinism-only (a
+# self-comparison). sine + pink-noise, in mpeg-ts at 44.1k stereo.
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "sine=frequency=440:duration=2:sample_rate=44100" \
+    -c:a aac -ac 2 -f mpegts local-corpus/tone-stereo-44k-aac.ts
+
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "anoisesrc=d=2:color=pink:sample_rate=44100" \
+    -c:a aac -ac 2 -f mpegts local-corpus/noise-stereo-44k-aac.ts
+
 echo "local-corpus ready:"
 ls -l local-corpus

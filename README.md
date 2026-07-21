@@ -114,8 +114,27 @@ planar `i420` / `i422` / `i444` family at 8-, 10-, and 12-bit
 (`yuv4xxp[10|12]le`) plus semi-planar `nv12`; the raw-dump engines convert to
 the probed format as an identity so the comparison stays bit-exact. Packed RGB
 / YUYV is matrix- or order-dependent across engines and stays unsupported (use
-an explicit `[video]` or a robustness/soak scenario). A
-`[soak]` scenario repeats the run `iterations` times and passes only if no
+an explicit `[video]` or a robustness/soak scenario).
+
+An `[audio]` scenario decodes to normalized interleaved PCM instead of video and
+hashes the whole stream (audio frame boundaries differ across decoders, so
+per-frame md5 is wrong). `[audio]` and `[video]` are mutually exclusive.
+
+```toml
+[audio]
+codec = "opus"    # opus | aac
+rate = 48000      # target sample rate (default 48000)
+channels = 1      # default 1
+format = "s16le"  # normalized sample format (default; or f32le)
+```
+
+Only Opus is bit-exact across decoders, so it is the sole codec eligible for the
+cross-engine differential (ffmpeg is pinned to its `libopus` decoder to match
+gstreamer's `opusdec` and g2g's `OpusDec`). AAC is not bit-exact, so an AAC
+`[audio]` scenario must use `[determinism]` (self-comparison); a cross-engine AAC
+differential is rejected at load. Audio wires into the differential and
+determinism modes only, not the video-geometry modes (encode / roundtrip /
+resolution-change). A `[soak]` scenario repeats the run `iterations` times and passes only if no
 iteration crashes or hangs (catches intermittent failures; each iteration is a
 fresh process, so this is a stability probe, not a memory-leak endurance test).
 A `[determinism]` scenario repeats each engine `runs` times and passes only if

@@ -219,9 +219,28 @@ elementary streams the oracle's accept/reject signal includes this demux-boundar
 strictness gap; it is sharpest on g2g's native parsers (e.g. dav1d AV1) and on
 container inputs where both sides run a real demuxer.
 
+### 13. Audio decode differential + determinism
+Decode compressed audio to normalized interleaved PCM and hash the whole stream
+(frame boundaries differ across decoders, so per-frame md5 is wrong). Opus is
+bit-exact across libopus-backed decoders, so it feeds the cross-engine
+differential (ffmpeg pinned to `libopus` to match gstreamer's `opusdec` and
+g2g's `OpusDec`); AAC is not bit-exact, so it uses determinism (self-comparison).
+```
+calliope run scenarios/opus-decode-diff.toml   # ffmpeg + gstreamer + g2g
+calliope run scenarios/aac-determinism.toml
+```
+Result: AAC determinism clean (all engines byte-identical across runs, including
+g2g's `--threads` variant). The opus differential initially **failed**, naming
+g2g as the outlier: ffmpeg and gstreamer agreed bit-exactly, g2g diverged (bug 4
+below, plus a one-sample loss in g2g's identity `audioresample`). Both fixed in
+g2g (M750/M751); the scenario now passes with all three engines bit-exact.
+Caveat: ffmpeg's native opus decoder differs from libopus by ~1 LSB in the
+float->s16 path, so the adapter pins libopus for a clean 2-vs-1 majority.
+
 ## Bugs found
 
-All found by coverage-guided fuzzing (technique 8), fixed in g2g with regression
+Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
+decode differential (technique 13). All four are fixed in g2g with regression
 tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
@@ -237,6 +256,17 @@ tests.
    bounded the picture *counts* (> 16) but not the per-delta values. Panics under
    overflow-checks (a hardened / debug-build DoS on attacker input), silent wrap
    otherwise. Fixed with checked arithmetic that rejects the malformed SPS.
+4. **Opus pre-skip / end-trim not applied.** g2g's Opus decode emits every
+   decoded sample instead of trimming the OpusHead pre-skip and the granule-
+   position end padding. A 1s mono 48k clip decodes to 48960 samples (312
+   pre-skip + 48000 + 648 end pad) where ffmpeg/gstreamer via libopus emit
+   exactly 48000; the retained samples are otherwise bit-exact (g2g[312:48312]
+   matches the reference). Not a memory-safety bug, a correctness / A-V-sync one:
+   every decoded stream was shifted and over-long. Fixed in g2g M750 (the demuxer
+   forwards `OpusHead` in-band and marks the end-trim via the final granule
+   position; the decoder drops the pre-skip window), with the adjacent M751
+   fixing a one-sample loss in the identity `audioresample` path the same
+   differential exposed.
 
 ## Not a gap
 
@@ -255,16 +285,7 @@ tests.
   http-src, `onvif` via `reqwest`) are a poor fit for the in-process ASan
   libFuzzer rig (network runtime, huge build); fuzzing them needs a harness that
   extracts the pure parse fn or mocks the transport. Deferred, not covered.
-- **Audio decode differential.** The aac / opus *parsers* are fuzzed (technique
-  8), but no scenario compares decoded audio output. Two blockers, the first
-  upstream in g2g: a `g2g-launch` built with `ffmpeg,opus` still won't negotiate
-  a decode-to-PCM pipeline from the CLI (`OpusDec -> AudioConvert: unconstrained`;
-  aac `decodebin ! filesink` is a `CapsMismatch`; no raw-audio file sink is
-  registered), so there is no way to dump comparable PCM yet. Second, even once
-  that works, only Opus is defined to be bit-exact across decoders; lossy AAC is
-  not, so an AAC cross-engine differential would false-fail and must use golden
-  (vs a reference vector) or determinism (self-comparison) instead. The calliope
-  side then needs an `audio/x-raw` path in all three adapters, whole-stream PCM
-  hashing (audio frame boundaries differ across decoders, so per-frame md5 is
-  wrong), and an `[audio]` spec. Deferred: the g2g audio pipeline has to
-  decode-to-PCM from the CLI before the harness work is worth doing.
+- **Audio golden.** Opus / AAC decode is now differential + determinism
+  (technique 13), but there is no golden audio oracle: RFC 6716 Opus conformance
+  uses a tolerance compare (`opus_compare`), not a bit-exact `decoded-md5`, so no
+  official audio vector maps onto the golden mode. Not covered.
