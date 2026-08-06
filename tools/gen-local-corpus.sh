@@ -145,10 +145,14 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
     -f lavfi -i "sine=frequency=440:duration=2:sample_rate=48000" \
     -c:a flac -ac 1 -f ogg local-corpus/tone-mono-48k-flac.oga
 
-# Ogg-Vorbis. libvorbis, since ffmpeg's native vorbis encoder is stereo-only.
-ffmpeg -nostdin -hide_banner -loglevel error -y \
-    -f lavfi -i "sine=frequency=440:duration=2:sample_rate=44100" \
-    -c:a libvorbis -ac 1 local-corpus/tone-mono-44k.ogg
+# Ogg-Vorbis. Needs libvorbis (ffmpeg's native vorbis encoder is stereo-only);
+# skipped where the ffmpeg build lacks it (macOS CI), like the AV1 guard. The
+# vorbis scenario is a local g2g determinism run, not part of ci-smoke.
+if grep -q libvorbis <<<"$encoders"; then
+    ffmpeg -nostdin -hide_banner -loglevel error -y \
+        -f lavfi -i "sine=frequency=440:duration=2:sample_rate=44100" \
+        -c:a libvorbis -ac 1 local-corpus/tone-mono-44k.ogg
+fi
 
 # Legacy broadcast audio in mpeg-ts: ac3 and mp2.
 ffmpeg -nostdin -hide_banner -loglevel error -y \
