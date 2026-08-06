@@ -126,10 +126,12 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
 
 # Chained ogg: two logical opus streams concatenated, so a decoder has to
 # rebuild at the chain boundary instead of stopping after the first link.
-chain_tmp="$(mktemp --suffix=.opus)"
+# (-f ogg names the muxer explicitly so the temp file needs no .opus suffix;
+# macOS mktemp has no --suffix)
+chain_tmp="$(mktemp)"
 ffmpeg -nostdin -hide_banner -loglevel error -y \
     -f lavfi -i "sine=frequency=660:duration=2:sample_rate=48000" \
-    -c:a libopus -ac 1 "$chain_tmp"
+    -c:a libopus -ac 1 -f ogg "$chain_tmp"
 cat local-corpus/tone-mono-48k.opus "$chain_tmp" > local-corpus/chained-mono-48k.opus
 rm -f "$chain_tmp"
 
