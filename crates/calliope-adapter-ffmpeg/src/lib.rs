@@ -163,12 +163,18 @@ impl Engine for Ffmpeg {
             // Pin framemd5 to the scenario's target format so the reference
             // hashes the same layout the raw-dump engines convert to. Without
             // this, ffmpeg would hash its native decode (e.g. I420) while the
-            // others emit NV12, and every frame would falsely diverge.
+            // others emit NV12, and every frame would falsely diverge. A
+            // deinterlace scenario prepends single-rate yadif, forced on every
+            // frame so no engine's interlace detection can disagree.
+            let mut filters = Vec::new();
+            if scenario.deinterlace {
+                filters.push("yadif=mode=send_frame:parity=tff:deint=all".to_string());
+            }
             if let Some(video) = scenario.video {
-                args.extend([
-                    "-vf".into(),
-                    format!("format={}", video.format.ffmpeg_pix_fmt()),
-                ]);
+                filters.push(format!("format={}", video.format.ffmpeg_pix_fmt()));
+            }
+            if !filters.is_empty() {
+                args.extend(["-vf".into(), filters.join(",")]);
             }
             let out = workdir.join("out.framemd5");
             args.extend(["-f".into(), "framemd5".into(), out.display().to_string()]);

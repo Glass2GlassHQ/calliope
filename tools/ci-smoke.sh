@@ -15,6 +15,12 @@ cargo run -p calliope-cli -- run \
     scenarios/h264-444-autoprobe.toml \
     scenarios/h265-decode.toml \
     scenarios/h265-mp4-decode.toml \
+    scenarios/mpeg2-ps-interlaced.toml \
+    scenarios/mpeg2-ts-interlaced.toml \
+    scenarios/h264-interlaced.toml \
+    scenarios/h264-mkv-decode.toml \
+    scenarios/flac-decode-diff.toml \
+    scenarios/ogg-flac-decode-diff.toml \
     scenarios/h264-ts-bitflip.toml \
     scenarios/h264-outcome-diff.toml \
     scenarios/opus-decode-diff.toml \

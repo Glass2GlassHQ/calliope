@@ -127,8 +127,15 @@ impl G2g {
             Some(v) if !v.format.is_planar_yuv() => "videoconvert ! ",
             _ => "",
         };
+        // deinterlace scenarios insert g2g's yadif; mode=interlaced forces it
+        // on every frame like ffmpeg's deint=all, single-rate like fields=top.
+        let deint = if scenario.deinterlace {
+            "deinterlace method=yadif mode=interlaced ! "
+        } else {
+            ""
+        };
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! {convert}video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin ! {deint}{convert}video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

@@ -139,6 +139,7 @@ fn engine_crashes(
         roundtrip: None,
         encode: None,
         resolution_change: false,
+        deinterlace: false,
         outcome_diff: false,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
@@ -199,6 +200,7 @@ fn golden_scenarios(
             roundtrip: None,
             encode: None,
             resolution_change: false,
+            deinterlace: false,
             outcome_diff: false,
         })
         .collect()

@@ -53,10 +53,18 @@ impl Engine for GStreamer {
         let out = workdir.join("out.yuv");
         // convert to the scenario's decoded format so the raw dump matches
         // ffmpeg's native framemd5 layout; a differential run resolves it (from
-        // [video] or ffprobe), robustness / soak default to I420.
+        // [video] or ffprobe), robustness / soak default to I420. A deinterlace
+        // scenario inserts single-rate yadif (fields=top keeps one frame per
+        // frame, mode=interlaced forces it on every frame like ffmpeg's
+        // deint=all).
         let format = scenario.video.map_or("I420", |v| v.format.gst_format());
+        let deint = if scenario.deinterlace {
+            "deinterlace mode=interlaced method=yadif fields=top ! "
+        } else {
+            ""
+        };
         let pipeline = format!(
-            "filesrc location={} ! decodebin force-sw-decoders=true ! videoconvert ! video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin force-sw-decoders=true ! {deint}videoconvert ! video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

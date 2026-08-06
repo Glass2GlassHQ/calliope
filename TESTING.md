@@ -14,7 +14,11 @@ real decoder bug.
 ```
 calliope run scenarios/h264-decode-smoke.toml
 ```
-Result: clean.
+Video surface: raw h264 (4:2:0 / 4:2:2 / 4:4:4, progressive and field-coded
+tff), h265 (8/10-bit, raw + mp4), av1 (ivf + mp4), interlaced mpeg2 in program
+stream and transport stream (the DVD path: ps demux, per-picture pts synthesis,
+mpeg2 decode), h264 in matroska (avcc to annex-b) and mpeg-ts. Result: clean
+after two fixes (bugs 5 and 6 below, both found by this pass).
 
 ### 2. Golden conformance
 Decode Fluster conformance vectors and assert each engine's whole output matches
@@ -240,27 +244,54 @@ container inputs where both sides run a real demuxer.
 
 ### 13. Audio decode differential + determinism
 Decode compressed audio to normalized interleaved PCM and hash the whole stream
-(frame boundaries differ across decoders, so per-frame md5 is wrong). Opus is
-bit-exact across libopus-backed decoders, so it feeds the cross-engine
-differential (ffmpeg pinned to `libopus` to match gstreamer's `opusdec` and
-g2g's `OpusDec`); AAC is not bit-exact, so it uses determinism (self-comparison).
+(frame boundaries differ across decoders, so per-frame md5 is wrong). The
+bit-exact policy is per codec: opus cross-compares across libopus integer-api
+engines; flac is lossless and cross-compares everywhere (raw .flac + ogg-flac);
+ac3 / mp2 cross-compare ffmpeg vs g2g only (both decode through the same
+libavcodec, gstreamer may plug a52dec); AAC and vorbis (g2g decodes via
+symphonia) are not bit-exact across decoders, so they self-compare
+(determinism), as does chained-ogg opus (see the quirks below).
 ```
-calliope run scenarios/opus-decode-diff.toml   # ffmpeg + gstreamer + g2g
+calliope run scenarios/opus-decode-diff.toml       # gstreamer + g2g
+calliope run scenarios/flac-decode-diff.toml       # all three engines
+calliope run scenarios/ac3-ts-decode-diff.toml     # ffmpeg + g2g
+calliope run scenarios/mp2-ts-decode-diff.toml
+calliope run scenarios/vorbis-determinism.toml
+calliope run scenarios/opus-chained-determinism.toml
 calliope run scenarios/aac-determinism.toml
 ```
-Result: AAC determinism clean (all engines byte-identical across runs, including
-g2g's `--threads` variant). The opus differential initially **failed**, naming
-g2g as the outlier: ffmpeg and gstreamer agreed bit-exactly, g2g diverged (bug 4
-below, plus a one-sample loss in g2g's identity `audioresample`). Both fixed in
-g2g (M750/M751); the scenario now passes with all three engines bit-exact.
-Caveat: ffmpeg's native opus decoder differs from libopus by ~1 LSB in the
-float->s16 path, so the adapter pins libopus for a clean 2-vs-1 majority.
+Result: all clean. The opus differential initially **failed**, naming g2g as the
+outlier (bug 4 below, plus a one-sample loss in g2g's identity `audioresample`),
+fixed in g2g M750/M751. The ac3 differential then **failed** on ~75% of samples,
+exposing g2g's float->s16 conversion (bug 6 below, fixed M937).
+
+Reference quirks found while re-validating (2026-08-06): ffmpeg n8.x's libopus
+wrapper decodes float internally and quantizes itself, drifting +-1 lsb from the
+libopus integer api on ~7% of samples (gstreamer == g2g, ffmpeg the outlier, in
+both s16 and float output), so the opus differential is now gstreamer vs g2g.
+gstreamer's static decodebin stops at a chained-ogg boundary (not-linked on the
+second serial), so the chained scenario is g2g determinism only; g2g decoding
+both chain links (4.0s from 2x2s) was hand-verified against ffmpeg's length.
+
+### 14. Deinterlace differential (filter stage, bit-exact)
+A `deinterlace = true` scenario inserts each engine's single-rate yadif between
+decode and the raw dump (ffmpeg `yadif=mode=send_frame:parity=tff:deint=all`,
+g2g `deinterlace method=yadif mode=interlaced`), then judges the deinterlaced
+frames with the normal per-frame compare. g2g's kernel is a port of ffmpeg's,
+so the output must stay bit-exact; the input is field-coded (tff) h264.
+```
+calliope run scenarios/yadif-deinterlace-diff.toml
+```
+Result: clean, g2g bit-exact with ffmpeg over 50 frames. Reference quirk:
+gstreamer's `deinterlace method=yadif fields=top mode=interlaced` emitted 52
+frames for these 50 and diverged from frame 0, so it stays out of the scenario
+(the 3-engine run named it the outlier, conclusively).
 
 ## Bugs found
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
-decode differential (technique 13). All four are fixed in g2g with regression
-tests.
+decode differential (technique 13), bugs 5-6 by the interlace / audio surface
+added 2026-08 (techniques 1 and 13). All are fixed in g2g with regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -286,6 +317,20 @@ tests.
    position; the decoder drops the pre-skip window), with the adjacent M751
    fixing a one-sample loss in the identity `audioresample` path the same
    differential exposed.
+5. **decodebin on MPEG-TS ignored the PMT's video codec.** The `decodebin`
+   primary-stream sniff declined to select a stream whenever the transport
+   stream carried any video track, assuming `TsDemux`'s default H.264 port was
+   right; an MPEG-2 (or H.265) video TS then negotiated an H.264 decoder and the
+   pipeline failed `NotConfigured` before decoding a frame. Found by the
+   mpeg2-ts-interlaced differential (g2g produced 0 bytes). Fixed in g2g M936:
+   the sniff now returns the PMT's first video stream with an explicit
+   `stream=<codec>` selection.
+6. **Float->s16 audio conversion off by 1 LSB from every other engine.** g2g's
+   libavcodec audio decode converted float samples with truncation at 32767
+   scale where ffmpeg (swresample) and GStreamer round to nearest at 32768
+   scale, so any float-codec decode (AC-3, AAC) differed from ffmpeg's decode of
+   the same stream on ~75% of samples, a permanent quantization bias. Found by
+   the ac3 differential. Fixed in g2g M937 (swresample-matching round-to-even).
 
 ## Not a gap
 

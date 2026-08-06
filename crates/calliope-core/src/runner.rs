@@ -510,6 +510,7 @@ mod tests {
             roundtrip: None,
             encode: None,
             resolution_change: false,
+            deinterlace: false,
             outcome_diff: false,
         }
     }

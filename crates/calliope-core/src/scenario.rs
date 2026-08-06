@@ -73,6 +73,13 @@ pub struct Scenario {
     /// resolution change, so it can't reference the pixels bit-exactly.
     #[serde(default)]
     pub resolution_change: bool,
+    /// deinterlace differential: insert each engine's single-rate yadif
+    /// (top-field-first, forced on every frame) between decode and the raw
+    /// dump. All three engines implement the same yadif kernel, so the frames
+    /// stay bit-exact and the normal per-frame compare judges them. Only valid
+    /// on a frame-judging video scenario.
+    #[serde(default)]
+    pub deinterlace: bool,
 }
 
 /// Encode-differential config: ffmpeg encodes a lavfi source into an elementary
@@ -385,32 +392,42 @@ impl SampleFormat {
 }
 
 /// Input audio codec. Drives the ffmpeg decoder choice and records the
-/// bit-exact policy: Opus decodes identically across libopus-backed engines, so
-/// it is eligible for the cross-engine differential; AAC is not bit-exact
-/// across decoders and must use determinism (self-comparison) only.
+/// bit-exact policy per codec:
+/// - Opus: identical across libopus-backed engines, differential.
+/// - Flac: lossless integer decode, differential across every engine.
+/// - Ac3 / Mp2: bit-exact only when every engine decodes through the same
+///   libavcodec (ffmpeg's CLI and g2g's FFI); scenarios restrict `engines`
+///   to those two.
+/// - Aac / Vorbis: not bit-exact across decoders (g2g decodes vorbis via
+///   symphonia), determinism (self-comparison) only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum AudioCodec {
     Opus,
     Aac,
+    Flac,
+    Vorbis,
+    Ac3,
+    Mp2,
 }
 
 impl AudioCodec {
     /// ffmpeg decoder to force so ffmpeg matches the other engines' reference
     /// library. Opus pins libopus (ffmpeg's native opus decoder differs by ~1
-    /// LSB in the float->s16 path); AAC uses ffmpeg's default (it is never
-    /// cross-compared, so the choice is free).
+    /// LSB in the float->s16 path); every other codec has a single ffmpeg
+    /// decoder, so the default is the one the differential is defined against.
     pub fn ffmpeg_decoder(self) -> Option<&'static str> {
         match self {
             Self::Opus => Some("libopus"),
-            Self::Aac => None,
+            _ => None,
         }
     }
 
-    /// Opus is bit-exact across libopus-backed decoders, so it is the only codec
-    /// eligible for the cross-engine differential. AAC is not.
+    /// Codecs whose decode is bit-exact across the engines a scenario names
+    /// (see the enum docs for which engines that is per codec). AAC and Vorbis
+    /// are not, and must self-compare via determinism.
     pub fn differential_eligible(self) -> bool {
-        matches!(self, Self::Opus)
+        !matches!(self, Self::Aac | Self::Vorbis)
     }
 }
 
@@ -546,6 +563,14 @@ impl Scenario {
                     audio.codec
                 )));
             }
+        }
+        // deinterlace inserts a video filter, so it only composes with the
+        // frame-judging differential (per-frame bit-exact compare).
+        if self.deinterlace && (self.audio.is_some() || !self.judges_frames()) {
+            return Err(Error::Parse(format!(
+                "{}: deinterlace is only valid on a frame-judging video differential",
+                at()
+            )));
         }
         // a differential scenario needs decoded geometry, but it may be probed
         // from the input at run time (ffprobe), so `[video]` is optional here.
@@ -998,6 +1023,80 @@ mod tests {
                 .validate(Path::new("t.toml"))
                 .is_err()
         );
+    }
+
+    #[test]
+    fn deinterlace_parses_on_a_video_differential_only() {
+        let ok = r#"
+            id = "deint"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            deinterlace = true
+            [input]
+            path = "interlaced.h264"
+            [video]
+            width = 352
+            height = 288
+            format = "i420"
+        "#;
+        let s: Scenario = toml::from_str(ok).unwrap();
+        s.validate(Path::new("t.toml")).unwrap();
+        assert!(s.deinterlace && s.judges_frames());
+
+        // golden is not frame-judging, so deinterlace must be rejected
+        let with_golden = r#"
+            id = "deint"
+            engines = ["ffmpeg"]
+            reference = "ffmpeg"
+            deinterlace = true
+            golden = true
+            [input]
+            corpus = "c"
+        "#;
+        let s: Scenario = toml::from_str(with_golden).unwrap();
+        assert!(s.validate(Path::new("t.toml")).is_err());
+
+        // audio decodes no frames to filter
+        let with_audio = r#"
+            id = "deint"
+            engines = ["ffmpeg"]
+            reference = "ffmpeg"
+            deinterlace = true
+            [input]
+            path = "c.opus"
+            [audio]
+            codec = "opus"
+        "#;
+        let s: Scenario = toml::from_str(with_audio).unwrap();
+        assert!(s.validate(Path::new("t.toml")).is_err());
+    }
+
+    #[test]
+    fn audio_codec_bit_exact_policy() {
+        // lossless / integer / shared-libavcodec codecs may cross-compare
+        for c in [
+            AudioCodec::Opus,
+            AudioCodec::Flac,
+            AudioCodec::Ac3,
+            AudioCodec::Mp2,
+        ] {
+            assert!(c.differential_eligible(), "{c:?}");
+        }
+        // float decoders with no shared reference library self-compare only
+        assert!(!AudioCodec::Aac.differential_eligible());
+        assert!(!AudioCodec::Vorbis.differential_eligible());
+
+        let toml = r#"
+            id = "vorbis-diff"
+            engines = ["ffmpeg", "g2g"]
+            reference = "ffmpeg"
+            [input]
+            path = "tone.ogg"
+            [audio]
+            codec = "vorbis"
+        "#;
+        let s: Scenario = toml::from_str(toml).unwrap();
+        assert!(s.validate(Path::new("t.toml")).is_err());
     }
 
     #[test]
