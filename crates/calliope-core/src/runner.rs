@@ -512,6 +512,7 @@ mod tests {
             resolution_change: false,
             deinterlace: false,
             outcome_diff: false,
+            overlay: false,
         }
     }
 
