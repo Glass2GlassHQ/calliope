@@ -134,8 +134,17 @@ impl G2g {
         } else {
             ""
         };
+        // overlay scenarios run the decode through a no-cue textoverlay (a
+        // strict RGBA-only element) so the demuxed placeholder caps refining
+        // mid-stream cross a converter-overlay-converter sandwich; the final
+        // capsfilter's convert takes the RGBA back to the dump format.
+        let overlay = if scenario.overlay {
+            "videoconvert ! textoverlay ! videoconvert ! "
+        } else {
+            ""
+        };
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! {deint}{convert}video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin ! {deint}{overlay}{convert}video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

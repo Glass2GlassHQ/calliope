@@ -63,8 +63,15 @@ impl Engine for GStreamer {
         } else {
             ""
         };
+        // overlay scenarios route the decode through a no-cue textoverlay
+        // between converts, the same sandwich the g2g adapter builds.
+        let overlay = if scenario.overlay {
+            "videoconvert ! textoverlay ! "
+        } else {
+            ""
+        };
         let pipeline = format!(
-            "filesrc location={} ! decodebin force-sw-decoders=true ! {deint}videoconvert ! video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin force-sw-decoders=true ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

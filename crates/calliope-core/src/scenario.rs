@@ -80,6 +80,15 @@ pub struct Scenario {
     /// on a frame-judging video scenario.
     #[serde(default)]
     pub deinterlace: bool,
+    /// overlay pass-through: insert the engine's no-cue text overlay bracketed
+    /// by colorspace converts between decode and the raw dump. The overlay
+    /// paints nothing, but the RGBA round-trip plus a strict RGBA-only element
+    /// exercise mid-stream caps renegotiation over a real demux / decode (the
+    /// g2g M959 class), which decode-to-dump pipelines never hit. Round-trip
+    /// chroma math differs per engine, so frames are NOT bit-exact across
+    /// engines: only valid on a [determinism] scenario.
+    #[serde(default)]
+    pub overlay: bool,
 }
 
 /// Encode-differential config: ffmpeg encodes a lavfi source into an elementary
@@ -563,6 +572,14 @@ impl Scenario {
                     audio.codec
                 )));
             }
+        }
+        // the overlay round-trip is not bit-exact across engines, so it never
+        // composes with a cross-engine compare; determinism self-compares.
+        if self.overlay && (self.audio.is_some() || self.determinism.is_none()) {
+            return Err(Error::Parse(format!(
+                "{}: overlay is only valid on a video [determinism] scenario",
+                at()
+            )));
         }
         // deinterlace inserts a video filter, so it only composes with the
         // frame-judging differential (per-frame bit-exact compare).

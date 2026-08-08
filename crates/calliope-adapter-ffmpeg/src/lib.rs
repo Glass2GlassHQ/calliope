@@ -170,6 +170,11 @@ impl Engine for Ffmpeg {
             if scenario.deinterlace {
                 filters.push("yadif=mode=send_frame:parity=tff:deint=all".to_string());
             }
+            // overlay analog: ffmpeg has no no-op text overlay without fonts,
+            // so the closest is the same RGBA colorspace round-trip.
+            if scenario.overlay {
+                filters.push("format=rgba".to_string());
+            }
             if let Some(video) = scenario.video {
                 filters.push(format!("format={}", video.format.ffmpeg_pix_fmt()));
             }
