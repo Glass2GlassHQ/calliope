@@ -7,6 +7,8 @@
 //! diverge non-reproducibly. filesink still writes buffers as-is, so a decoder
 //! that pads strides (odd geometries) remains a separate future concern.
 
+pub mod dot;
+
 use std::path::Path;
 
 use calliope_core::Result;

@@ -74,6 +74,27 @@ calliope minimize --engine g2g --input runs/<scenario>/input.corrupted
 # -> writes input.min, the smallest byte sequence that still crashes/hangs g2g
 ```
 
+To see where g2g and GStreamer build a different pipeline from the same
+`gst-launch` line, diff one line across both engines:
+
+```sh
+calliope gst-parity "videotestsrc num-buffers=30 ! videoconvert ! filesink location=out.raw"
+```
+
+It reports the negotiated caps per link, the element graph each engine ended up
+with after auto-plugging, and (when the line ends in a `filesink location=`) the
+MD5 of each engine's output file. GStreamer is read from its
+`GST_DEBUG_DUMP_DOT_DIR` graph dump written on the way out of PLAYING; g2g from
+`g2g-launch --validate-json`, which needs a `g2g-launch` built with the
+`tooling-json` feature. The two readings are from different instants, gst's
+after data flowed and g2g's from the solve before the run, so a demuxed stream
+shows g2g's negotiation placeholder geometry against gst's real one.
+
+The equivalence judgment is approximate: element naming, a different auto-plug
+chain, and caps fields only one engine models are reported as informational, and
+only a caps conflict on a link both engines built (or a differing artifact, or a
+failed run) exits non-zero.
+
 To hunt g2g decoder crashes at volume, build g2g under AddressSanitizer and fuzz
 it. ASan intercepts malloc process-wide, so a heap overflow / use-after-free in
 g2g's own code or the system libav it calls aborts loudly instead of corrupting

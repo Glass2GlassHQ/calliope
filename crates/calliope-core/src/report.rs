@@ -4,6 +4,7 @@
 use serde::Serialize;
 
 use crate::compare::{Comparison, MajorityVote};
+use crate::pipeline_diff::{PipelineDiff, PipelineGraph, Verdict};
 use crate::runner::{RunResult, RunStatus};
 
 #[derive(Debug, Serialize)]
@@ -44,6 +45,51 @@ pub struct ScenarioReport {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolution_change_expected_bytes: Option<u64>,
     pub runs: Vec<EngineReport>,
+}
+
+/// One gst-parity run: the same launch line through two engines, with the
+/// negotiated caps, the post-autoplug topology, and (when the line writes one)
+/// the output artifact compared. The diff's verdict is approximate: only a caps
+/// conflict on a link both engines built counts as a real difference.
+#[derive(Debug, Serialize)]
+pub struct ParityReport {
+    pub pipeline: String,
+    pub left: ParityEngine,
+    pub right: ParityEngine,
+    pub diff: PipelineDiff,
+    /// None when the line writes no artifact to compare
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_matched: Option<bool>,
+}
+
+/// One engine's side of a parity run.
+#[derive(Debug, Serialize)]
+pub struct ParityEngine {
+    pub engine: String,
+    pub version: String,
+    /// the graph this engine reported it built and negotiated
+    pub graph: PipelineGraph,
+    /// where the graph came from. The two engines are not read at the same
+    /// instant: gst is read after data flowed, g2g before, so a stream whose
+    /// geometry only arrives with data shows g2g's negotiation placeholder.
+    pub caps_source: String,
+    /// the pipeline ran to a clean exit
+    pub ran_ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_md5: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artifact_len: Option<u64>,
+}
+
+impl ParityReport {
+    /// Did the two engines agree? A caps conflict, a failed run, or a differing
+    /// artifact is a disagreement; naming and element-set differences are not.
+    pub fn passed(&self) -> bool {
+        self.diff.verdict != Verdict::Differs
+            && self.left.ran_ok
+            && self.right.ran_ok
+            && self.artifact_matched != Some(false)
+    }
 }
 
 #[derive(Debug, Serialize)]

@@ -124,6 +124,7 @@ name = "calliope-adapter-g2g"
 version = "0.1.0"
 dependencies = [
  "calliope-core",
+ "serde_json",
 ]
 
 [[package]]

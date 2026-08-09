@@ -245,7 +245,7 @@ fn produced_output(output: &OutputSpec) -> bool {
 }
 
 /// streaming MD5 of a whole file (the golden conformance hash)
-fn whole_file_md5(path: &Path) -> Result<String> {
+pub fn whole_file_md5(path: &Path) -> Result<String> {
     use md5::{Digest, Md5};
     use std::io::Read;
     let mut file = std::fs::File::open(path)?;

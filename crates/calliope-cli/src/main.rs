@@ -1,3 +1,5 @@
+mod parity;
+
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::Arc;
@@ -72,6 +74,17 @@ enum Command {
         #[arg(long, default_value_t = 4)]
         jobs: usize,
         #[arg(long, default_value = "runs")]
+        workdir: PathBuf,
+        /// write a JSON report here
+        #[arg(long)]
+        report: Option<PathBuf>,
+    },
+    /// diff one gst-launch line across GStreamer and g2g: negotiated caps,
+    /// post-autoplug topology, and the output artifact
+    GstParity {
+        /// the gst-launch pipeline, quoted as one argument
+        pipeline: String,
+        #[arg(long, default_value = "runs/gst-parity")]
         workdir: PathBuf,
         /// write a JSON report here
         #[arg(long)]
@@ -331,6 +344,23 @@ async fn main() -> Result<ExitCode> {
                 out.display()
             );
             Ok(ExitCode::SUCCESS)
+        }
+        Command::GstParity {
+            pipeline,
+            workdir,
+            report,
+        } => {
+            let out = parity::run(&pipeline, &workdir)?;
+            parity::print_summary(&out);
+            if let Some(path) = report {
+                std::fs::write(&path, serde_json::to_vec_pretty(&out)?)?;
+                println!("report: {}", path.display());
+            }
+            Ok(if out.passed() {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::FAILURE
+            })
         }
         Command::Run {
             scenarios,

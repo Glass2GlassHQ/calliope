@@ -10,6 +10,7 @@ pub mod fault;
 pub mod fluster;
 pub mod framehash;
 pub mod minimize;
+pub mod pipeline_diff;
 pub mod probe;
 pub mod report;
 pub mod runner;

@@ -3,6 +3,8 @@
 //! hashes. g2g-launch is not usually on PATH; point CALLIOPE_G2G_LAUNCH at a
 //! built binary.
 
+pub mod validate;
+
 use std::path::Path;
 
 use calliope_core::Result;
