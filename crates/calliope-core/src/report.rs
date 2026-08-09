@@ -69,9 +69,10 @@ pub struct ParityEngine {
     pub version: String,
     /// the graph this engine reported it built and negotiated
     pub graph: PipelineGraph,
-    /// where the graph came from. The two engines are not read at the same
-    /// instant: gst is read after data flowed, g2g before, so a stream whose
-    /// geometry only arrives with data shows g2g's negotiation placeholder.
+    /// where the graph came from, and so at what instant its caps were read.
+    /// Both engines report post-data caps unless g2g-launch is too old for
+    /// `--run-json`, in which case its side is the pre-run negotiation and a
+    /// stream whose geometry only arrives with data shows a placeholder.
     pub caps_source: String,
     /// the pipeline ran to a clean exit
     pub ran_ok: bool,

@@ -85,10 +85,11 @@ It reports the negotiated caps per link, the element graph each engine ended up
 with after auto-plugging, and (when the line ends in a `filesink location=`) the
 MD5 of each engine's output file. GStreamer is read from its
 `GST_DEBUG_DUMP_DOT_DIR` graph dump written on the way out of PLAYING; g2g from
-`g2g-launch --validate-json`, which needs a `g2g-launch` built with the
-`tooling-json` feature. The two readings are from different instants, gst's
-after data flowed and g2g's from the solve before the run, so a demuxed stream
-shows g2g's negotiation placeholder geometry against gst's real one.
+`g2g-launch --run-json`, which runs the line and reports the caps each link
+carried. Both need a `g2g-launch` built with the `tooling-json` feature. A
+g2g-launch too old for `--run-json` falls back to `--validate-json`, the solve
+before the run: then a demuxed stream shows g2g's placeholder geometry against
+gst's real one.
 
 The equivalence judgment is approximate: element naming, a different auto-plug
 chain, and caps fields only one engine models are reported as informational, and

@@ -1,17 +1,17 @@
 //! `gst-parity`: run one gst-launch line through real GStreamer and through
 //! g2g, then diff what each of them built. GStreamer is introspected from the
 //! `GST_DEBUG_DUMP_DOT_DIR` graph dump of the run itself; g2g from
-//! `g2g-launch --validate-json`, which negotiates without running, so g2g is
-//! run separately for its artifact.
+//! `g2g-launch --run-json`, which runs the line and reports the caps each edge
+//! carried, so both readings are post-data. g2g is run separately for its
+//! artifact.
 //!
 //! When the line ends in a `filesink location=`, each engine is pointed at its
 //! own file under the workdir and the two artifacts are hashed and compared.
 //!
-//! The two caps readings are not from the same instant: gst's are what the pads
-//! settled on after data flowed, g2g's are what its solver chose before the run.
-//! A pipeline whose geometry only arrives with the stream (a demuxed file) shows
-//! g2g's placeholder geometry against gst's real one, which the summary labels
-//! rather than tries to reconcile.
+//! A g2g-launch too old for `--run-json` falls back to `--validate-json`, whose
+//! caps are the solver's, chosen before the run. Then a pipeline whose geometry
+//! only arrives with the stream (a demuxed file) shows g2g's placeholder against
+//! gst's real geometry, which the summary labels rather than tries to reconcile.
 
 use std::path::Path;
 
@@ -65,8 +65,19 @@ pub fn run(pipeline: &str, workdir: &Path) -> Result<ParityReport> {
     let gst_graph = calliope_adapter_gst::dot::graph_from_dump(&dot_dir)
         .context("reading the gstreamer graph dump")?;
 
-    let g2g_graph = calliope_adapter_g2g::validate::negotiated_graph(&g2g_args)
-        .context("negotiating the pipeline with g2g")?;
+    let (g2g_graph, g2g_caps_source) = if calliope_adapter_g2g::validate::supports_run_json() {
+        (
+            calliope_adapter_g2g::validate::observed_graph(&g2g_args)
+                .context("running the pipeline through g2g")?,
+            "g2g-launch --run-json (caps observed while running)",
+        )
+    } else {
+        (
+            calliope_adapter_g2g::validate::negotiated_graph(&g2g_args)
+                .context("negotiating the pipeline with g2g")?,
+            "g2g-launch --validate-json (negotiation before the run)",
+        )
+    };
     let g2g_run = run_g2g(&g2g_args)?;
 
     let diff = pipeline_diff::diff("gstreamer", &gst_graph, "g2g", &g2g_graph);
@@ -101,7 +112,7 @@ pub fn run(pipeline: &str, workdir: &Path) -> Result<ParityReport> {
             engine: "g2g".into(),
             version: g2g_version,
             graph: g2g_graph,
-            caps_source: "g2g-launch --validate-json (negotiation before the run)".into(),
+            caps_source: g2g_caps_source.into(),
             ran_ok: g2g_run.status.success(),
             artifact_md5: g2g_md5,
             artifact_len: g2g_len,
@@ -286,5 +297,67 @@ mod tests {
         assert!(report.left.artifact_md5.is_some());
         assert!(report.right.artifact_md5.is_some());
         assert!(report.artifact_matched.is_some());
+    }
+
+    /// A stream whose geometry only arrives with the data. g2g negotiates a
+    /// 16x16 placeholder for the parser's output and refines it once it reads an
+    /// SPS, so the run dump is what makes this line comparable at all: both
+    /// engines have to report the clip's real 176x144 on that link.
+    ///
+    /// `name=parse` on the parser because the two engines name it differently
+    /// (`h264parse0` against g2g's `NalParse0`) and unpaired elements share no
+    /// link to compare.
+    #[test]
+    fn a_refined_caps_line_agrees_on_the_real_geometry() {
+        if binary_missing("CALLIOPE_GST_LAUNCH", "gst-launch-1.0", "--version") {
+            eprintln!("skipping: gst-launch-1.0 not installed");
+            return;
+        }
+        if !calliope_adapter_g2g::validate::supports_run_json() {
+            eprintln!("skipping: no g2g-launch with --run-json (set CALLIOPE_G2G_LAUNCH)");
+            return;
+        }
+        let clip = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../local-corpus/testsrc-176x144.h264")
+            .canonicalize();
+        let Ok(clip) = clip else {
+            eprintln!("skipping: local-corpus missing (run tools/gen-local-corpus.sh)");
+            return;
+        };
+        let workdir = std::env::temp_dir().join("calliope-gst-parity-refined-test");
+        let _ = std::fs::remove_dir_all(&workdir);
+        let report = run(
+            &format!(
+                "filesrc location={} ! h264parse name=parse ! fakesink",
+                clip.display()
+            ),
+            &workdir,
+        )
+        .expect("parity run");
+
+        assert!(report.left.ran_ok, "gstreamer run failed");
+        assert!(report.right.ran_ok, "g2g run failed");
+        assert!(
+            report.right.caps_source.contains("--run-json"),
+            "g2g's caps should come from the run, got {}",
+            report.right.caps_source
+        );
+
+        let parsed = report
+            .diff
+            .links
+            .iter()
+            .find(|l| l.link.starts_with("parse ->"))
+            .expect("the parser's output link is shared");
+        let g2g_caps = parsed.right_caps.as_deref().expect("g2g reported caps");
+        assert!(
+            g2g_caps.contains("width=176") && g2g_caps.contains("height=144"),
+            "the run dump carries the clip's geometry, not the negotiation \
+             placeholder, got {g2g_caps}"
+        );
+        // The geometry both engines model agrees, so nothing on this link is a
+        // real difference; gst simply models more fields.
+        assert!(parsed.conflicts.is_empty(), "{parsed:?}");
+        assert!(!parsed.media_type_differs);
     }
 }
