@@ -91,6 +91,13 @@ g2g-launch too old for `--run-json` falls back to `--validate-json`, the solve
 before the run: then a demuxed stream shows g2g's placeholder geometry against
 gst's real one.
 
+The two engines name elements after different things (gst after the factory,
+`h264parse0`; g2g after the Rust type, `NalParse0`), so the element pairing is
+fed the synonym table `g2g-inspect --gst-map` prints. Point
+`CALLIOPE_G2G_INSPECT` at a `g2g-inspect` from the same build as `g2g-launch`;
+without one, the elements the two spell differently stay unpaired and their
+links compare nothing.
+
 The equivalence judgment is approximate: element naming, a different auto-plug
 chain, and caps fields only one engine models are reported as informational, and
 only a caps conflict on a link both engines built (or a differing artifact, or a
@@ -112,7 +119,8 @@ Running the normal differential / golden scenarios against the ASan binary also
 catches memory bugs on well-formed input, not just corrupted streams.
 
 Engine binaries resolve from PATH; override with `CALLIOPE_FFMPEG`,
-`CALLIOPE_GST_LAUNCH`, `CALLIOPE_G2G_LAUNCH`. Build `g2g-launch` with the codec
+`CALLIOPE_GST_LAUNCH`, `CALLIOPE_G2G_LAUNCH`, `CALLIOPE_G2G_INSPECT`. Build
+`g2g-launch` with the codec
 features you want to exercise and point the env var at a stable copy, not
 `target/debug` (a background `cargo`/rust-analyzer rebuild can overwrite it with
 a different feature set):

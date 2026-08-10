@@ -3,13 +3,19 @@
 //! prints the same document with the caps each edge actually carried. Both give
 //! every node plus per-edge caps, parsed here into the engine-neutral
 //! [`PipelineGraph`].
+//!
+//! `g2g-inspect --gst-map` supplies the element-name synonyms, since g2g names a
+//! graph node after the Rust type (`NalParse0`) where gst names it after the
+//! factory (`h264parse0`).
 
 use calliope_core::engine::binary;
-use calliope_core::pipeline_diff::{Caps, Element, Link, PipelineGraph};
+use calliope_core::pipeline_diff::{Caps, Element, Link, NameSynonyms, PipelineGraph};
 use calliope_core::{Error, Result};
 
 const VALIDATE_FLAG: &str = "--validate-json";
 const RUN_FLAG: &str = "--run-json";
+/// `g2g-inspect`'s element-name synonym dump, not a `g2g-launch` flag.
+const GST_MAP_FLAG: &str = "--gst-map";
 
 /// Does the configured g2g-launch advertise `flag`? Older builds warn about an
 /// unknown flag and run the pipeline instead, so this is checked before
@@ -96,6 +102,23 @@ pub fn parse_graph_json(text: &str) -> Result<PipelineGraph> {
         })
         .collect::<Result<Vec<_>>>()?;
     Ok(PipelineGraph { elements, links })
+}
+
+/// The gst-name/g2g-name pairs `g2g-inspect --gst-map` prints, so a parity diff
+/// pairs the elements the two engines name differently (`h264parse` against
+/// `NalParse`). An inspect binary that is missing, or too old for the flag,
+/// gives an empty table: those elements then stay unpaired, as they were before.
+pub fn name_synonyms() -> NameSynonyms {
+    let program = binary("CALLIOPE_G2G_INSPECT", "g2g-inspect");
+    let out = std::process::Command::new(&program)
+        .arg(GST_MAP_FLAG)
+        .output();
+    match out {
+        Ok(out) if out.status.success() => {
+            NameSynonyms::parse_tsv(&String::from_utf8_lossy(&out.stdout))
+        }
+        _ => NameSynonyms::default(),
+    }
 }
 
 fn index(edge: &serde_json::Value, field: &str) -> Result<usize> {

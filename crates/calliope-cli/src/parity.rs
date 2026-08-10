@@ -8,6 +8,10 @@
 //! When the line ends in a `filesink location=`, each engine is pointed at its
 //! own file under the workdir and the two artifacts are hashed and compared.
 //!
+//! The two engines name elements after different things (gst after the factory,
+//! g2g after the Rust type), so the pairing is fed `g2g-inspect --gst-map`; the
+//! elements it cannot pair share no link and so compare nothing.
+//!
 //! A g2g-launch too old for `--run-json` falls back to `--validate-json`, whose
 //! caps are the solver's, chosen before the run. Then a pipeline whose geometry
 //! only arrives with the stream (a demuxed file) shows g2g's placeholder against
@@ -80,7 +84,8 @@ pub fn run(pipeline: &str, workdir: &Path) -> Result<ParityReport> {
     };
     let g2g_run = run_g2g(&g2g_args)?;
 
-    let diff = pipeline_diff::diff("gstreamer", &gst_graph, "g2g", &g2g_graph);
+    let synonyms = calliope_adapter_g2g::validate::name_synonyms();
+    let diff = pipeline_diff::diff("gstreamer", &gst_graph, "g2g", &g2g_graph, &synonyms);
     let artifact = |path: &Path| -> (Option<String>, Option<u64>) {
         if !writes_artifact {
             return (None, None);
@@ -304,9 +309,9 @@ mod tests {
     /// SPS, so the run dump is what makes this line comparable at all: both
     /// engines have to report the clip's real 176x144 on that link.
     ///
-    /// `name=parse` on the parser because the two engines name it differently
-    /// (`h264parse0` against g2g's `NalParse0`) and unpaired elements share no
-    /// link to compare.
+    /// `name=parse` on the parser so the pairing holds without a `g2g-inspect`
+    /// to read the synonym table from; the engines otherwise name it
+    /// differently (`h264parse0` against g2g's `NalParse0`).
     #[test]
     fn a_refined_caps_line_agrees_on_the_real_geometry() {
         if binary_missing("CALLIOPE_GST_LAUNCH", "gst-launch-1.0", "--version") {

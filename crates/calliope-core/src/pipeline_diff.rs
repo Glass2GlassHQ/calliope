@@ -133,6 +133,47 @@ pub fn element_names_match(left: &str, right: &str) -> bool {
     instance_suffix(&left, &right) || instance_suffix(&right, &left)
 }
 
+/// Element names the two engines spell so differently that
+/// [`element_names_match`] cannot pair them: gst's `h264parse` against g2g's
+/// `NalParse`, whose type is shared between codecs. Without these the two
+/// engines' graphs share no link at that hop, so nothing gets compared.
+///
+/// `g2g-inspect --gst-map` prints the table; the adapter feeds it in.
+#[derive(Debug, Clone, Default)]
+pub struct NameSynonyms {
+    pairs: Vec<(String, String)>,
+}
+
+impl NameSynonyms {
+    /// Read the tab-separated `left-name<TAB>right-name` lines `--gst-map`
+    /// prints. Blank lines and lines without a tab are skipped, so an engine
+    /// binary too old for the flag yields an empty table rather than an error.
+    pub fn parse_tsv(text: &str) -> Self {
+        let pairs = text
+            .lines()
+            .filter_map(|line| line.split_once('\t'))
+            .map(|(left, right)| (left.trim().to_string(), right.trim().to_string()))
+            .filter(|(left, right)| !left.is_empty() && !right.is_empty())
+            .collect();
+        Self { pairs }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.pairs.is_empty()
+    }
+
+    /// Are these two names a listed pair, in either direction? Each side is
+    /// compared with [`element_names_match`], so the instance numbers the
+    /// engines append (`h264parse0`, `NalParse0`) do not have to be stripped
+    /// first, and a codec number inside a name is never mistaken for one.
+    pub fn pairs_up(&self, left: &str, right: &str) -> bool {
+        self.pairs.iter().any(|(one, other)| {
+            (element_names_match(left, one) && element_names_match(right, other))
+                || (element_names_match(left, other) && element_names_match(right, one))
+        })
+    }
+}
+
 /// How close two engines' pipelines are. Approximate: see the module docs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -193,15 +234,17 @@ pub struct PipelineDiff {
     pub verdict: Verdict,
 }
 
-/// Compare two engines' pipelines: match elements by name, then match links
-/// between matched elements, then compare the caps on each matched link.
+/// Compare two engines' pipelines: match elements by name (`synonyms` covering
+/// the ones they name differently), then match links between matched elements,
+/// then compare the caps on each matched link.
 pub fn diff(
     left_engine: &str,
     left: &PipelineGraph,
     right_engine: &str,
     right: &PipelineGraph,
+    synonyms: &NameSynonyms,
 ) -> PipelineDiff {
-    let (left_to_right, right_to_left) = match_elements(left, right);
+    let (left_to_right, right_to_left) = match_elements(left, right, synonyms);
 
     let unmatched = |graph: &PipelineGraph, map: &[Option<usize>]| -> Vec<String> {
         map.iter()
@@ -274,12 +317,15 @@ pub fn diff(
 fn match_elements(
     left: &PipelineGraph,
     right: &PipelineGraph,
+    synonyms: &NameSynonyms,
 ) -> (Vec<Option<usize>>, Vec<Option<usize>>) {
     let mut left_to_right = vec![None; left.elements.len()];
     let mut right_to_left = vec![None; right.elements.len()];
     for (i, element) in left.elements.iter().enumerate() {
         let found = right.elements.iter().enumerate().find(|(j, candidate)| {
-            right_to_left[*j].is_none() && element_names_match(&element.name, &candidate.name)
+            right_to_left[*j].is_none()
+                && (element_names_match(&element.name, &candidate.name)
+                    || synonyms.pairs_up(&element.name, &candidate.name))
         });
         if let Some((j, _)) = found {
             left_to_right[i] = Some(j);
@@ -380,6 +426,52 @@ mod tests {
         assert!(!element_names_match("videoconvert0", "videoscale0"));
     }
 
+    /// The case the synonym table exists for: g2g names the parser after the
+    /// Rust type it shares between codecs, so without the table the two engines
+    /// pair nothing at that hop and the link's caps go uncompared.
+    #[test]
+    fn a_synonym_pairs_elements_the_engines_name_differently() {
+        let gst = graph(
+            &["filesrc0", "h264parse0", "fakesink0"],
+            &[
+                (0, 1, "video/x-h264"),
+                (1, 2, "video/x-h264, width=176, height=144"),
+            ],
+        );
+        let g2g = graph(
+            &["FileSrc0", "NalParse0", "FakeSink0"],
+            &[
+                (0, 1, "video/x-h264"),
+                (1, 2, "video/x-h264,width=176,height=144"),
+            ],
+        );
+        let untabled = diff("gstreamer", &gst, "g2g", &g2g, &NameSynonyms::default());
+        assert_eq!(untabled.elements_only_left, ["h264parse0"]);
+        assert!(untabled.links.is_empty(), "{untabled:?}");
+
+        let synonyms = NameSynonyms::parse_tsv("h264parse\tNalParse\nqtdemux\tMp4Demux\n");
+        let tabled = diff("gstreamer", &gst, "g2g", &g2g, &synonyms);
+        assert!(tabled.elements_only_left.is_empty(), "{tabled:?}");
+        assert!(tabled.elements_only_right.is_empty(), "{tabled:?}");
+        assert_eq!(tabled.links.len(), 2);
+        assert_eq!(tabled.verdict, Verdict::Match);
+    }
+
+    /// A synonym pairs only the row it names, both directions, and an empty or
+    /// malformed dump leaves the matcher exactly as it was.
+    #[test]
+    fn synonyms_do_not_pair_anything_the_table_does_not_name() {
+        let synonyms =
+            NameSynonyms::parse_tsv("h264parse\tNalParse\n\nno tab here\nqtdemux\tMp4Demux\n\t\n");
+        assert!(synonyms.pairs_up("h264parse0", "NalParse0"));
+        assert!(synonyms.pairs_up("NalParse0", "h264parse0"));
+        assert!(synonyms.pairs_up("qtdemux", "Mp4Demux3"));
+        assert!(!synonyms.pairs_up("h264parse0", "Mp4Demux0"));
+        assert!(!synonyms.pairs_up("h265parse0", "NalParse0"));
+        assert!(NameSynonyms::parse_tsv("").is_empty());
+        assert!(NameSynonyms::parse_tsv("no tabs at all\n").is_empty());
+    }
+
     #[test]
     fn identical_pipelines_match() {
         let left = graph(
@@ -396,7 +488,7 @@ mod tests {
                 (1, 2, "video/x-raw,width=320,format=I420"),
             ],
         );
-        let d = diff("gstreamer", &left, "g2g", &right);
+        let d = diff("gstreamer", &left, "g2g", &right, &NameSynonyms::default());
         assert_eq!(d.verdict, Verdict::Match);
         assert_eq!(d.links.len(), 2);
         assert!(d.elements_only_left.is_empty() && d.elements_only_right.is_empty());
@@ -412,7 +504,7 @@ mod tests {
             &["VideoTestSrc", "FileSink"],
             &[(0, 1, "video/x-raw, format=RGBA, width=320")],
         );
-        let d = diff("gstreamer", &left, "g2g", &right);
+        let d = diff("gstreamer", &left, "g2g", &right, &NameSynonyms::default());
         assert_eq!(d.verdict, Verdict::Differs);
         let link = &d.links[0];
         assert_eq!(link.link, "videotestsrc0 -> filesink0");
@@ -427,7 +519,7 @@ mod tests {
     fn a_media_type_difference_is_a_real_difference() {
         let left = graph(&["a0", "b0"], &[(0, 1, "video/x-h264, width=320")]);
         let right = graph(&["a", "b"], &[(0, 1, "video/x-raw, width=320")]);
-        let d = diff("gstreamer", &left, "g2g", &right);
+        let d = diff("gstreamer", &left, "g2g", &right, &NameSynonyms::default());
         assert!(d.links[0].media_type_differs);
         assert_eq!(d.verdict, Verdict::Differs);
     }
@@ -439,7 +531,7 @@ mod tests {
             &[(0, 1, "video/x-raw, format=I420, pixel-aspect-ratio=1/1")],
         );
         let right = graph(&["a", "b"], &[(0, 1, "video/x-raw, format=I420")]);
-        let d = diff("gstreamer", &left, "g2g", &right);
+        let d = diff("gstreamer", &left, "g2g", &right, &NameSynonyms::default());
         assert_eq!(d.verdict, Verdict::Informational);
         assert_eq!(d.links[0].fields_only_left, ["pixel-aspect-ratio=1/1"]);
         assert!(d.links[0].conflicts.is_empty());
@@ -453,7 +545,7 @@ mod tests {
             &[(0, 1, ""), (1, 2, ""), (2, 3, "video/x-h264")],
         );
         let right = graph(&["FileSrc", "FileSink"], &[(0, 1, "video/x-h264")]);
-        let d = diff("gstreamer", &left, "g2g", &right);
+        let d = diff("gstreamer", &left, "g2g", &right, &NameSynonyms::default());
         assert_eq!(d.elements_only_left, ["typefind", "h264parse0"]);
         assert!(d.elements_only_right.is_empty());
         // No link survives the pairing: the right graph's only link is between
@@ -474,7 +566,7 @@ mod tests {
     fn an_unnegotiated_hop_is_informational_not_a_conflict() {
         let left = graph(&["a0", "b0"], &[(0, 1, "ANY")]);
         let right = graph(&["a", "b"], &[(0, 1, "video/x-h264, width=320")]);
-        let d = diff("gstreamer", &left, "g2g", &right);
+        let d = diff("gstreamer", &left, "g2g", &right, &NameSynonyms::default());
         assert_eq!(d.verdict, Verdict::Informational);
         assert!(d.links[0].left_caps.is_none());
         assert_eq!(d.links[0].fields_only_right, ["width=320"]);
