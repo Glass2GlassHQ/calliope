@@ -79,7 +79,9 @@ impl G2g {
 
     /// Build the decode-to-PCM invocation for an audio scenario. audioresample
     /// normalizes the rate (identity when it already matches); the whole PCM
-    /// stream is hashed by the runner.
+    /// stream is hashed by the runner. `dithering=none` because audioconvert
+    /// dithers a bit-depth reduction by default (tpdf), which ffmpeg's plain
+    /// rounding never matches.
     fn audio_invocation(
         &self,
         audio: &calliope_core::scenario::Audio,
@@ -89,7 +91,7 @@ impl G2g {
     ) -> Invocation {
         let out = workdir.join("out.pcm");
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! audioconvert ! audioresample ! audio/x-raw,format={},rate={},channels={} ! filesink location={}",
+            "filesrc location={} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={} ! filesink location={}",
             input.display(),
             audio.format.gst_format(),
             audio.rate,

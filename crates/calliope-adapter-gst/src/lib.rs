@@ -34,10 +34,12 @@ impl Engine for GStreamer {
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
         // audio: decode to normalized interleaved PCM. audioresample normalizes
         // the rate (identity when it already matches); the whole stream is hashed.
+        // dithering=none: audioconvert dithers a bit-depth reduction by default
+        // (tpdf), which ffmpeg's plain rounding never matches.
         if let Some(audio) = scenario.audio {
             let out = workdir.join("out.pcm");
             let pipeline = format!(
-                "filesrc location={} ! decodebin ! audioconvert ! audioresample ! audio/x-raw,format={},rate={},channels={},layout=interleaved ! filesink location={}",
+                "filesrc location={} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={},layout=interleaved ! filesink location={}",
                 input.display(),
                 audio.format.gst_format(),
                 audio.rate,
