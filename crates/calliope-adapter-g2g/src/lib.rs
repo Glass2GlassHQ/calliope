@@ -11,6 +11,8 @@ use calliope_core::Result;
 use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, probe_first_line};
 use calliope_core::scenario::Scenario;
 
+const G2G_PLUGIN_FEATURE_RANK_VARIABLE: &str = "G2G_PLUGIN_FEATURE_RANK";
+
 #[derive(Debug, Default)]
 pub struct G2g;
 
@@ -127,8 +129,11 @@ impl G2g {
         // semi-planar NV12 is not a decoder-native output, so insert a
         // videoconvert (an identity repack, still bit-exact) to reach it.
         let format = scenario.video.map_or("I420", |v| v.format.gst_format());
+        // a pinned GPU decoder emits NV12 / P010 whatever the capsfilter asks for
+        let pinned = std::env::var_os(G2G_PLUGIN_FEATURE_RANK_VARIABLE).is_some();
         let convert = match scenario.video {
             Some(v) if !v.format.is_planar_yuv() => "videoconvert ! ",
+            _ if pinned => "videoconvert ! ",
             _ => "",
         };
         // deinterlace scenarios insert g2g's yadif; mode=interlaced forces it

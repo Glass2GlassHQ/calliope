@@ -224,6 +224,17 @@ calliope conformance --corpus corpus/vectors.toml --limit 20
 # prints N/total passed and exits non-zero on any mismatch.
 ```
 
+g2g picks its decoder through `decodebin`. To check one decoder backend, pin it
+with `G2G_PLUGIN_FEATURE_RANK`, which g2g-launch inherits:
+
+```sh
+G2G_PLUGIN_FEATURE_RANK=vulkanvideodec:max calliope conformance --corpus corpus/vectors.toml
+```
+
+A pin to a decoder the g2g-launch build lacks panics instead of testing another
+one. With a pin set, the adapter adds a `videoconvert` before the capsfilter,
+because the GPU decoders emit NV12 or P010.
+
 Timing and RSS are recorded per run for within-engine regression tracking;
 they are never compared across engines (different buffering models make that
 meaningless).
