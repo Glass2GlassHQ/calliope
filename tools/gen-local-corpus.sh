@@ -62,13 +62,13 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
 # field first), so the interlace signal has to survive parse, decode and caps.
 # mpeg-2 in a dvd-style program stream and in mpeg-ts, plus tff h264.
 ffmpeg -nostdin -hide_banner -loglevel error -y \
-    -f lavfi -i "testsrc2=duration=2:size=352x288:rate=25" \
-    -c:v mpeg2video -flags +ildct+ilme -top 1 -b:v 3M \
+    -f lavfi -i "testsrc2=duration=2:size=352x288:rate=25" -vf setfield=tff \
+    -c:v mpeg2video -flags +ildct+ilme -b:v 3M \
     -f vob local-corpus/interlaced-352x288.mpg
 
 ffmpeg -nostdin -hide_banner -loglevel error -y \
-    -f lavfi -i "testsrc2=duration=2:size=352x288:rate=25" \
-    -c:v mpeg2video -flags +ildct+ilme -top 1 -b:v 3M \
+    -f lavfi -i "testsrc2=duration=2:size=352x288:rate=25" -vf setfield=tff \
+    -c:v mpeg2video -flags +ildct+ilme -b:v 3M \
     -f mpegts local-corpus/interlaced-352x288-mpeg2.ts
 
 ffmpeg -nostdin -hide_banner -loglevel error -y \
