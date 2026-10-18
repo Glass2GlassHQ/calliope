@@ -30,14 +30,16 @@ OUT="$SCRATCH/out/$SCOPE"
 TIMEOUT_MULTIPLIER="${TIMEOUT_MULTIPLIER:-3}"
 mkdir -p "$SCRATCH/tmp" "$OUT" "$RESULTS"
 
-# one build at a time with two rustc jobs, the box has crashed under more
-MUTANTS_ARGS=(--jobs 1 --jobserver-tasks 2 --cap-lints true
+# the defaults suit a shared desktop, which crashed under more; a quiet box takes more
+MUTANTS_JOBS="${MUTANTS_JOBS:-1}"
+MUTANTS_JOBSERVER_TASKS="${MUTANTS_JOBSERVER_TASKS:-2}"
+MUTANTS_ARGS=(--jobs "$MUTANTS_JOBS" --jobserver-tasks "$MUTANTS_JOBSERVER_TASKS" --cap-lints true
     --timeout-multiplier "$TIMEOUT_MULTIPLIER" --colors never "$@")
 
 start=$(date +%s)
 set +e
 cd "$G2G_SRC"
-TMPDIR="$SCRATCH/tmp" CARGO_BUILD_JOBS=2 nice -n 10 \
+TMPDIR="$SCRATCH/tmp" CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-2}" nice -n 10 \
     cargo mutants --output "$OUT" "${MUTANTS_ARGS[@]}" 2>&1 | tee "$OUT/run.log"
 status=${PIPESTATUS[0]}
 set -e

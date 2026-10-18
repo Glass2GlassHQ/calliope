@@ -7,8 +7,10 @@ pins down that behavior. Per scope, the subdir holds the four outcome lists and
 `summary.txt` (command, g2g commit, wall time, cargo-mutants totals).
 
 Run a scope with `tools/mutants-g2g.sh <scope> <cargo-mutants args>`. It runs one
-build at a time with two rustc jobs at nice 10, keeps the tree copy and logs
-under `~/tmp/calliope-mutants`, and copies the lists here.
+build at a time with two rustc jobs at nice 10 (`MUTANTS_JOBS`,
+`MUTANTS_JOBSERVER_TASKS` and `CARGO_BUILD_JOBS` raise that on a quiet box),
+keeps the tree copy and logs under `~/tmp/calliope-mutants`, and copies the
+lists here.
 
 Name test targets with `--cargo-arg` (`--cargo-arg=--lib --cargo-arg=--test=m135_vp9parse`),
 not after `--`. cargo-mutants builds each mutant with `cargo test --no-run` and
