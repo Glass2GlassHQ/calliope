@@ -408,8 +408,8 @@ pts.
 one when it exits or decodes no frame for 30 s. Once a minute it appends frames,
 fps, decoder latency, RSS and restart count per pipeline to a jsonl log, and it
 writes a status page. The self-hosted tier decodes a looped 720p30 h264 clip
-that mediamtx and an ffmpeg feeder serve on the same host over RTSP, HLS and
-SRT, so a failure there is g2g's. The public tier pulls third-party streams. The
+that mediamtx and an ffmpeg feeder serve on the same host over RTSP, HLS, SRT
+and WebRTC (WHEP), so a failure there is g2g's. The public tier pulls third-party streams. The
 deploy is a podman image under user systemd units, see the Canary section of
 the README.
 ```
@@ -447,6 +447,36 @@ up in 0 of 40 intervals with 16 restarts: every run fails negotiation with
 exits `CapsMismatch`. The stream's SPS carries no frame rate (ffprobe reports
 `avg_frame_rate=0/0`). No public SRT stream is in the config because g2g's
 `srtsrc` only listens.
+
+Second run: 25 minutes of the deployed units on the dev box (2026-10-18, 25
+samples per pipeline), eight pipelines. The image carries `g2g-launch` built
+from g2g a69dac41 with the `webrtc` feature. The feeder clip is now encoded
+without B-frames, because mediamtx closes a WebRTC session on H.264 with
+B-frames. The canary container used 57% of one core averaged over the run and
+407 to 441 MB.
+
+Seven pipelines decoded every interval. `baseline-srt` (30 fps, RSS 82 to 100
+MB, decoder p50 0.5 ms) never restarted and opened no stall incident. The public
+`strba-rtsp` webcam now decodes (10 to 12 fps, 26 to 45 MB, 2.1 to 4.2 ms) and
+never restarted. `baseline-rtsp` (30 fps, 23 to 42 MB, 4.2 ms) and
+`baseline-hls` (30 fps, 90 to 112 MB, 0.5 ms) again restarted twice at startup
+on mediamtx's 404. `unified-live-hls` (25 fps, 89 to 111 MB, 0.5 ms),
+`mux-vod-hls` (480p60, 84 to 109 MB, 0.3 to 0.5 ms) and `apple-vod-hls` (30
+fps, 60 to 83 MB, 0.3 ms) never restarted.
+
+The new `baseline-webrtc` row found a g2g bug:
+```
+whepsrc location=http://127.0.0.1:18889/baseline/whep ! h264parse ! avdec_h264 ! fakesink
+```
+It was up in 7 of 25 intervals with 11 restarts. The first run failed at
+startup with `pipeline error in WebRtcWhepSrc0: Hardware(Other)`, in the same
+second `baseline-rtsp` got its 404. Every later failed run ended with
+`[h264] non-existing PPS 0 referenced` and `pipeline error in FfmpegVideoDec0:
+Hardware(Other)`. `whepsrc` forwards the P-frames it receives before the first
+IDR, so the decoder gets slices before any SPS and PPS and fails the pipeline.
+The other g2g WebRTC receivers drop video until the first keyframe and
+`whepsrc` does not. A run that joins the stream on an IDR decodes: the run that
+started 19 minutes in decoded 30 fps (RSS 29 to 51 MB, 4.2 ms) to the end.
 
 ## Bugs found
 

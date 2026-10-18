@@ -327,9 +327,11 @@ incident closes when frames flow again. The status page is
 `status/index.html` plus `status/status.json`, rewritten every sample.
 
 The `self-hosted` tier decodes a looped clip that mediamtx and an ffmpeg feeder
-serve on the same host over RTSP, HLS and SRT. A failure there is g2g's. The
-`public` tier pulls third-party HLS and RTSP streams with no uptime promise.
-There is no public SRT entry because g2g's `srtsrc` only listens.
+serve on the same host over RTSP, HLS, SRT and WebRTC (WHEP). A failure there
+is g2g's. The clip has no B-frames because mediamtx closes a WebRTC session on
+H.264 with B-frames. The `public` tier pulls third-party HLS and RTSP streams
+with no uptime promise. There is no public SRT entry because g2g's `srtsrc` only
+listens.
 
 ### Deploy
 
