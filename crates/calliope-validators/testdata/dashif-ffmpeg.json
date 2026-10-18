@@ -1,0 +1,158 @@
+{
+    "MPD": {
+        "Global - Schematron": {
+            "Conformance Tool": {
+                "checks": {
+                    "Schematron shall be able to run": {
+                        "state": "PASS",
+                        "messages": [
+                            "\u2713 Schematron ran successfully"
+                        ]
+                    }
+                },
+                "state": "PASS"
+            },
+            "Schematron": {
+                "checks": {
+                    "The d attribute of a SegmentTimeline shall not exceed the value give by the MPD maxSegmentDuration attribute.": {
+                        "state": "FAIL",
+                        "messages": [
+                            "\u2717 Test failed",
+                            "\u2717 Test failed"
+                        ]
+                    }
+                },
+                "state": "FAIL"
+            }
+        },
+        "Global - XSD": {
+            "DASH 5th": {
+                "checks": {
+                    "MPD SHALL be valid": {
+                        "state": "PASS",
+                        "messages": [
+                            "\ud83d\udec8 Used resource: xsd\/DASH5th.xsd",
+                            "\u2713 MPD valid"
+                        ]
+                    }
+                },
+                "state": "PASS"
+            }
+        },
+        "LEGACY - XSD": {
+            "DASH 2nd (DVB 2018)": {
+                "checks": {
+                    "MPD SHALL be valid": {
+                        "state": "PASS",
+                        "messages": [
+                            "\ud83d\udec8 Used resource: xsd\/DASH2nd.xsd",
+                            "\u2713 MPD valid"
+                        ]
+                    }
+                },
+                "state": "PASS"
+            },
+            "DASH 4th-amd1 (DVB 2019)": {
+                "checks": {
+                    "MPD SHALL be valid": {
+                        "state": "PASS",
+                        "messages": [
+                            "\ud83d\udec8 Used resource: xsd\/DASH4th-amd1.xsd",
+                            "\u2713 MPD valid"
+                        ]
+                    }
+                },
+                "state": "PASS"
+            }
+        },
+        "DASH-IF IOP - 4.3": {
+            "3.2.7.4": {
+                "checks": {
+                    "MPD fields having datatype xs:duration shall not use year or month units": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 Corresponding profile(s) not signalled"
+                        ]
+                    }
+                },
+                "state": "SKIP"
+            },
+            "3.10.3": {
+                "checks": {
+                    "SegmentTemplate@media attribute SHALL be present": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 Corresponding profile(s) not signalled"
+                        ]
+                    },
+                    "SegmentTemplate@indexRange attribute SHALL be present": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 Corresponding profile(s) not signalled"
+                        ]
+                    }
+                },
+                "state": "SKIP"
+            },
+            "3.10.4": {
+                "checks": {
+                    "@profiles signalling SHALL be present in each Period": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 Corresponding profile(s) not signalled"
+                        ]
+                    }
+                },
+                "state": "SKIP"
+            }
+        }
+    },
+    "CrossValidation": {
+        "DASH-IF IOP - 4.3": {
+            "6.2.5.2": {
+                "checks": {
+                    "The level of the adaptation set SHALL match the maximum of the corresponding representations": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 @bitstreamSwitching not set, or no supported video track found"
+                        ]
+                    },
+                    "The profile of the adaptation set SHALL match the maximum of the corresponding representations": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 @bitstreamSwitching not set, or no supported video track found"
+                        ]
+                    },
+                    "The edit list, if present in one, SHALL be present in all representations": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 @bitstreamSwitching not set, or no supported video track found"
+                        ]
+                    }
+                },
+                "state": "SKIP"
+            }
+        }
+    },
+    "Segments": {
+        "DASH-IF IOP - 4.3": {
+            "3.10.3.2": {
+                "checks": {
+                    "Only a single 'sidx' box shall be present": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 No on-demand profile signalled, or no segments found"
+                        ]
+                    },
+                    "Each representation SHALL have on segment": {
+                        "state": "SKIP",
+                        "messages": [
+                            "\ud83d\udec8 No on-demand profile signalled"
+                        ]
+                    }
+                },
+                "state": "SKIP"
+            }
+        }
+    }
+}
