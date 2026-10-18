@@ -224,6 +224,31 @@ calliope conformance --corpus corpus/vectors.toml --limit 20
 # prints N/total passed and exits non-zero on any mismatch.
 ```
 
+To run real-world samples through every engine, import a sample tree and sweep
+it. The ffmpeg fate-suite and the gst-integration-testsuites medias are the two
+supported trees. Fetch them into the cache so the sweep reads them in place:
+
+```sh
+rsync -vrltLW rsync://fate-suite.ffmpeg.org/fate-suite/ ~/.cache/calliope/fate-suite/
+GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
+  https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites.git ~/.cache/calliope/gst-medias
+git -C ~/.cache/calliope/gst-medias lfs pull
+calliope corpus-import --fate ~/.cache/calliope/fate-suite --out corpus/fate-suite.toml
+calliope corpus-import --gst-medias ~/.cache/calliope/gst-medias --out corpus/gst-medias.toml
+calliope sweep --corpus corpus/fate-suite.toml --title fate-suite \
+  --report runs/fate-suite.json --triage triage/fate-suite.md
+```
+
+The importer keeps every file ffprobe finds a video or audio stream in and records
+its container, codecs, pixel format, and sha256. The sweep runs one scenario per
+stream with ffmpeg as the reference. Planar video and the bit-exact audio codecs
+get the per-frame / whole-stream differential. Every other stream gets a
+determinism run. When ffmpeg rejects a file, the decode outcome is the oracle. The
+triage table groups the results as agree, g2g diverges, g2g no output, g2g crash /
+hang, gstreamer diverges, unsupported codec, or reference quirk, and gives a
+`g2g-launch` reproducer for each g2g divergence. `--limit N` sweeps the first N
+vectors. Decoded output is deleted after each batch, only the logs stay.
+
 g2g picks its decoder through `decodebin`. To check one decoder backend, pin it
 with `G2G_PLUGIN_FEATURE_RANK`, which g2g-launch inherits:
 
