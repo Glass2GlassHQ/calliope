@@ -281,8 +281,9 @@ GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
 git -C ~/.cache/calliope/gst-medias lfs pull
 calliope corpus-import --fate ~/.cache/calliope/fate-suite --out corpus/fate-suite.toml
 calliope corpus-import --gst-medias ~/.cache/calliope/gst-medias --out corpus/gst-medias.toml
-calliope sweep --corpus corpus/fate-suite.toml --title fate-suite \
-  --report runs/fate-suite.json --triage triage/fate-suite.md
+calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
+python3 -I tools/sweep-triage.py runs/fate-suite.json corpus/fate-suite.toml fate-suite \
+  "master <rev>" triage/fate-suite.md
 ```
 
 The importer keeps every file ffprobe finds a video or audio stream in and records
@@ -294,6 +295,9 @@ triage table groups the results as agree, g2g diverges, g2g no output, g2g crash
 hang, gstreamer diverges, unsupported codec, or reference quirk, and gives a
 `g2g-launch` reproducer for each g2g divergence. `--limit N` sweeps the first N
 vectors. Decoded output is deleted after each batch, only the logs stay.
+`tools/sweep-triage.py` turns the report into the committed `triage/<tree>.md`,
+adding a diagnosis per row and keeping the hand-written `## g2g bugs` section
+already in that file.
 
 g2g picks its decoder through `decodebin`. To check one decoder backend, pin it
 with `G2G_PLUGIN_FEATURE_RANK`, which g2g-launch inherits:

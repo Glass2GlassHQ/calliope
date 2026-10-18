@@ -296,10 +296,10 @@ and the bit-exact audio codecs the whole-stream differential. Packed video and
 the other audio codecs get a determinism run. When ffmpeg rejects a file the
 decode outcome is the oracle.
 ```
-calliope sweep --corpus corpus/fate-suite.toml --title fate-suite \
-  --report runs/fate-suite.json --triage triage/fate-suite.md
-calliope sweep --corpus corpus/gst-medias.toml --title gst-medias \
-  --report runs/gst-medias.json --triage triage/gst-medias.md
+calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
+calliope sweep --corpus corpus/gst-medias.toml --title gst-medias --report runs/gst-medias.json
+python3 -I tools/sweep-triage.py runs/fate-suite.json corpus/fate-suite.toml fate-suite \
+  "master 42c0a809 built with linux-full in release" triage/fate-suite.md
 ```
 Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
 gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
