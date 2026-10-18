@@ -1,0 +1,3600 @@
+[[vector]]
+id = "gst-medias/defaults/avi/bowlerhatdancer.sleepytom.SGP.mjpeg.avi"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/avi/bowlerhatdancer.sleepytom.SGP.mjpeg.avi"
+sha256 = "279b7350cb70da40896ec1eebb447923c76805dd80c135f7d6da1a35ffe79e0a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "avi"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 384
+height = 288
+pix-fmt = "yuvj422p"
+
+[[vector]]
+id = "gst-medias/defaults/avi/raw_video.avi"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/avi/raw_video.avi"
+sha256 = "5cdcaf6750cf81d24050bb2885c58ccb88d0c715751e51ed876fd673bb85d61f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "avi"
+
+[vector.media.video]
+codec = "rawvideo"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/avi/samples.multimedia.cx_testsuite_iv31.avi"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/avi/samples.multimedia.cx_testsuite_iv31.avi"
+sha256 = "ca0f5e1c52865b2d9091cbb8341d36a49cf0b010467589503f8a711c85cca432"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "avi"
+
+[vector.media.video]
+codec = "indeo3"
+width = 160
+height = 120
+pix-fmt = "yuv410p"
+
+[vector.media.audio]
+codec = "pcm_u8"
+sample-rate = 11025
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/bipbopall.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/bipbopall.m3u8"
+sha256 = "6bd199385e8a3e510bdb6090dca0399441fa448f3283386b736bcfcdbc011a8a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/fileSequence0.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/fileSequence0.ts"
+sha256 = "549e3ab7a13816f8aa878945844417c189978b07952488b3f3f523d199d4327a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/fileSequence1.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/fileSequence1.ts"
+sha256 = "b06a9b71d04a858544378b2aa4a7fb8a5701f0ebc7cd6fb38da298c786c6f3ba"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/fileSequence2.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/fileSequence2.ts"
+sha256 = "bb6a500153fb903f51f16723b346fa5ae63f36638c9a983f91e01575ecbdf5f7"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/fileSequence3.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/fileSequence3.ts"
+sha256 = "37e3c748b629703372e86bdefc12f3e8568a6e58096e7d440fa5cb5361194019"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/fileSequence4.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/fileSequence4.ts"
+sha256 = "a3550601e2d3903bc37ac14696d62975cdf6119f14906d0e6b9cbb30aa323f2f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/fileSequence5.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/fileSequence5.ts"
+sha256 = "eb11168aebd5721577e50ae6981ef0cf0512d8dc4920a90a2f9277f2a4186ea8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear1/prog_index.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear1/prog_index.m3u8"
+sha256 = "3592f297e941b31f08469713d074f022299267c24907053ff9466849087949a9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 192
+height = 144
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/fileSequence0.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/fileSequence0.ts"
+sha256 = "fe03caec29364784769875ec29488c2d54f7aa9d19ae5cabac1c7bd0d81050a3"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/fileSequence1.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/fileSequence1.ts"
+sha256 = "d2991334948a93440c7190263ef2d6bcac77d6dad7d660e0d4338fb4f15a895f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/fileSequence2.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/fileSequence2.ts"
+sha256 = "e99e631d942e46f390e93c38368e6a4d0c993497918f3d54f40aae76410fa814"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/fileSequence3.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/fileSequence3.ts"
+sha256 = "db74a887f95ebb5b19bd577b42f54e6598d2ab15ab3448355503cbd2bf58c374"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/fileSequence4.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/fileSequence4.ts"
+sha256 = "a592b12910bd42bb7b461ecb5bd5aa5a42272eb5bbc94f7bbcf527d9f0489e83"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/fileSequence5.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/fileSequence5.ts"
+sha256 = "324e912a0b2d9373db257c9ba911ec95baa6592310d9cb7379a6ce0ace9e731c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear2/prog_index.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear2/prog_index.m3u8"
+sha256 = "3592f297e941b31f08469713d074f022299267c24907053ff9466849087949a9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/fileSequence0.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/fileSequence0.ts"
+sha256 = "261f935bc607bbd0a1a872b452a59537f0ab2dc2293b4337a2706e034438b85e"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/fileSequence1.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/fileSequence1.ts"
+sha256 = "241238c948aad3df0871f3715763c06c3d682e46ddfd2b6e4ffa59335ebc2e9b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/fileSequence2.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/fileSequence2.ts"
+sha256 = "e1b55e5c089dd6444694cd17b2242678c3d2c057bb7ba0dd5b33395d366d4a89"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/fileSequence3.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/fileSequence3.ts"
+sha256 = "000886f03311971a2991649d3f96d63c0ac680a659b1282fd27b175d9c330772"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/fileSequence4.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/fileSequence4.ts"
+sha256 = "994125c45d7cbc9e5544284a77f31526ba6279efa1e16f693b97da4324142b0b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/fileSequence5.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/fileSequence5.ts"
+sha256 = "553e9f576812b707021c3771159a564905b7d5491fba66a90edda1d9a7c9b62b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear3/prog_index.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear3/prog_index.m3u8"
+sha256 = "3592f297e941b31f08469713d074f022299267c24907053ff9466849087949a9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/fileSequence0.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/fileSequence0.ts"
+sha256 = "7157429f8c9ec49ca56b3fc024375e127bfe99ea091ebead80d53c48756d8d0c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/fileSequence1.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/fileSequence1.ts"
+sha256 = "3db2f73a11a4740485a19d1d0c7751ebb35a3fc69affe7235a1689d2872fb2dc"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/fileSequence2.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/fileSequence2.ts"
+sha256 = "e6ef7ba14503faac52fcc2379611fbc8fee45a55a906a2dd484e2a03842e7ce0"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/fileSequence3.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/fileSequence3.ts"
+sha256 = "a3f7d03759b865bdca49aefa2cb7692a3a19c4ce5ef01cf43cc32fa7d8b269f8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/fileSequence4.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/fileSequence4.ts"
+sha256 = "84bf81ecbd52ecf6be236ccd7f81cb64d94d64be3acaf5aa8fe6962d859be8ff"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/fileSequence5.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/fileSequence5.ts"
+sha256 = "88999ca0aa005759f9999763e88d2d95b19e5fb93141764e95e53187eef4deab"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/bipbop/gear4/prog_index.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/bipbop/gear4/prog_index.m3u8"
+sha256 = "3592f297e941b31f08469713d074f022299267c24907053ff9466849087949a9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/dash/mp4/mp4box-tfdt-per-segment-not-per-fragment_dash.mpd"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/dash/mp4/mp4box-tfdt-per-segment-not-per-fragment_dash.mpd"
+sha256 = "41c518b5373b773bcf2ad998c5e10840248314c5e24f865c4d2212a5a8f3417b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "dash"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv444p10le"
+
+[[vector]]
+id = "gst-medias/defaults/dash/mp4/mp4box-tfdt-per-segment-not-per-fragment_dashinit.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/dash/mp4/mp4box-tfdt-per-segment-not-per-fragment_dashinit.mp4"
+sha256 = "9fa7c008a99e71238e24a8b26b1f033d658d830d477ae18626f83d8028b00e12"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv444p10le"
+
+[[vector]]
+id = "gst-medias/defaults/dash/webm/output.mpd"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/dash/webm/output.mpd"
+sha256 = "8929fd870db9072de05ba7b9366728ec80034ca94e9b1b867d97b5d47e43cd96"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "dash"
+
+[vector.media.video]
+codec = "vp8"
+width = 928
+height = 446
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "opus"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/exMPD_BIP_TC1/ElephantsDream_AAC48K_064.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/exMPD_BIP_TC1/ElephantsDream_AAC48K_064.mp4"
+sha256 = "f99a0dff43bd700170ea991e4ec938977ef2ca407c42289607ce17f3df059493"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0100.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0100.mp4"
+sha256 = "78ebacfd4d23053b2a671a890d56afbc812e18a6302f805449b598230cb54266"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0175.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0175.mp4"
+sha256 = "c113ead6eca67b64aaebe402b48fb471a25980036f69b7c215aa23d757071ac4"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0250.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0250.mp4"
+sha256 = "0600c88483018db34d7b72425d13b9ba62eede230f875f95da2fac8b053cc63b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0500.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/exMPD_BIP_TC1/ElephantsDream_H264BPL30_0500.mp4"
+sha256 = "3bc5a90732ef6bc956f717ff57da54acee55024bf6dd30d047eaa0867b4d79c4"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/exMPD_BIP_TC1/exMPD_BIP_TC1.mpd"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/exMPD_BIP_TC1/exMPD_BIP_TC1.mpd"
+sha256 = "c2deefccce0811ef1b69ecbdf8356caa3c6b72669088c0a2c39703ef2cfafe49"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "dash"
+
+[vector.media.video]
+codec = "h264"
+width = 480
+height = 360
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/flac/samples.multimedia.cx_flac_Yesterday.flac"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/flac/samples.multimedia.cx_flac_Yesterday.flac"
+sha256 = "48d116179dfa10c472309241779673848e0903ff089912b18c29098e6ccb3692"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "flac"
+
+[vector.media.audio]
+codec = "flac"
+sample-rate = 44100
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/flv/819290236.flv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/flv/819290236.flv"
+sha256 = "77995b682db494158c388a6b2aa2add0d6454a5f3b0d1a9ee74d5d682757c188"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "flv"
+
+[vector.media.video]
+codec = "vp6f"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "mp3"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/flv/h264_intra_first-small.flv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/flv/h264_intra_first-small.flv"
+sha256 = "f117623224102318247eb774b12131b84f19d0a840e9095ba8a68a170d3d387f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "flv"
+
+[vector.media.video]
+codec = "h264"
+width = 1920
+height = 1080
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/h265/alternate.h265"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/h265/alternate.h265"
+sha256 = "499d9fb812670a7583cfaf8b5b2de9f9315137e50b447179af8357d32ede2c44"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hevc"
+
+[vector.media.video]
+codec = "hevc"
+width = 300
+height = 100
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/hls/with_empty_segments/output.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/hls/with_empty_segments/output.m3u8"
+sha256 = "d9ce8607ac6f7135f7193a903acc42242233c3f9dbf0c03f4249d3687a295e4f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 3456
+height = 2160
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/hls/with_empty_segments/video.m3u8"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/hls/with_empty_segments/video.m3u8"
+sha256 = "1db684ea377d2998549f45080fe3502152bbe32a4540a34cdcd1d42e50b5701d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "hls"
+
+[vector.media.video]
+codec = "h264"
+width = 3456
+height = 2160
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/hls/with_empty_segments/video0000.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/hls/with_empty_segments/video0000.mp4"
+sha256 = "1507fc5be373ab9fe83e3cb73efde553acbca8c75f5613398f3ef8ddcb06866c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 3456
+height = 2160
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00000.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00000.jpeg"
+sha256 = "52215766b7804faed92bab6a9ffff3f1a88fab1613452c4130dc95d4f64ef363"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00001.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00001.jpeg"
+sha256 = "b72fe799ad1b0e9582ae7caeda282478c73f7f66efd1c2cc4e4359b5099dc44d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00002.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00002.jpeg"
+sha256 = "15cd90802054f9d1bb42cc7b970e3a7944cf5654aa445323b1d97cf4c562cae7"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00003.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00003.jpeg"
+sha256 = "a1705351da5a943576016bbb808391004553eeb71288b05187f8b3a19abedf75"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00004.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00004.jpeg"
+sha256 = "9d47df3e20a02a3bd4dcf5e8cbb07a7051d8d2bd92212377800e6203215001e5"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00005.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00005.jpeg"
+sha256 = "0696743b4b0b31c74895ce7ebdb4a3769dd8b997361eff65ac5135ddc6251b08"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00006.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00006.jpeg"
+sha256 = "af0cf875efd89af9de60b7fafa43ac2f63ee8f28c5b75e052de845422aa956af"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00007.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00007.jpeg"
+sha256 = "5189faea41662665472c60caf3345eae49b8455768c61a495ffc7c1d3b136a65"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00008.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00008.jpeg"
+sha256 = "bf83d0f5431a1725aa4fb37a29114a25eaf5ee46a00b519d97f0a663a2d5ced9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00009.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00009.jpeg"
+sha256 = "6602ec72622b3c7d5c271f13b3b9c6336a87eea739c35c1907e15f427be94c39"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00010.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00010.jpeg"
+sha256 = "beaebc0ccf780bdd78be1755730364ae4b63d233fb82f9f66f96fdf717dafed3"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00011.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00011.jpeg"
+sha256 = "b518ad98bd820dad46c13d95daa4f97eec44879016df8a240dbe52b894af92a8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00012.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00012.jpeg"
+sha256 = "97b65cb27b6205476e0b3631e6e09da9a52faf6e9ae5b5a37cfdf73113ae8d78"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00013.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00013.jpeg"
+sha256 = "99953ef98dbe3236b295f1e31d7ac8ed03747e1bf4293fbb35c66c593728b364"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00014.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00014.jpeg"
+sha256 = "6ae0a814be02c59459ca52298745159568e3ba4618037aa780fefeab99db2393"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00015.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00015.jpeg"
+sha256 = "6539505193469f3b975753288c1f5eabba045789ded2ce8ed90f9d337a9566fd"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00016.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00016.jpeg"
+sha256 = "6db9ee459c379125b5d54fe83d22e697c4ec726a5fac4dbd56a66af9bc381772"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00017.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00017.jpeg"
+sha256 = "939f5dcc64305f515a4b9cccf80f7277eed84b3897ad2e08da8139d0407a2e2b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00018.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00018.jpeg"
+sha256 = "157de12ec3fe89c17a5452cde523327af9c92f183e31e958b529b876bad980ae"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00019.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00019.jpeg"
+sha256 = "299e6c31bb914265966f58aedb78c94f8544352ef5d1fe4ed74fda29bdee1840"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00020.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00020.jpeg"
+sha256 = "4848263fa61722953d2600ca69bef8244a2bab4c9675e7b84941b227d2df7cc3"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00021.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00021.jpeg"
+sha256 = "e5b9a6e13b83806b71a1711936de6d612b4d908cbdb13df3b4e38aa208cae0f8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00022.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00022.jpeg"
+sha256 = "e447d79a329fbbee794da75bf3af830dfa4f5dca6c8203118b93fd3df29bbd6d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00023.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00023.jpeg"
+sha256 = "2e282a2ebf925adb8de12f570dc393788d8d99255135bb326cf199f9f4a741a1"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00024.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00024.jpeg"
+sha256 = "48d14496c6806fc37a8a6f6debc69a83239859f8058a3f260a14da4f1f947018"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00025.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00025.jpeg"
+sha256 = "a8128ece0f3a468ad98a5e23a01cf607c9decac81b4530ac4c831da9bed032a4"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00026.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00026.jpeg"
+sha256 = "90ef372fb7309d3c0cd3255ac6657e2eccfa32c38be4547e0f607c2d9e8a2fd9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00027.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00027.jpeg"
+sha256 = "ea5e5daae01b000efe0b1a8c38795872a94e1bb7fd2d00dfac7d0fb7046684e2"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00028.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00028.jpeg"
+sha256 = "afb7852bb8172e16d1d3d75d50d9863b1252aa49ecff883958986614e44f11ae"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00029.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00029.jpeg"
+sha256 = "b4ffba950d22189e17d3e214f3a7fc28d0455667be306663cdcff589991f750b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00030.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00030.jpeg"
+sha256 = "1ba3313c3e44e779f3c2c6979b56eaa8b587445995c272d7165ddc37fff91535"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00031.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00031.jpeg"
+sha256 = "9889420b04e21e76797980eb790b2f9004f27102b0451d3ca3381b1c83a8667c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00032.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00032.jpeg"
+sha256 = "e60efd27adde153c7812355b4774b7bbf350578aa382b0c27c4ad14bb75719bd"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00033.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00033.jpeg"
+sha256 = "ce3595f82702747204b6a92b6c7483a94abd34437fb6078a13863fbccca31968"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00034.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00034.jpeg"
+sha256 = "beb8c69031ed6fc61f2e5aec1abbd7b857587c3c6324b25e2089f7a72a5d7cd9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00035.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00035.jpeg"
+sha256 = "0c9b748467ebd02e09f8ce7346a8c1783633632ec140c2c9be66194bf8c89eae"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00036.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00036.jpeg"
+sha256 = "cdf88c96c2f6bb4f4ea27ec39c4e0f6340eb7be6d1f94a73f83efdc74b3787fd"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00037.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00037.jpeg"
+sha256 = "528202fe36eb00266befe9df21e2ae7256e1a993d2497e77dd1b1be74dff45af"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00038.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00038.jpeg"
+sha256 = "dbd64e2656bc0e405bb06225eb2e77694d0d09668a478b5339b2731156d4ed96"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00039.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00039.jpeg"
+sha256 = "e900e8ecdec0f6884b3023ab39843356e61fa32c19efc5f7c4403771d1021b60"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00040.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00040.jpeg"
+sha256 = "6ffed1ba2fadd18f1cfd4653e1f5bf158dc132b35b8787ca4199a1f1afb60507"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00041.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00041.jpeg"
+sha256 = "dc13dfd13597e5f455d3cbb9535af9bf332c4bdc5f9222af89255b8c440920a1"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00042.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00042.jpeg"
+sha256 = "b50e008e7617df900b02fd0dfbcce07b441e158a01e1e1bc602f8370bf02c2bb"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00043.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00043.jpeg"
+sha256 = "797520fb485d71344e3964eaeb01e78b45b77a4d923d1af7469b9ba464715848"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00044.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00044.jpeg"
+sha256 = "43ae8904077accebacc182b9d06f5813f391421e12953556f0358281d4982db8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00045.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00045.jpeg"
+sha256 = "8c38a462170db700953f2309662f227435953462d419fa3eb487f6b3f5583bb0"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00046.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00046.jpeg"
+sha256 = "4db2da5d1a043f948dc3826577883156f4409f0426d691066516182890e3c27d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00047.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00047.jpeg"
+sha256 = "a09c816310848e064e95ab6e43f356962b0dd0da4e6895e2463e46319908343e"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00048.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00048.jpeg"
+sha256 = "37e81778248cfa98878cd5697a145f37e6ac48adf6a4b72f6d9f92c8a200deb6"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00049.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00049.jpeg"
+sha256 = "03f6d105dd2296762ce239574b77dfcd54f387d55d6870a3e661d162b80a3d78"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00050.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00050.jpeg"
+sha256 = "c7dde403de50b39ecffac8aaf6fbe4685e2a035627ae8b815d0c8d9b834b8c1a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00051.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00051.jpeg"
+sha256 = "c3f692bb3c3a76008aea0d1dcdb41abe42f74b67f53f362c5cf5599c4cebb4ba"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00052.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00052.jpeg"
+sha256 = "4385229b43dde1f82c376a0a2c7f30e22b43dec844cd96e1c69b3ce758a8a278"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00053.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00053.jpeg"
+sha256 = "4fef0ca346c25dad39aaa321d7f51c8856206352759f89e5d856b5315f974a2c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00054.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00054.jpeg"
+sha256 = "516fb9cb60229c5914708f14064e852dea0728dcdfa640af5505417d9e20558c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00055.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00055.jpeg"
+sha256 = "19ddbe8a9bbd9ad84ef6a9af21ac9496cec55c4a2beaa74b484576725a28241e"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00056.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00056.jpeg"
+sha256 = "27b2f395be6e6518d9089a969d52b911d3d371de642b30b841891971696fc249"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00057.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00057.jpeg"
+sha256 = "1dc123d12eaaf54ded8e6b871fb6290ead5389874997d5bc538b47e99da54cba"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00058.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00058.jpeg"
+sha256 = "b64f0938da920cd7b340b81d26bddd86e65926c2f11e96aa3b8a32270f1544e9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00059.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00059.jpeg"
+sha256 = "26a2af78f355f1f04361840644f91b61ea41b21cb00ab6e1097bb2b96d27ae25"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00060.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00060.jpeg"
+sha256 = "daffb11e91a7183acedbcb28b02683f5bfc20f647128f6d62e1a7abc172ac09d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00061.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00061.jpeg"
+sha256 = "2fbf0958ca2add16a298f7bd5a7329a253cd99bc6f48108c1d8646448be2ab68"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00062.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00062.jpeg"
+sha256 = "73bc3d532a095151342dfa0e5bc856be11553b46ae98c629433e5580300f595b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00063.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00063.jpeg"
+sha256 = "1cc643e5c026214be84bb08aa4e8fe0fc67a2713b7c5a44b3ab5fe650fd7acd4"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00064.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00064.jpeg"
+sha256 = "5c81ea7dfce8d86ee0bd187e8a1b8dbcc044af8658614297c98e1f9e69fe2ab8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00065.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00065.jpeg"
+sha256 = "4e494039cfe2d3e3857cd262866ff613add1291abaa92468e2648384628e75ce"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00066.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00066.jpeg"
+sha256 = "c1f446929edf1b5aa044a47e61262f7d6b5faee6267dccb33ae690268913ec21"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00067.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00067.jpeg"
+sha256 = "303031c98fb1559db7d2f5c62d9f74447a11a82098e17d2f7f0b29366a2a00fd"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00068.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00068.jpeg"
+sha256 = "8f88ebe784b47ecc3f9497b566cbfba84d0b149f1ace75c1034c43cfebe6865b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00069.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00069.jpeg"
+sha256 = "5060be070c0030202e50538e3c984a2aa51bd942f6e73ae7ab5f6cc12696512f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00070.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00070.jpeg"
+sha256 = "d5e6c08db01c696e09903faba9dda0ca9c31ce77e90922b1a466a03d030afe40"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00071.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00071.jpeg"
+sha256 = "d163f8aedf9443ef306d1872b6b52a4e79f009d0dc0f9ac809bbb7f70698cf06"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00072.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00072.jpeg"
+sha256 = "886a2890995b2d104babdb1875ab67f42199c354440c532bedae60e4084ad7a3"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00073.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00073.jpeg"
+sha256 = "31ff7cdc5994553c6edba2312d75b320e84d51dc2bcfe2049a72c478b0256b4b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00074.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00074.jpeg"
+sha256 = "5579f55ce5fff320f6add1ee5fae194d9a2858c3e1d567266e414033456da584"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00075.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00075.jpeg"
+sha256 = "58591b7f7f319cbc210420e251cba8917d7e0b13c5395010ac6713e392622959"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00076.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00076.jpeg"
+sha256 = "9e6393e96e4d36b4ec24624f4982c4b7a6b8c9a935e49de38308497e11be5171"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00077.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00077.jpeg"
+sha256 = "bf1bdadd864d95ea90fabf14d31a1c014bea7ace9dd8084a22faea45c3106fb8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00078.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00078.jpeg"
+sha256 = "a2dd24dc46512b7ad9fe5eb9461ab2b9c8f090286b5d5b197790f9e3ba23604d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00079.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00079.jpeg"
+sha256 = "968a6320144f97b89d1bfdc9508f13858841698dcb46e32ce647f1524026ba4c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00080.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00080.jpeg"
+sha256 = "d1bf5d6a4cebabd8428751b09d8aa0d6d6dccce108773fcb03f16bc3b9fc55bf"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00081.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00081.jpeg"
+sha256 = "e2498c214a5de0396c0ebd52c6eb03af677054c7d033e3d238bdcf23f94f7c35"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00082.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00082.jpeg"
+sha256 = "349540a294b759d4eed7d5abd70b9a22581c5856b8f19b5aa179e582e66dcfdd"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00083.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00083.jpeg"
+sha256 = "1952904fc9970e8602f0b592e5e86f8a239af64fe0e2ce16a0d6c20ecc495e68"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00084.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00084.jpeg"
+sha256 = "dc3a6b6d896e3367f465f29dade40f99c47ef794b055e9e846ef3e130cdfea28"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00085.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00085.jpeg"
+sha256 = "3a1e91c9ca112426c3558d36cacba2b3b27fc1c04712daba43d4ca9a0b60c4d1"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00086.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00086.jpeg"
+sha256 = "db32613051fb5efcd88109679d900d05cb8c04781ec4c42ff4228f7430993f76"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00087.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00087.jpeg"
+sha256 = "39f43b179581e35e63c7cde9e9c924aed9e7e161741ad5cb1f20c86bc18c3b47"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00088.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00088.jpeg"
+sha256 = "aa1f30d92e5c258226067fcd37a7a2ce75d8ce46719050a7470f7d7fd1532767"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00089.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00089.jpeg"
+sha256 = "1f7e3c14a4c21e4312595c38bc2648691454a89ee4da3a1f54b6836d3a0e4bc1"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00090.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00090.jpeg"
+sha256 = "04eba0cdcc4161dcd6e81e5f3c0787baa0ca1875c381bb752b95c368d53f21b8"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00091.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00091.jpeg"
+sha256 = "1a03cefcad6d047e1a5a226a0131452a32153ab1faef3b63eaf8c0bb19990278"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00092.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00092.jpeg"
+sha256 = "70b5134776b9df3d28ac332e186117245f4ead66fa1482a4f5279a011d89cd49"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00093.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00093.jpeg"
+sha256 = "e6ef5215a219ad786a93288456b947847440a9be600d189a172fea8722afeea1"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00094.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00094.jpeg"
+sha256 = "f13058d7208fc9b2a0178ea587139a85371f09ae64bc54df56a4d5fc9c4c8e17"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00095.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00095.jpeg"
+sha256 = "61cb2ab1bc5a023ec5af902dcb0fa0082e2d92b0714b7096084094c2c922d84c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00096.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00096.jpeg"
+sha256 = "fdd8af73a8da740309c31edb4e44122d66256c29c4886137d13fea2aee4739fe"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00097.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00097.jpeg"
+sha256 = "7f9782e96f52cd99425fadba7590048502d6675205ceecb7fe655832064d4aa4"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00098.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00098.jpeg"
+sha256 = "65715e15790758e91d2f183e91cbc9dc73674a015a705c28cada27bb2af8b51a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/imagesequences/jpeg/00099.jpeg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/imagesequences/jpeg/00099.jpeg"
+sha256 = "926a04013dfb8b5f128439578673725931a7ba67ffa5347b6490e3345678d018"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "image2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/matroska/flac_jpeg.0.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/flac_jpeg.0.mkv"
+sha256 = "98fb4d6e66e65ebea430fefe66d8769b60d30c0bc702fd6a3862e7cd74ec3b79"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[vector.media.audio]
+codec = "flac"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/matroska/flac_jpeg.1.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/flac_jpeg.1.mkv"
+sha256 = "0d1fa70b4423d807ed3a468732d9db5ef1ccc69005990c2f67f053398992b1c9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[vector.media.audio]
+codec = "flac"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/matroska/h264_srt.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/h264_srt.mkv"
+sha256 = "121fe2833853acf4fc64f8acb4cbcb7b5386565774eb1c602f5355c217311499"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/matroska/numerated_frames_blue.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/numerated_frames_blue.mkv"
+sha256 = "6245aa247fab1db4a007ac1febd643af5512c877e6407fdbfe663a6a86200aef"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/matroska/numerated_frames_red.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/numerated_frames_red.mkv"
+sha256 = "5dab9dbfc9357dfe6ce9fa8188a929bc5ec251020ba31841aa0aa8531b1e8e2e"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/matroska/opus_jpeg.0.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/opus_jpeg.0.mkv"
+sha256 = "e46f64006bf82a9983cc837649003758c1eb39b30f685e1bf648be9b75e8ea90"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[vector.media.audio]
+codec = "opus"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/matroska/opus_jpeg.1.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/opus_jpeg.1.mkv"
+sha256 = "df4bd18411ceb135cdb3529a8118d29c36d189c753e45589c095961582ff5c4d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 320
+height = 240
+pix-fmt = "yuvj420p"
+
+[vector.media.audio]
+codec = "opus"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/matroska/raw_video.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/raw_video.mkv"
+sha256 = "8df2902fa2b0a16bacdab7b2da9bb34ee1a5c7f86e29a31ba92df5fc29123628"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "rawvideo"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/matroska/red_timed_frames_video_only_1fps.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/red_timed_frames_video_only_1fps.mkv"
+sha256 = "62bdf1cee5109feb991ac0cb1b25b3e78c4d034666fba228d7ea576931e552d3"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 1080
+height = 720
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/matroska/test5.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/test5.mkv"
+sha256 = "92acdc33bb0b5d7a4d9b0d6ca792230a78c786a30179dc9999cee41c28642842"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "h264"
+width = 1024
+height = 576
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/matroska/timed_frames_audio_video_1fps.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/timed_frames_audio_video_1fps.mkv"
+sha256 = "790dc696e797db14ea95b592a18d37d3db03e618d21ff9d13b8593a8f42c9d6b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 1080
+height = 720
+pix-fmt = "yuvj420p"
+
+[vector.media.audio]
+codec = "opus"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/matroska/timed_frames_video_only_1fps.mkv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/matroska/timed_frames_video_only_1fps.mkv"
+sha256 = "1fd7243c77f2668afd2ec8e23ac58846b1928e387bbc8254d78a7ba9474bf5ef"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 1080
+height = 720
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/aac.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/aac.mp4"
+sha256 = "a4e30ba26af6a17131b607f2f38d4c3c60baf858591fb2b2df01ad5b43af522a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 44100
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mp4/av1-image-sequence.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/av1-image-sequence.mp4"
+sha256 = "75e47e35b2626d6dbefca8d91610bae75c0ad797b71aa8fe14473fb12b7cca68"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "av1"
+width = 160
+height = 120
+pix-fmt = "yuv444p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/counting-vtt.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/counting-vtt.mp4"
+sha256 = "485715a395e18a4f8f8b8442a182962559b4dad227d74071167258dfe0e8a9c1"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "mpeg4"
+width = 352
+height = 288
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/fragmented_nonseekable_sink.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/fragmented_nonseekable_sink.mp4"
+sha256 = "887cc1cced4ae4d66ecabb9977a33563443cde8949328d55085d9e8ab79dfd39"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/mp3_h264.0.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/mp3_h264.0.mp4"
+sha256 = "7d0dbfddeb6fb212575d3a25f52166724fb3d06710f4e1bcf15906ff7f779906"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "mp3"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/mp3_h264.1.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/mp3_h264.1.mp4"
+sha256 = "805a304203cb2c4fcbe3472b261d5d55c57b3a3c77b66b8f2ee609d242abaf8b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "mp3"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/mp3_h265.0.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/mp3_h265.0.mp4"
+sha256 = "dead8eb5910e2e40a16af75b96ac5fb3a02c74c045db496261792cc029dc16a4"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "hevc"
+width = 320
+height = 240
+pix-fmt = "yuv420p10le"
+
+[vector.media.audio]
+codec = "mp3"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/multi_audio_5tones.mov"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/multi_audio_5tones.mov"
+sha256 = "e6bf7a51646ee7b837e2bf65e20d2986241cc794d87a76fed227f0dcd16d0afa"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv444p10le"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/prores_s8.mov"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/prores_s8.mov"
+sha256 = "63110bf716acd5465f3c59cd14824b033a539b953c4fdaedd3d1ffd91ff8b1ce"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "prores"
+width = 1920
+height = 1080
+pix-fmt = "yuva444p12le"
+
+[vector.media.audio]
+codec = "pcm_s8"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/qtdemux-test-frag-basic_zero_dur_no_mehd.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/qtdemux-test-frag-basic_zero_dur_no_mehd.mp4"
+sha256 = "66ffc1cb93248d9a3c529a34d325b18ab5b9ee4a2edc5f34cb1b25dd02ca4316"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/raw_h264.0.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/raw_h264.0.mp4"
+sha256 = "8ab75537557bdc13f7cc53e391e3c4d681f6e1f3fba5fa40251da5c28b2e1886"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/raw_h264.1.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/raw_h264.1.mp4"
+sha256 = "1b92edcca7ba451c7e68bcfa63de7360def3a704db8f1101be7d07db8442cfc6"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/raw_video.mov"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/raw_video.mov"
+sha256 = "63bb0aaed07897b825f35047380d63ea96919f79a58b16a065da4f16e5220e55"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "rawvideo"
+width = 320
+height = 240
+pix-fmt = "uyvy422"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/rawaudioS32LE_prores.mov"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/rawaudioS32LE_prores.mov"
+sha256 = "1c912b3f6712601704268795bb7af8a95fac64055cb9f64d257f3fe7c5cb63e9"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "prores"
+width = 320
+height = 240
+pix-fmt = "yuv422p10le"
+
+[vector.media.audio]
+codec = "pcm_s32le"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_h264_23976fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_h264_23976fps.mp4"
+sha256 = "2ee20fc2ac57b61dab20819696747ce891d7b17a8d1ffc3709f56a440f2b9ecf"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 640
+height = 380
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_h264_2997fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_h264_2997fps.mp4"
+sha256 = "f9adf52d322fc09ff7fc767965c0bd16e4204a9084eaef4452a7a3178c744201"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 640
+height = 380
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_h264_30fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_h264_30fps.mp4"
+sha256 = "4916559041f0dae4516ecd1be08964bb114c43c1ceafa3e6b58d70e762f2ac6a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 640
+height = 380
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_jpeg_23976fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_jpeg_23976fps.mp4"
+sha256 = "3bce250d516b15417a1dd6564b2dc5c3fbf225d926a8cfd35a55d354b5001b83"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 640
+height = 380
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_jpeg_2997fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_jpeg_2997fps.mp4"
+sha256 = "4d969097381d63f8fa240166c2cef908aa1d66fb83f65dae5cc27b3cdf660c5c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 640
+height = 380
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_jpeg_30fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_jpeg_30fps.mp4"
+sha256 = "143bc6200e6d59fd106aa7582e7e136a69c6cec21c6f5ac9f8ed5e7c6f2f0e2c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "mjpeg"
+width = 640
+height = 380
+pix-fmt = "yuvj420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_vp8_23976fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_vp8_23976fps.mp4"
+sha256 = "8dc235f7642bfd0c6f14d74a8f4ca2a38b52c029eb57e9b21d1ad59ec1cc6059"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "vp8"
+width = 640
+height = 380
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_vp8_2997fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_vp8_2997fps.mp4"
+sha256 = "d1b3fab4b9c8c4ab608e400fa1cb59d2a9a9373657d1fe23cf0209376e1365ff"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "vp8"
+width = 640
+height = 380
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mp4/timecoded_vp8_30fps.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mp4/timecoded_vp8_30fps.mp4"
+sha256 = "6c98b19c3cf26c7ddb4b4d0c70ac8f8e908677bc16177ff5300e9175fed820ce"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "vp8"
+width = 640
+height = 380
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/mpegps/sample_mpeg_program_stream_scr.mpg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mpegps/sample_mpeg_program_stream_scr.mpg"
+sha256 = "be8ed71fbc17772b1e985a8ab4e73927d031c0557395f12a687672b8060ae076"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpeg"
+
+[vector.media.video]
+codec = "mpeg2video"
+width = 1280
+height = 720
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "mp2"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mpegts/GH1_00094_1920x1280.MTS"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mpegts/GH1_00094_1920x1280.MTS"
+sha256 = "b579997aede215adf7d2bfd66823796d75f88b4d691f2265d8e9a4e961cfba30"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 1920
+height = 1080
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "ac3"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mpegts/cm5000_hevc_1080i_colorbars.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mpegts/cm5000_hevc_1080i_colorbars.ts"
+sha256 = "c3806e424cebaa6897d021cd67664a4338d12aa22d9586848cd208525e17382b"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "hevc"
+width = 1920
+height = 540
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mpegts/tron_en_ge_aac_h264.ts"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mpegts/tron_en_ge_aac_h264.ts"
+sha256 = "3e4832ca1a27f6a23d38329becbfb31091abefc85d0af480247edb9eeafc7351"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mpegts"
+
+[vector.media.video]
+codec = "h264"
+width = 688
+height = 320
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mxf/1080p_xavc_audio_conforming_accuracy.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/1080p_xavc_audio_conforming_accuracy.mxf"
+sha256 = "aca296acd3327b6e29765ff19cb55f16b5e922d8365650679d5b7d7ff8897099"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "h264"
+width = 1920
+height = 1080
+pix-fmt = "yuv422p10le"
+
+[vector.media.audio]
+codec = "pcm_s24le"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/mxf/op1a-mpeg2-wave_hd.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/op1a-mpeg2-wave_hd.mxf"
+sha256 = "9f393b9ac30df54db9e1e40465fa469c6dec40a312063c11625743741e161182"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "mpeg2video"
+width = 1920
+height = 1080
+pix-fmt = "yuv422p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mxf/op1a-pal-mpeg2.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/op1a-pal-mpeg2.mxf"
+sha256 = "e6bd713021c9bf58330c54f8896db71e2b1c37b6bc2c56be2baed8b39e1e2a49"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "mpeg2video"
+width = 720
+height = 608
+pix-fmt = "yuv422p"
+
+[[vector]]
+id = "gst-medias/defaults/mxf/op2b-mpeg2-wave_hd.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/op2b-mpeg2-wave_hd.mxf"
+sha256 = "c844e5b7d4baf5d5a6f2f6e93e4b3fa0c2f1d8e6aaccd705708996dec110a57f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "mpeg2video"
+width = 1920
+height = 1080
+pix-fmt = "yuv422p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/mxf/xdcam-pal-d10-imx30.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/xdcam-pal-d10-imx30.mxf"
+sha256 = "cc906d72d8a865f4df5055fdc62d9d1d4849fe4e6d084ba1ad6fc21da7abcd0d"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "mpeg2video"
+width = 720
+height = 608
+pix-fmt = "yuv422p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 48000
+channels = 8
+
+[[vector]]
+id = "gst-medias/defaults/mxf/xdcam-pal-d10-imx50.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/xdcam-pal-d10-imx50.mxf"
+sha256 = "8386c725147acc0ebc03b926abb1d634d8d4cfcb486dd717a00aa91e02275609"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "mpeg2video"
+width = 720
+height = 608
+pix-fmt = "yuv422p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 48000
+channels = 8
+
+[[vector]]
+id = "gst-medias/defaults/mxf/xdcam-pal-dv25.mxf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/mxf/xdcam-pal-dv25.mxf"
+sha256 = "d224dfc7de1259eef4df86819a7eb31398cc3e507060af50671ad2bb3dafa531"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mxf"
+
+[vector.media.video]
+codec = "dvvideo"
+width = 720
+height = 576
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "pcm_s16le"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/ogg/audio_5.1_separated_frequencies.ogg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/ogg/audio_5.1_separated_frequencies.ogg"
+sha256 = "cba1a680c3940a020b91ee188b1d05c67e60810ed1c12c667a267eb85899fc67"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "ogg"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 48000
+channels = 6
+
+[[vector]]
+id = "gst-medias/defaults/ogg/numerated_frames_blue.ogv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/ogg/numerated_frames_blue.ogv"
+sha256 = "37fefbe5eec78b1855e172e84409c06365be023150d8b4b32845c680bb670824"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "ogg"
+
+[vector.media.video]
+codec = "theora"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/ogg/opus.1.ogg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/ogg/opus.1.ogg"
+sha256 = "b8873cba154e31ca3f75135520ed01bb1294b0672b5ff00232c4e3d2ff73628e"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "ogg"
+
+[vector.media.audio]
+codec = "opus"
+sample-rate = 48000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/ogg/vorbis_theora.0.ogg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/ogg/vorbis_theora.0.ogg"
+sha256 = "2abca6c98e119e45acec837a1b6b4b1bfcb1045da8b3b6183f90b4e88e3eee0c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "ogg"
+
+[vector.media.video]
+codec = "theora"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/ogg/vorbis_theora.1.ogg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/ogg/vorbis_theora.1.ogg"
+sha256 = "b47447a0ddea3d611bc1536a04fc16d0ed37d3be47dc260395e8b03a7a0f2484"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "ogg"
+
+[vector.media.video]
+codec = "theora"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/ogg/wpt-test-ogg-vp8.ogv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/ogg/wpt-test-ogg-vp8.ogv"
+sha256 = "6b8d9239414304ab57e286ca155e4b74c9a472b30dea148f635e7cbb05c05482"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "ogg"
+
+[vector.media.video]
+codec = "vp8"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 44100
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/png/png.png"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/png/png.png"
+sha256 = "05fb2a199de26f6bb2b08bd5930908aa04b3ad83e2172b13fd843fc2cd076a57"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "png_pipe"
+
+[vector.media.video]
+codec = "png"
+width = 320
+height = 240
+pix-fmt = "rgba"
+
+[[vector]]
+id = "gst-medias/defaults/svg/opacity01.svg"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/svg/opacity01.svg"
+sha256 = "2952325ee6d8ac97d4e36f626e968c2ac084b53a812459b9e87211077b1c1bbd"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "svg_pipe"
+
+[vector.media.video]
+codec = "svg"
+width = 0
+height = 0
+
+[[vector]]
+id = "gst-medias/defaults/webm/opus_vp9-alpha.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/webm/opus_vp9-alpha.webm"
+sha256 = "7f9b72ea8878feab8e1b16aebd09aa53dd4fa908712ee7ab32454629fd4ce79f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp9"
+width = 1920
+height = 1080
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "opus"
+sample-rate = 48000
+channels = 2
+
+[[vector]]
+id = "gst-medias/defaults/webm/vorbis_vp8.0.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/webm/vorbis_vp8.0.webm"
+sha256 = "78ab462e3b66e7898f5445ab23308cbb9c0d8bb49fbabb79b57b5cd30ef40303"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp8"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/webm/vorbis_vp8.1.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/webm/vorbis_vp8.1.webm"
+sha256 = "5fc7b4a66140f8ca868cf941199e25d7489ad285d8f5e5f8636135e1b3001a0c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp8"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/webm/vorbis_vp9.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/webm/vorbis_vp9.webm"
+sha256 = "3fcf68a153ba7cfba590dacb69e546750bc20ace926c04b52b4256ff2525a60e"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp9"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "vorbis"
+sample-rate = 44100
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/webm/vp8-alpha.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/webm/vp8-alpha.webm"
+sha256 = "2cee3a4c6026583070e492f2dba9f5da1253383279bb4cf634d7ec1c31581703"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp8"
+width = 1920
+height = 1080
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/defaults/wmv-asf/samples.multimedia.cx_asf_wmv_elephant.asf"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/wmv-asf/samples.multimedia.cx_asf_wmv_elephant.asf"
+sha256 = "e81690e9e99a5c5dc3c408404862da18c26a5e4f064e461d4d36887af2e3de28"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "asf"
+
+[vector.media.video]
+codec = "msmpeg4v3"
+width = 160
+height = 120
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "wmav2"
+sample-rate = 8000
+channels = 1
+
+[[vector]]
+id = "gst-medias/defaults/wmv-asf/samples.multimedia.cx_asf_wmv_low_fps_cheaterlow.wmv"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/defaults/wmv-asf/samples.multimedia.cx_asf_wmv_low_fps_cheaterlow.wmv"
+sha256 = "c918e076b5417ece7229c8e9f3a084dcbfabd26e917f9a99583a358927543b22"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "asf"
+
+[vector.media.video]
+codec = "wmv1"
+width = 360
+height = 240
+pix-fmt = "yuv420p"
+
+[vector.media.audio]
+codec = "wmav2"
+sample-rate = 44100
+channels = 2
+
+[[vector]]
+id = "gst-medias/edit-lists/simple/edit_list_video_23456789_implicit_duration.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/edit-lists/simple/edit_list_video_23456789_implicit_duration.mp4"
+sha256 = "edb38cae78a847a44dac36de20dbc553eea9242738bc48ad84a209eb920e4b00"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv444p"
+
+[[vector]]
+id = "gst-medias/edit-lists/simple/ibpibp-non-frag.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/edit-lists/simple/ibpibp-non-frag.mp4"
+sha256 = "e802e5bf6a6400bddab24eac99d134134611142d959f76709c65b42f7fff4e55"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 320
+height = 240
+pix-fmt = "yuv420p"
+
+[[vector]]
+id = "gst-medias/encrypted/cenc-encrypted-youtube-aac.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/encrypted/cenc-encrypted-youtube-aac.mp4"
+sha256 = "9235f1913c4ba18ae881f535214093dea33d8299c08a58eef17ffeb03b204334"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 22050
+channels = 1
+
+[[vector]]
+id = "gst-medias/extras-ges/desktop-summit/png/happy pitivi user.png"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/extras-ges/desktop-summit/png/happy pitivi user.png"
+sha256 = "688351ddca499318f915d275a3a7fce1db8cbfeaa217af222015eb0e6c03502a"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "png_pipe"
+
+[vector.media.video]
+codec = "png"
+width = 1280
+height = 720
+pix-fmt = "rgba"
+
+[[vector]]
+id = "gst-medias/fragments/car-20120827-85.mp4/init.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/fragments/car-20120827-85.mp4/init.mp4"
+sha256 = "a703101e41d56e427a88e7b05fa17233a704c37189c6bb044bc4532f1323eca6"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 426
+height = 240
+
+[[vector]]
+id = "gst-medias/fragments/car-20120827-86.mp4/init.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/fragments/car-20120827-86.mp4/init.mp4"
+sha256 = "8d92385caef277dc90e53d6499d753c7c56fbcf6426a7cefa4f0a1f96ceddbb7"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 640
+height = 360
+
+[[vector]]
+id = "gst-medias/fragments/cea608-20260909.mp4/init.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/fragments/cea608-20260909.mp4/init.mp4"
+sha256 = "fc5f010e16f5d88e24e6b67bd6110885122abf6aa82d2353e1d3d6065503ad0c"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.video]
+codec = "h264"
+width = 426
+height = 240
+
+[[vector]]
+id = "gst-medias/fragments/feelings_vp9-20130806-242.webm/init.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/fragments/feelings_vp9-20130806-242.webm/init.webm"
+sha256 = "a33df8705645441a57a35e8555c1948b026031046467ef0abf74b33c65bdc9b6"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp9"
+width = 426
+height = 240
+
+[[vector]]
+id = "gst-medias/fragments/feelings_vp9-20130806-247.webm/init.webm"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/fragments/feelings_vp9-20130806-247.webm/init.webm"
+sha256 = "c72dfa868dc6382e667b8284ba438d9ea13fb2befdfae86e89435f00248a1e7f"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "matroska,webm"
+
+[vector.media.video]
+codec = "vp9"
+width = 1280
+height = 720
+
+[[vector]]
+id = "gst-medias/fragments/mse.1/segment-mse-first-sample-init.mp4"
+url = "https://gitlab.freedesktop.org/gstreamer/gst-integration-testsuites/-/raw/main/fragments/mse.1/segment-mse-first-sample-init.mp4"
+sha256 = "f80ac8d876a757a5bbc271a80256372641f7d328f449310ed792d7b9e1c467c0"
+license = "GStreamer gst-integration-testsuites medias, no license stated, fetched not redistributed"
+
+[vector.media]
+container = "mov,mp4,m4a,3gp,3g2,mj2"
+
+[vector.media.audio]
+codec = "aac"
+sample-rate = 48000
+channels = 2
