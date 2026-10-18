@@ -2,15 +2,16 @@
 # publishes a looped clip to mediamtx over rtsp and pushes it to the g2g srt listener
 set -u
 
-clip=/clip/baseline.mp4
+clip=/clip/baseline-no-bframes.mp4
 rtsp_url=rtsp://127.0.0.1:18554/baseline
 srt_url="srt://127.0.0.1:18890?mode=caller"
 retry_secs=1
 
 if [ ! -s "$clip" ]; then
     mkdir -p /clip
+    # mediamtx closes a webrtc session on h264 with b-frames
     ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=30 -t 20 \
-        -c:v libx264 -preset veryfast -g 30 -pix_fmt yuv420p -y "$clip.partial.mp4"
+        -c:v libx264 -preset veryfast -bf 0 -g 30 -pix_fmt yuv420p -y "$clip.partial.mp4"
     mv "$clip.partial.mp4" "$clip"
 fi
 
