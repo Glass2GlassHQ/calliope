@@ -6,9 +6,6 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
 ## Canary
 - Run the canary on the EC2 instance for 6 months and link the S3 status page
   from the g2g docs site.
-- Self-hosted WebRTC row: enable webrtc in the canary mediamtx, add a
-  `whepsrc` pipeline on the feeder's clip to canary.toml, verify it decodes on
-  the dev box before the EC2 deploy.
 
 ## Mutation testing
 - cargo-mutants over g2g-core, then the g2g-plugins parsers the fuzz targets
