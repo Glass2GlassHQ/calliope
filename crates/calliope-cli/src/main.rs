@@ -4,6 +4,9 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::Arc;
 
+// one scenario on one engine: its resolved input and the expected outcome
+type PreparedRun = (Arc<Scenario>, Arc<dyn Engine>, PathBuf, Option<Expectation>);
+
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
 use futures::stream::{FuturesUnordered, StreamExt};
@@ -467,8 +470,7 @@ async fn run_matrix(
     // geometry when a differential scenario omits [video]); the resolved
     // scenario is shared across its engines and drives the report.
     let mut resolved: Vec<(Arc<Scenario>, Option<String>, Option<u64>)> = Vec::new();
-    let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf, Option<Expectation>)> =
-        Vec::new();
+    let mut prepared: Vec<PreparedRun> = Vec::new();
     // vectors whose input could not be fetched (dead URL, missing archive
     // member); skipped so one bad download does not abort the whole matrix
     let mut skipped: Vec<(String, String)> = Vec::new();
