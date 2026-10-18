@@ -25,3 +25,4 @@ compile.
 
 | Scope | Mutants | Caught | Missed | Timeout | Unviable | Score | Wall |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| g2g-core (caps, solver, clock, memory, frame, channel, runner) | 1114 | 516 | 351 | 26 | 221 | 59% | 3h |

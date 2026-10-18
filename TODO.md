@@ -4,12 +4,11 @@ Production-readiness evidence for g2g. Each item ends with a section in
 TESTING.md stating method, volume, and result. Delete an item when it lands.
 
 ## Canary
-- `calliope canary`: keeps N g2g pipelines alive against public RTSP, HLS and
-  SRT streams, restarts on exit, records uptime, restarts, RSS and latency per
-  pipeline to an append-only log, writes a static status page.
-- Deploy recipe: systemd units + binary sync script, host-agnostic (first
-  deployment on the dev box, then a 2 vCPU ARM VM).
-- Status page published to the g2g docs site.
+- Run the canary on the EC2 instance for 6 months and link the S3 status page
+  from the g2g docs site.
+- Self-hosted WebRTC row: enable webrtc in the canary mediamtx, add a
+  `whepsrc` pipeline on the feeder's clip to canary.toml, verify it decodes on
+  the dev box before the EC2 deploy.
 
 ## Mutation testing
 - cargo-mutants over g2g-core, then the g2g-plugins parsers the fuzz targets
