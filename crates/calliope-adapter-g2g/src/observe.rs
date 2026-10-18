@@ -6,6 +6,8 @@ use tokio_tungstenite::tungstenite::Message;
 
 const OBSERVE_HOST: &str = "127.0.0.1";
 const SINK_ROLE: &str = "sink";
+// g2g names its decoder elements after the type: FfmpegVideoDec, Dav1dDec, NvDec, MfDecode
+const DECODER_NAME_PART: &str = "Dec";
 const TELEMETRY_TYPE: &str = "telemetry";
 // g2g-launch binds the port only once the graph is built
 const RECONNECT_DELAY: Duration = Duration::from_millis(250);
@@ -14,8 +16,8 @@ const RECONNECT_DELAY: Duration = Duration::from_millis(250);
 pub struct TelemetryReading {
     // packets into every sink since the process started, frames plus a few control packets
     pub sink_packets: u64,
-    // median process() time of the elements feeding a sink, the decoder in `... ! dec ! fakesink`
-    pub sink_feeder_p50_ns: Option<u64>,
+    // median process() time of the slowest decoder element
+    pub decoder_p50_ns: Option<u64>,
 }
 
 pub fn observe_args(launch_line: &str, port: u16) -> Vec<String> {
@@ -39,24 +41,17 @@ pub fn parse_telemetry(text: &str) -> Option<TelemetryReading> {
         .filter(|node| node["role"] == SINK_ROLE)
         .filter_map(|node| node["id"].as_u64())
         .collect();
-    let sink_edges: Vec<&Value> = edges
+    let sink_packets = edges
         .iter()
         .filter(|edge| edge["to"].as_u64().is_some_and(|to| sink_ids.contains(&to)))
-        .collect();
-    let sink_packets = sink_edges
-        .iter()
         .filter_map(|edge| edge["packets"].as_u64())
         .sum();
-    let feeder_ids: Vec<u64> = sink_edges
-        .iter()
-        .filter_map(|edge| edge["from"].as_u64())
-        .collect();
-    let sink_feeder_p50_ns = nodes
+    let decoder_p50_ns = nodes
         .iter()
         .filter(|node| {
-            node["id"]
-                .as_u64()
-                .is_some_and(|id| feeder_ids.contains(&id))
+            node["name"]
+                .as_str()
+                .is_some_and(|name| name.contains(DECODER_NAME_PART))
         })
         .filter(|node| {
             node["proc"]["count"]
@@ -67,7 +62,7 @@ pub fn parse_telemetry(text: &str) -> Option<TelemetryReading> {
         .max();
     Some(TelemetryReading {
         sink_packets,
-        sink_feeder_p50_ns,
+        decoder_p50_ns,
     })
 }
 
@@ -93,29 +88,31 @@ pub async fn follow_telemetry(port: u16, mut on_reading: impl FnMut(TelemetryRea
 mod tests {
     use super::*;
 
-    // shape from g2g's dashboard wire protocol: source -> decoder -> fakesink
+    // shape from g2g's dashboard wire protocol: source -> decoder -> clocksync -> fakesink
     const TELEMETRY: &str = r#"{"type":"telemetry","uptime_ns":5000000000,
         "nodes":[
           {"id":0,"name":"RtspSrc0","role":"source","proc":null},
           {"id":1,"name":"FfmpegDec0","role":"transform","proc":{"count":120,"p50_ns":2500000,"p99_ns":9000000}},
-          {"id":2,"name":"FakeSink0","role":"sink","proc":{"count":118,"p50_ns":1000,"p99_ns":2000}}],
+          {"id":2,"name":"ClockSync0","role":"transform","proc":{"count":119,"p50_ns":33000000,"p99_ns":34000000}},
+          {"id":3,"name":"FakeSink0","role":"sink","proc":{"count":118,"p50_ns":1000,"p99_ns":2000}}],
         "edges":[
           {"from":0,"to":1,"packets":125,"bytes":900000},
-          {"from":1,"to":2,"packets":121,"bytes":0}],
+          {"from":1,"to":2,"packets":122,"bytes":0},
+          {"from":2,"to":3,"packets":121,"bytes":0}],
         "journey":null}"#;
 
     #[test]
     fn reads_sink_packets_and_decoder_latency() {
         let reading = parse_telemetry(TELEMETRY).expect("telemetry message");
         assert_eq!(reading.sink_packets, 121);
-        assert_eq!(reading.sink_feeder_p50_ns, Some(2_500_000));
+        assert_eq!(reading.decoder_p50_ns, Some(2_500_000));
     }
 
     #[test]
-    fn ignores_events_and_untimed_feeders() {
+    fn ignores_events_and_untimed_decoders() {
         assert_eq!(parse_telemetry(r#"{"type":"event","kind":"eos"}"#), None);
         let untimed = TELEMETRY.replace(r#""count":120"#, r#""count":0"#);
         let reading = parse_telemetry(&untimed).expect("telemetry message");
-        assert_eq!(reading.sink_feeder_p50_ns, None);
+        assert_eq!(reading.decoder_p50_ns, None);
     }
 }

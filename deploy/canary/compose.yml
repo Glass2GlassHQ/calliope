@@ -1,0 +1,30 @@
+# host networking: the canary reaches mediamtx and the srt listener on 127.0.0.1
+name: g2g-canary
+services:
+  mediamtx:
+    image: docker.io/bluenviron/mediamtx:1.21.2-ffmpeg
+    network_mode: host
+    restart: always
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro,Z
+  feeder:
+    image: docker.io/bluenviron/mediamtx:1.21.2-ffmpeg
+    network_mode: host
+    restart: always
+    init: true
+    entrypoint: ["/bin/sh", "/feeder.sh"]
+    depends_on: [mediamtx]
+    volumes:
+      - ./feeder.sh:/feeder.sh:ro,Z
+      - clip:/clip
+  canary:
+    image: localhost/g2g-canary:latest
+    network_mode: host
+    restart: always
+    init: true
+    depends_on: [mediamtx, feeder]
+    volumes:
+      - ./canary.toml:/etc/canary/canary.toml:ro,Z
+      - ./data:/var/lib/canary:Z
+volumes:
+  clip: {}

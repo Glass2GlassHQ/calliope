@@ -192,7 +192,7 @@ impl Supervisor {
             let new_packets = reading.sink_packets.saturating_sub(seen_packets);
             seen_packets = reading.sink_packets;
             let mut state = state.lock().expect("pipeline state lock");
-            state.decode_latency_ns = reading.sink_feeder_p50_ns;
+            state.decode_latency_ns = reading.decoder_p50_ns;
             if new_packets > 0 {
                 state.frames_total += new_packets;
                 state.last_frame = Some((Instant::now(), unix_now()));
@@ -385,7 +385,7 @@ mod tests {
                 loop {
                     packets += PACKETS_PER_TICK;
                     let telemetry = format!(
-                        r#"{{"type":"telemetry","nodes":[{{"id":0,"role":"transform","proc":{{"count":{packets},"p50_ns":2000000}}}},{{"id":1,"role":"sink","proc":null}}],"edges":[{{"from":0,"to":1,"packets":{packets}}}]}}"#
+                        r#"{{"type":"telemetry","nodes":[{{"id":0,"name":"FfmpegVideoDec0","role":"transform","proc":{{"count":{packets},"p50_ns":2000000}}}},{{"id":1,"role":"sink","proc":null}}],"edges":[{{"from":0,"to":1,"packets":{packets}}}]}}"#
                     );
                     if socket.send(Message::text(telemetry)).await.is_err() {
                         return;

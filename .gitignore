@@ -3,3 +3,4 @@
 /local-corpus
 /fuzz-out
 smoke-report.json
+/canary-out

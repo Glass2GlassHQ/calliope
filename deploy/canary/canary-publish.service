@@ -1,0 +1,7 @@
+[Unit]
+Description=publish the g2g canary status page
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/g2g-canary/publish.env
+ExecStart=%h/g2g-canary/canary-publish.sh %h/g2g-canary/data/canary-out/status ${CANARY_PUBLISH_DESTINATION}

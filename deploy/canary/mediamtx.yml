@@ -1,0 +1,21 @@
+# loopback only: the canary shares the host network with mediamtx
+logLevel: warn
+rtsp: true
+rtspTransports: [tcp]
+rtspAddress: 127.0.0.1:18554
+hls: true
+hlsAddress: 127.0.0.1:18888
+# g2g plays mpeg-ts hls, its fmp4 hls path fails caps negotiation
+hlsVariant: mpegts
+# keep the playlist ready, a restarted pipeline would otherwise wait for a fresh muxer
+hlsAlwaysRemux: true
+rtmp: false
+webrtc: false
+srt: false
+moq: false
+api: false
+metrics: false
+pprof: false
+playback: false
+paths:
+  baseline: {}

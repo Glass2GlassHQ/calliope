@@ -1,0 +1,27 @@
+# the g2g source arrives as the `g2g` build context, a git archive of the checkout
+ARG FEDORA_RELEASE=43
+
+FROM registry.fedoraproject.org/fedora:${FEDORA_RELEASE} AS base
+# fedora's ffmpeg-free decodes h264 only through openh264, rpm fusion ships the native decoder
+RUN dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+    && dnf clean all
+
+FROM base AS build
+RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
+    && dnf clean all
+ARG G2G_FEATURES=std,multi-thread,rtsp,srt,http-src,hls,ffmpeg,observe
+ARG CARGO_BUILD_JOBS=4
+ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
+COPY --from=g2g . /src/glass2glass
+RUN cd /src/glass2glass \
+    && cargo build --release --locked -p g2g-plugins --bin g2g-launch --features "${G2G_FEATURES}"
+COPY . /src/calliope
+RUN cd /src/calliope && cargo build --release --locked -p calliope-cli
+
+FROM base AS runtime
+RUN dnf -y install --allowerasing ffmpeg-libs openssl-libs ca-certificates && dnf clean all
+COPY --from=build /src/glass2glass/target/release/g2g-launch /usr/local/bin/g2g-launch
+COPY --from=build /src/calliope/target/release/calliope /usr/local/bin/calliope
+COPY deploy/canary/canary.toml /etc/canary/canary.toml
+WORKDIR /var/lib/canary
+ENTRYPOINT ["calliope", "canary", "--config", "/etc/canary/canary.toml"]
