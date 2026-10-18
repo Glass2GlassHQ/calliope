@@ -1,0 +1,20 @@
+[Unit]
+Description=g2g canary: g2g pipelines on live streams, uptime and incident log
+Wants=g2g-canary-feeder.service
+After=g2g-canary-feeder.service
+
+[Container]
+Image=localhost/g2g-canary:latest
+ContainerName=g2g-canary
+Network=host
+RunInit=true
+Volume=%h/g2g-canary/canary.toml:/etc/canary/canary.toml:ro,Z
+Volume=%h/g2g-canary/data:/var/lib/canary:Z
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/g2g-canary/data
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

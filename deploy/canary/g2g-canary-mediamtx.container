@@ -1,0 +1,15 @@
+[Unit]
+Description=g2g canary: mediamtx serving the self-hosted streams
+
+[Container]
+Image=docker.io/bluenviron/mediamtx:1.21.2-ffmpeg
+ContainerName=g2g-canary-mediamtx
+Network=host
+Volume=%h/g2g-canary/mediamtx.yml:/mediamtx.yml:ro,Z
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

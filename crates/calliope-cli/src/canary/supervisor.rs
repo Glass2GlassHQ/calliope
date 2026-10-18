@@ -1,0 +1,435 @@
+use std::collections::VecDeque;
+use std::path::PathBuf;
+use std::process::{ExitStatus, Stdio};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
+use anyhow::{Context, Result};
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::{Child, Command};
+
+use calliope_adapter_g2g::observe::{TelemetryReading, follow_telemetry, observe_args};
+use calliope_core::runner::{RunStatus, exit_to_status};
+
+use super::config::{CanaryConfig, PipelineConfig};
+use super::record::{self, Cause, INCIDENTS_PREFIX, Incident, STDERR_DIR, unix_now};
+
+pub const STDERR_TAIL_LINES: usize = 50;
+const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
+// stderr reaches EOF as soon as the process is gone
+const STDERR_DRAIN_TIMEOUT: Duration = Duration::from_secs(2);
+
+#[derive(Debug, Default)]
+pub struct PipelineState {
+    pub pid: Option<u32>,
+    // frames into the sinks over every run of this pipeline
+    pub frames_total: u64,
+    pub decode_latency_ns: Option<u64>,
+    pub restarts: u64,
+    pub last_error: Option<String>,
+    pub open_incident: Option<Incident>,
+    // the current run's last frame, as (monotonic, unix seconds)
+    last_frame: Option<(Instant, u64)>,
+}
+
+pub type SharedState = Arc<Mutex<PipelineState>>;
+
+#[derive(Debug)]
+pub struct Supervisor {
+    pipeline: PipelineConfig,
+    program: String,
+    port: u16,
+    log_dir: PathBuf,
+    stall: Duration,
+    backoff_min: Duration,
+    backoff_max: Duration,
+    healthy_run: Duration,
+    state: SharedState,
+}
+
+#[derive(Debug)]
+struct RunEnd {
+    cause: Cause,
+    // unix seconds the run stopped decoding
+    failed_at: u64,
+    decoded: bool,
+    ran_for: Duration,
+    stderr_tail: Vec<String>,
+}
+
+impl Supervisor {
+    pub fn new(config: &CanaryConfig, index: usize, state: SharedState) -> Self {
+        Supervisor {
+            pipeline: config.pipelines[index].clone(),
+            program: config
+                .g2g_launch
+                .clone()
+                .unwrap_or_else(calliope_adapter_g2g::g2g_launch_binary),
+            port: config.observe_port(index),
+            log_dir: config.log_dir.clone(),
+            stall: Duration::from_secs(config.stall_secs),
+            backoff_min: Duration::from_secs(config.backoff_min_secs),
+            backoff_max: Duration::from_secs(config.backoff_max_secs),
+            healthy_run: Duration::from_secs(config.healthy_run_secs),
+            state,
+        }
+    }
+
+    // returns only on a log write error
+    pub async fn run(self) -> Result<()> {
+        let mut backoff = self.backoff_min;
+        loop {
+            let end = self.run_once().await?;
+            if end.ran_for >= self.healthy_run {
+                backoff = self.backoff_min;
+            }
+            let finished_vod =
+                self.pipeline.vod && end.decoded && end.cause == Cause::Exit { code: 0 };
+            if finished_vod {
+                continue;
+            }
+            self.record_failure(end)?;
+            tokio::time::sleep(backoff).await;
+            backoff = (backoff * 2).min(self.backoff_max);
+        }
+    }
+
+    async fn run_once(&self) -> Result<RunEnd> {
+        let spawned_at = Instant::now();
+        let spawned_unix = unix_now();
+        let mut child = match Command::new(&self.program)
+            .args(observe_args(&self.pipeline.launch, self.port))
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::piped())
+            .kill_on_drop(true)
+            .spawn()
+        {
+            Ok(child) => child,
+            Err(e) => {
+                return Ok(RunEnd {
+                    cause: Cause::SpawnFailed {
+                        message: format!("{}: {e}", self.program),
+                    },
+                    failed_at: spawned_unix,
+                    decoded: false,
+                    ran_for: Duration::ZERO,
+                    stderr_tail: Vec::new(),
+                });
+            }
+        };
+        {
+            let mut state = self.lock();
+            state.pid = child.id();
+            state.last_frame = None;
+        }
+        let tail = Arc::new(Mutex::new(VecDeque::with_capacity(STDERR_TAIL_LINES)));
+        let stderr_reader = child.stderr.take().map(|stderr| {
+            tokio::spawn(read_stderr(
+                stderr,
+                Arc::clone(&tail),
+                Arc::clone(&self.state),
+            ))
+        });
+        let telemetry = tokio::spawn(follow_telemetry(self.port, self.on_reading()));
+
+        let watched = self.watch(&mut child, spawned_at, spawned_unix).await;
+        telemetry.abort();
+        if let Some(reader) = stderr_reader {
+            let _ = tokio::time::timeout(STDERR_DRAIN_TIMEOUT, reader).await;
+        }
+        let decoded = {
+            let mut state = self.lock();
+            state.pid = None;
+            state.last_frame.is_some()
+        };
+        let (cause, failed_at) = watched?;
+        let stderr_tail = tail.lock().expect("stderr tail lock").drain(..).collect();
+        Ok(RunEnd {
+            cause,
+            failed_at,
+            decoded,
+            ran_for: spawned_at.elapsed(),
+            stderr_tail,
+        })
+    }
+
+    // waits for exit or kills on stall, closing an open incident once frames flow
+    async fn watch(
+        &self,
+        child: &mut Child,
+        spawned_at: Instant,
+        spawned_unix: u64,
+    ) -> Result<(Cause, u64)> {
+        let mut watchdog = tokio::time::interval(WATCHDOG_INTERVAL);
+        loop {
+            tokio::select! {
+                status = child.wait() => {
+                    let status = status.context("wait for g2g-launch")?;
+                    return Ok((exit_cause(status), unix_now()));
+                }
+                _ = watchdog.tick() => {
+                    let last_frame = self.lock().last_frame;
+                    if last_frame.is_some() {
+                        self.close_incident()?;
+                    }
+                    let (progress_at, progress_unix) =
+                        last_frame.unwrap_or((spawned_at, spawned_unix));
+                    if progress_at.elapsed() >= self.stall {
+                        let _ = child.start_kill();
+                        let _ = child.wait().await;
+                        return Ok((Cause::Stall { secs: self.stall.as_secs() }, progress_unix));
+                    }
+                }
+            }
+        }
+    }
+
+    fn on_reading(&self) -> impl FnMut(TelemetryReading) + Send + 'static {
+        let state = Arc::clone(&self.state);
+        let mut seen_packets = 0;
+        move |reading| {
+            let new_packets = reading.sink_packets.saturating_sub(seen_packets);
+            seen_packets = reading.sink_packets;
+            let mut state = state.lock().expect("pipeline state lock");
+            state.decode_latency_ns = reading.decoder_p50_ns;
+            if new_packets > 0 {
+                state.frames_total += new_packets;
+                state.last_frame = Some((Instant::now(), unix_now()));
+            }
+        }
+    }
+
+    fn record_failure(&self, end: RunEnd) -> Result<()> {
+        let mut state = self.lock();
+        state.restarts += 1;
+        if let Some(incident) = state.open_incident.as_mut() {
+            incident.restarts += 1;
+            return Ok(());
+        }
+        let id = format!("{}-{}", self.pipeline.id, end.failed_at);
+        let stderr = format!("{STDERR_DIR}/{id}.log");
+        let mut text = end.stderr_tail.join("\n");
+        text.push('\n');
+        let path = self.log_dir.join(&stderr);
+        std::fs::write(&path, text).with_context(|| format!("write {}", path.display()))?;
+        state.open_incident = Some(Incident {
+            id,
+            pipeline: self.pipeline.id.clone(),
+            tier: self.pipeline.tier,
+            start: end.failed_at,
+            end: None,
+            cause: end.cause,
+            restarts: 1,
+            last_error: state.last_error.clone(),
+            stderr: Some(stderr),
+        });
+        Ok(())
+    }
+
+    fn close_incident(&self) -> Result<()> {
+        let mut state = self.lock();
+        let Some(mut incident) = state.open_incident.take() else {
+            return Ok(());
+        };
+        let now = unix_now();
+        incident.end = Some(now);
+        record::append(&self.log_dir, INCIDENTS_PREFIX, now, &incident)
+    }
+
+    fn lock(&self) -> std::sync::MutexGuard<'_, PipelineState> {
+        self.state.lock().expect("pipeline state lock")
+    }
+}
+
+async fn read_stderr(
+    stderr: tokio::process::ChildStderr,
+    tail: Arc<Mutex<VecDeque<String>>>,
+    state: SharedState,
+) {
+    let mut lines = BufReader::new(stderr).lines();
+    while let Ok(Some(line)) = lines.next_line().await {
+        if line.trim().is_empty() {
+            continue;
+        }
+        state.lock().expect("pipeline state lock").last_error = Some(line.clone());
+        let mut tail = tail.lock().expect("stderr tail lock");
+        if tail.len() == STDERR_TAIL_LINES {
+            tail.pop_front();
+        }
+        tail.push_back(line);
+    }
+}
+
+fn exit_cause(status: ExitStatus) -> Cause {
+    match exit_to_status(status) {
+        RunStatus::Signaled { signal } => Cause::Signal { signal },
+        RunStatus::ExitFailure { code } => Cause::Exit { code },
+        RunStatus::Ok => Cause::Exit { code: 0 },
+        other => unreachable!("an exit status never maps to {other:?}"),
+    }
+}
+
+// fake g2g-launch scripts stand in for the subprocess, a local websocket stands in for its telemetry
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use crate::canary::config::Tier;
+    use crate::canary::record::{INCIDENTS_PREFIX, read_days};
+    use futures::SinkExt;
+    use std::os::unix::fs::PermissionsExt;
+    use std::path::Path;
+    use tokio_tungstenite::tungstenite::Message;
+
+    const STALL_SECS: u64 = 1;
+    // long enough for a stall kill plus one restart at the minimum backoff
+    const OBSERVE_FOR: Duration = Duration::from_millis(3_500);
+    const TELEMETRY_INTERVAL: Duration = Duration::from_millis(100);
+    const PACKETS_PER_TICK: u64 = 3;
+
+    fn scratch(tag: &str) -> PathBuf {
+        let dir =
+            std::env::temp_dir().join(format!("calliope-canary-{tag}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join(STDERR_DIR)).unwrap();
+        dir
+    }
+
+    fn fake_launch(dir: &Path, body: &str) -> PathBuf {
+        let path = dir.join("fake-g2g-launch");
+        std::fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        path
+    }
+
+    fn config(dir: &Path, program: &Path, port: u16) -> CanaryConfig {
+        toml::from_str(&format!(
+            r#"
+            log-dir = "{dir}"
+            status-dir = "{dir}/status"
+            g2g-launch = "{program}"
+            stall-secs = {STALL_SECS}
+            observe-base-port = {port}
+            backoff-min-secs = 1
+            [[pipeline]]
+            id = "fake"
+            tier = "self-hosted"
+            launch = "videotestsrc ! fakesink"
+            "#,
+            dir = dir.display(),
+            program = program.display(),
+        ))
+        .unwrap()
+    }
+
+    async fn supervise_for(config: &CanaryConfig, state: &SharedState) {
+        let supervisor = Supervisor::new(config, 0, Arc::clone(state));
+        let ended = tokio::time::timeout(OBSERVE_FOR, supervisor.run()).await;
+        assert!(ended.is_err(), "supervisor returned early: {ended:?}");
+    }
+
+    fn unused_port() -> u16 {
+        std::net::TcpListener::bind("127.0.0.1:0")
+            .unwrap()
+            .local_addr()
+            .unwrap()
+            .port()
+    }
+
+    #[tokio::test]
+    async fn kills_a_stalled_run_and_keeps_its_stderr() {
+        let dir = scratch("stall");
+        let program = fake_launch(&dir, "echo 'fake: waiting for stream' >&2\nexec sleep 60");
+        let config = config(&dir, &program, unused_port());
+        let state = SharedState::default();
+        supervise_for(&config, &state).await;
+
+        let state = state.lock().unwrap();
+        assert!(state.restarts >= 1);
+        let incident = state
+            .open_incident
+            .as_ref()
+            .expect("stall opens an incident");
+        assert_eq!(incident.cause, Cause::Stall { secs: STALL_SECS });
+        assert_eq!(incident.tier, Tier::SelfHosted);
+        let stderr = std::fs::read_to_string(dir.join(incident.stderr.as_ref().unwrap())).unwrap();
+        assert!(stderr.contains("fake: waiting for stream"));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn repeated_exits_stay_one_incident() {
+        let dir = scratch("exit");
+        let program = fake_launch(&dir, "echo 'pipeline error: boom' >&2\nexit 3");
+        let config = config(&dir, &program, unused_port());
+        let state = SharedState::default();
+        supervise_for(&config, &state).await;
+
+        let state = state.lock().unwrap();
+        let incident = state
+            .open_incident
+            .as_ref()
+            .expect("exit opens an incident");
+        assert_eq!(incident.cause, Cause::Exit { code: 3 });
+        assert_eq!(incident.last_error.as_deref(), Some("pipeline error: boom"));
+        assert!(state.restarts >= 2, "restarts {}", state.restarts);
+        assert_eq!(incident.restarts, state.restarts);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    async fn serve_growing_telemetry(listener: tokio::net::TcpListener) {
+        while let Ok((stream, _)) = listener.accept().await {
+            tokio::spawn(async move {
+                let mut socket = tokio_tungstenite::accept_async(stream).await.unwrap();
+                let mut packets = 0;
+                loop {
+                    packets += PACKETS_PER_TICK;
+                    let telemetry = format!(
+                        r#"{{"type":"telemetry","nodes":[{{"id":0,"name":"FfmpegVideoDec0","role":"transform","proc":{{"count":{packets},"p50_ns":2000000}}}},{{"id":1,"role":"sink","proc":null}}],"edges":[{{"from":0,"to":1,"packets":{packets}}}]}}"#
+                    );
+                    if socket.send(Message::text(telemetry)).await.is_err() {
+                        return;
+                    }
+                    tokio::time::sleep(TELEMETRY_INTERVAL).await;
+                }
+            });
+        }
+    }
+
+    #[tokio::test]
+    async fn flowing_frames_close_the_open_incident() {
+        let dir = scratch("flow");
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(serve_growing_telemetry(listener));
+        let program = fake_launch(&dir, "exec sleep 60");
+        let config = config(&dir, &program, port);
+        let earlier = Incident {
+            id: "fake-1".into(),
+            pipeline: "fake".into(),
+            tier: Tier::SelfHosted,
+            start: 1,
+            end: None,
+            cause: Cause::Exit { code: 1 },
+            restarts: 1,
+            last_error: None,
+            stderr: None,
+        };
+        let state = SharedState::default();
+        state.lock().unwrap().open_incident = Some(earlier);
+        supervise_for(&config, &state).await;
+
+        let state = state.lock().unwrap();
+        assert_eq!(
+            state.restarts, 0,
+            "a run with frames flowing must not stall"
+        );
+        assert!(state.frames_total >= PACKETS_PER_TICK * 10);
+        assert_eq!(state.decode_latency_ns, Some(2_000_000));
+        assert!(state.open_incident.is_none());
+        let closed: Vec<Incident> = read_days(&dir, INCIDENTS_PREFIX, 0, unix_now()).unwrap();
+        assert_eq!(closed.len(), 1);
+        assert!(closed[0].end.is_some());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+}

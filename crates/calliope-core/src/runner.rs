@@ -420,7 +420,7 @@ fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String
     Ok(hashes)
 }
 
-fn exit_to_status(status: std::process::ExitStatus) -> RunStatus {
+pub fn exit_to_status(status: std::process::ExitStatus) -> RunStatus {
     if status.success() {
         return RunStatus::Ok;
     }
@@ -439,11 +439,16 @@ fn exit_to_status(status: std::process::ExitStatus) -> RunStatus {
 /// VmHWM from /proc/<pid>/status; already a high-water mark, so the last
 /// successful poll before exit is the peak
 fn read_vm_hwm_kb(pid: u32) -> Option<u64> {
+    read_proc_status_kb(pid, "VmHWM:")
+}
+
+// a kB field such as `VmRSS:` from /proc/<pid>/status, linux only
+pub fn read_proc_status_kb(pid: u32, field: &str) -> Option<u64> {
     if !cfg!(target_os = "linux") {
         return None;
     }
     let status = std::fs::read_to_string(format!("/proc/{pid}/status")).ok()?;
-    let line = status.lines().find(|l| l.starts_with("VmHWM:"))?;
+    let line = status.lines().find(|l| l.starts_with(field))?;
     line.split_whitespace().nth(1)?.parse().ok()
 }
 

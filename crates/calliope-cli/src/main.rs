@@ -1,3 +1,4 @@
+mod canary;
 mod parity;
 mod sweep;
 
@@ -131,6 +132,11 @@ enum Command {
         /// corpus name for the triage title
         #[arg(long, default_value = "corpus")]
         title: String,
+    },
+    /// keep g2g pipelines decoding live streams, logging uptime and incidents
+    Canary {
+        #[arg(long)]
+        config: PathBuf,
     },
     /// golden-check every corpus vector with a decoded-md5 (a conformance run)
     Conformance {
@@ -414,6 +420,10 @@ async fn main() -> Result<ExitCode> {
                 minimized.len(),
                 out.display()
             );
+            Ok(ExitCode::SUCCESS)
+        }
+        Command::Canary { config } => {
+            canary::run(&config).await?;
             Ok(ExitCode::SUCCESS)
         }
         Command::GstParity {

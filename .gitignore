@@ -4,3 +4,4 @@
 /fuzz-out
 smoke-report.json
 /tools/playback/node_modules
+/canary-out

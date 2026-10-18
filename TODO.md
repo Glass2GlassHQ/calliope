@@ -3,15 +3,6 @@
 Production-readiness evidence for g2g. Each item ends with a section in
 TESTING.md stating method, volume, and result. Delete an item when it lands.
 
-## Real-world corpus differential
-- Import the ffmpeg fate-suite (`fate-suite/` rsync tree) as corpus vectors:
-  fetch-on-demand + sha256, per-file license from the tree, skip non-media.
-- Import gst-integration-testsuites `medias/` the same way.
-- Run decode differential (video per-frame, audio whole-stream) over every file
-  ffmpeg decodes, with the outcome-diff oracle for files ffmpeg rejects.
-- Classify each divergence (g2g bug, reference quirk, unsupported codec) in a
-  committed triage table, file g2g bugs with reproducers.
-
 ## Canary
 - `calliope canary`: keeps N g2g pipelines alive against public RTSP, HLS and
   SRT streams, restarts on exit, records uptime, restarts, RSS and latency per

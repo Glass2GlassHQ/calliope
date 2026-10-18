@@ -21,7 +21,7 @@ const GST_MAP_FLAG: &str = "--gst-map";
 /// unknown flag and run the pipeline instead, so this is checked before
 /// invoking it.
 fn help_mentions(flag: &str) -> bool {
-    let program = binary("CALLIOPE_G2G_LAUNCH", "g2g-launch");
+    let program = crate::g2g_launch_binary();
     std::process::Command::new(program)
         .arg("--help")
         .output()
@@ -57,7 +57,7 @@ pub fn observed_graph(pipeline_args: &[String]) -> Result<PipelineGraph> {
 }
 
 fn dump_graph(flag: &str, pipeline_args: &[String]) -> Result<PipelineGraph> {
-    let program = binary("CALLIOPE_G2G_LAUNCH", "g2g-launch");
+    let program = crate::g2g_launch_binary();
     let out = std::process::Command::new(&program)
         .arg(flag)
         .args(pipeline_args)

@@ -21,8 +21,12 @@ clap.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toml.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["signal"] }
 futures.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["net"] }
+tokio-tungstenite.workspace = true
 
 [lints]
 workspace = true

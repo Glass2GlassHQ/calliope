@@ -1,0 +1,51 @@
+# relative to the working directory: /var/lib/canary in the container
+log-dir = "canary-out/log"
+status-dir = "canary-out/status"
+sample-secs = 60
+stall-secs = 30
+
+# self-hosted: mediamtx and the feeder on the same host, a failure here is g2g's
+
+[[pipeline]]
+id = "baseline-rtsp"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! decodebin ! fakesink"
+
+[[pipeline]]
+id = "baseline-hls"
+tier = "self-hosted"
+launch = "hlssrc location=http://127.0.0.1:18888/baseline/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+
+# the feeder is the srt caller, g2g's srtsrc only listens
+[[pipeline]]
+id = "baseline-srt"
+tier = "self-hosted"
+launch = "srtsrc address=127.0.0.1 port=18890 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+
+# public: third-party test streams with no uptime promise
+
+[[pipeline]]
+id = "unified-live-hls"
+tier = "public"
+launch = "hlssrc location=https://demo.unified-streaming.com/k8s/live/stable/live.isml/.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+
+# a public webcam in slovakia, h264 1280x720 over rtsp on port 1935
+[[pipeline]]
+id = "strba-rtsp"
+tier = "public"
+launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream ! decodebin ! fakesink"
+
+# no public srt entry: g2g's srtsrc only listens, a public srt server never calls in
+
+# vod streams loop: clocksync paces them to real time, the lowest variant keeps bandwidth down
+[[pipeline]]
+id = "mux-vod-hls"
+tier = "public"
+vod = true
+launch = "hlssrc location=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
+
+[[pipeline]]
+id = "apple-vod-hls"
+tier = "public"
+vod = true
+launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
