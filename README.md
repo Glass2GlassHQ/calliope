@@ -355,21 +355,19 @@ directory.
 
 ### EC2
 
-The canary runs on a t4g.small (2 Graviton vCPU, 2 GB) with the Fedora Cloud 43
-aarch64 AMI from fedoraproject.org/cloud/download, default user `fedora`, a 20 GB
+The canary runs on a t3.small (2 x86-64 vCPU, 2 GB) with the Fedora Cloud 43
+x86_64 AMI from fedoraproject.org/cloud/download, default user `fedora`, a 20 GB
 gp3 root volume, and a security group that allows inbound ssh only. Every
 pipeline pulls outbound and mediamtx binds loopback.
 
-The image is built here for arm64 under qemu and copied over ssh with
-`podman save | ssh podman load`, so no registry is involved. The emulated g2g
-build is slow, expect hours.
+The image builds natively here or on hercules in minutes, so a g2g update
+redeploys quickly. It is copied over ssh with `podman save | ssh podman load`,
+so no registry is involved.
 
 ```sh
-sudo dnf install qemu-user-static-aarch64
-CANARY_PLATFORM=linux/arm64 CANARY_IMAGE=localhost/g2g-canary:arm64 \
-    tools/canary-image.sh ~/src/glass2glass
+tools/canary-image.sh ~/src/glass2glass
 ssh fedora@<host> 'sudo dnf -y install podman awscli2 && sudo loginctl enable-linger fedora'
-CANARY_IMAGE=localhost/g2g-canary:arm64 tools/canary-deploy.sh fedora@<host>
+tools/canary-deploy.sh fedora@<host>
 ```
 
 Linger starts the user units at boot without a login. The deploy script tags the
