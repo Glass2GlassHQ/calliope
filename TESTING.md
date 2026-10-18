@@ -298,32 +298,31 @@ decode outcome is the oracle.
 ```
 calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
 calliope sweep --corpus corpus/gst-medias.toml --title gst-medias --report runs/gst-medias.json
-python3 -I tools/sweep-triage.py runs/fate-suite.json corpus/fate-suite.toml fate-suite \
-  "master b84a510a built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
+python3 -I tools/sweep-triage.py runs/fate-suite.json fate-suite \
+  "master 6c675bef built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
 ```
 Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
 gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
 space in its name and is skipped. g2g-launch is linux-full in release. The
-first sweep ran g2g master 42c0a809. The current one runs b84a510a without
+first sweep ran g2g master 42c0a809. The current one runs 6c675bef without
 vaapi, pipewire and portal, which do not build on the Fedora 44 sweep host.
 
 Result at 42c0a809: 948 fate-suite and 149 gst-medias scenarios agreed, and
 262 failed from 22 g2g bugs. All 22 are fixed (bugs 7 to 28 below). The
 re-sweeps at e4629017 and 5f25e5b8 found four more, also fixed (29 to 32).
 
-Result at b84a510a, fate-suite: 1048 scenarios agree. Of the other 1363, 43
-are g2g bugs, 1130 are codecs, containers or pixel formats g2g does not
-support, 101 are harness limits, 34 are reference quirks, 52 are
-GStreamer-only failures and 3 are open. gst-medias: 216 agree. Of the other
-68, 13 are g2g bugs, 43 unsupported, 3 reference quirks and 9 GStreamer-only.
+The sweep at b84a510a found 13 more, fixed in M1562 to M1582 (38 to 57).
 
-The 56 g2g-bug scenarios come from 13 bugs, listed with a reproducer in
-`triage/fate-suite.md`. The largest are demuxers that do not map PCM, MP3,
-Vorbis or VP8 tracks g2g decodes (30 scenarios) and AviDemux refusing
-truncated files (10). 66 unsupported scenarios fail with a pipeline error
-instead of naming the missing decoder (bug 11). The b84a510a sweep ran before
-calliope matched g2g's `decodebin: no decoder for` error, so it filed 280
-unsupported scenarios as "g2g no output" and the triage rules move them.
+Result at 6c675bef, fate-suite: 1085 scenarios agree. Of the other 1326, 12
+are g2g bugs, 1120 are codecs, containers or pixel formats g2g does not
+support, 102 are harness limits, 35 are reference quirks, 54 are
+GStreamer-only failures and 3 are open. gst-medias: 229 agree. Of the other
+55, 43 are unsupported, 3 reference quirks and 9 GStreamer-only.
+
+The 12 g2g-bug scenarios come from 3 bugs, listed with a reproducer in
+`triage/fate-suite.md`: typefind misses MPEG-1/2 video elementary streams (4)
+and elementary streams that do not start at byte 0 (5), and two video fourccs
+of codecs g2g decodes are not mapped (3).
 
 Open: an MPEG-4 Studio profile stream decodes to different samples than
 ffmpeg with the same libavcodec, `mov/empty_edit_5s.mp4` has decode errors
@@ -332,7 +331,7 @@ and a progressive 4:4:4 JPEG fails in MjpegDec.
 
 Harness limits: 10 resolution-changing streams cannot be hashed at one
 geometry, and g2g is bit-exact with `ffmpeg -noautoscale` on all of them.
-GStreamer pads raw rows to 4 bytes or changes resolution mid-stream, so 87 of
+GStreamer pads raw rows to 4 bytes or changes resolution mid-stream, so 88 of
 its dumps do not split into frames. Determinism scenarios pin I420, so the g2g
 adapter inserts `videoconvert` when a scenario has no `[video]` table. Without
 it every packed-RGB decoder (PNG, APNG) fails the capsfilter.
@@ -514,8 +513,9 @@ h264parse.rs (52%) are the weakest. The missed plugin mutants have no tests yet.
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
 decode differential (technique 13), bugs 5-6 by the interlace / audio surface
 added 2026-08 (techniques 1 and 13), bugs 7-28 by the corpus sweep at 42c0a809
-and bugs 29-32 by its re-sweeps (technique 15). All are fixed in g2g with
-regression tests.
+bugs 29-32 and 33-36 by its re-sweeps (technique 15), bug 37 by building the
+sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a and bug 58
+by the canary (technique 17). All are fixed in g2g with regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -596,6 +596,37 @@ regression tests.
     frames ahead of the first I frame (M1560).
 32. **AC-3, AAC and MP3 parsers lost the demuxer time** when frames arrived one
     per chunk, so the segment clip dropped TS audio (M1561).
+33. **VP6-alpha had no raw format with alpha** (M1554).
+34. **h265parse output the leading RASL pictures** of a CRA that starts the
+    stream (M1555).
+35. **The MP4, Matroska and FLV muxers wrote ER AAC, ELD and USAC wrong**
+    (M1556).
+36. **Audio decoders kept the AAC and USAC priming** that the edit list cuts
+    (M1557).
+37. **The `vpx` feature failed to build** against libvpx 1.15 and libclang 22
+    (M1547).
+38. **Matroska AAC decoded to silence** (M1562).
+39. **Mp4Demux failed CapsMismatch on AAC** with a program config element, a
+    sync extension or implicit SBR (M1563).
+40. **AviDemux rejected an AVI cut short** by the end of the file (M1564).
+41. **PsDemux merged two MP2 streams into one** (M1565).
+42. **TsDemux sent DVB AC-3 to MpegAudioParse** (M1566).
+43. **The mp4 demuxers had no mapping for QuickTime PCM or MP3** (M1567).
+44. **Matroska PCM, Ogg VP8 and Ogg Theora were mapped wrong** (M1568).
+45. **decodebin had no chain for mu-law and A-law in AVI** (M1569).
+46. **MjpegDec failed on a frame without Huffman tables** (M1570).
+47. **AviDemux overflowed the stack on nested `rec ` lists** (M1571).
+48. **FlvDemux took some length-prefixed H.264 NALs for Annex-B** (M1572).
+49. **Multi-entry edit lists were not applied** (M1573).
+50. **The audio edit end was not applied** (M1574).
+51. **Only the first link of a chained Ogg FLAC file decoded** (M1575).
+52. **A damaged Matroska Cluster was not skipped** (M1576).
+53. **Unsupported codecs were not named at launch** (M1577).
+54. **USAC end of stream failed with Hardware(Other)** (M1578).
+55. **Interlaced AVI motion JPEG came out as half-height fields** (M1580).
+56. **AviDemux ignored the `avcC` H.264 framing** (M1581).
+57. **A truncated MOV PCM track was refused** (M1582).
+58. **whepsrc passed P-frames ahead of the first keyframe** (M1523).
 
 ## Not a gap
 

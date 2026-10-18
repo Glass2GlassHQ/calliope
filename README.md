@@ -282,7 +282,7 @@ git -C ~/.cache/calliope/gst-medias lfs pull
 calliope corpus-import --fate ~/.cache/calliope/fate-suite --out corpus/fate-suite.toml
 calliope corpus-import --gst-medias ~/.cache/calliope/gst-medias --out corpus/gst-medias.toml
 calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
-python3 -I tools/sweep-triage.py runs/fate-suite.json corpus/fate-suite.toml fate-suite \
+python3 -I tools/sweep-triage.py runs/fate-suite.json fate-suite \
   "master <rev>" triage/fate-suite.md
 ```
 
