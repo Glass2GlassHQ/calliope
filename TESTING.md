@@ -301,7 +301,8 @@ integration tests that use the module directly.
 tools/mutants-g2g.sh g2g-core -p g2g-core \
     --features std,multi-thread,runtime,metadata,dyn-slot,tracing -- --lib --tests
 tools/mutants-g2g.sh g2g-plugins-mpegts -p g2g-plugins -f g2g-plugins/src/mpegts.rs \
-    --features std,metadata,mp4-cenc -E fuzz_parse -- --lib --test m108_mpegts ...
+    --features std,metadata,mp4-cenc -E fuzz_parse \
+    --cargo-arg=--lib --cargo-arg=--test=m108_mpegts ...
 ```
 Per-scope lists, commands and wall times are in `mutants/README.md`.
 Result: pending.
