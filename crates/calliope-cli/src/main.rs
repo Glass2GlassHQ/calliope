@@ -1,4 +1,5 @@
 mod parity;
+mod sweep;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -13,6 +14,7 @@ use calliope_core::corpus::{self, Manifest};
 use calliope_core::engine::Engine;
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
 use calliope_core::runner::{RunStatus, run_determinism, run_one, run_soak};
+use calliope_core::sample_tree::SampleTree;
 use calliope_core::scenario::{Input, Scenario, Video};
 
 #[derive(Parser)]
@@ -33,11 +35,18 @@ enum Command {
         /// vector ids; all when empty
         ids: Vec<String>,
     },
-    /// import Fluster conformance suite JSONs into the corpus manifest
+    /// import Fluster conformance suites or real-world sample trees into the corpus manifest
+    #[command(group(clap::ArgGroup::new("source").required(true).multiple(true)))]
     CorpusImport {
         /// a Fluster test_suites directory or a single suite .json
-        #[arg(long)]
-        fluster: PathBuf,
+        #[arg(long, group = "source")]
+        fluster: Option<PathBuf>,
+        /// an ffmpeg fate-suite tree (rsync://fate-suite.ffmpeg.org/fate-suite/)
+        #[arg(long, group = "source")]
+        fate: Option<PathBuf>,
+        /// a gst-integration-testsuites medias checkout
+        #[arg(long, group = "source")]
+        gst_medias: Option<PathBuf>,
         #[arg(long, default_value = "corpus/vectors.toml")]
         out: PathBuf,
         /// cap the number of imported vectors (0 = all)
@@ -90,6 +99,30 @@ enum Command {
         #[arg(long)]
         report: Option<PathBuf>,
     },
+    /// decode every imported real-world sample on every engine and triage the divergences
+    Sweep {
+        #[arg(long, default_value = "corpus/vectors.toml")]
+        corpus: PathBuf,
+        /// engines to run (comma-separated); default ffmpeg,gstreamer,g2g, ffmpeg is the reference
+        #[arg(long, value_delimiter = ',')]
+        engines: Vec<String>,
+        /// cap the number of vectors swept (0 = all)
+        #[arg(long, default_value_t = 0)]
+        limit: usize,
+        #[arg(long, default_value_t = 4)]
+        jobs: usize,
+        #[arg(long, default_value = "runs/sweep")]
+        workdir: PathBuf,
+        /// write the JSON report here
+        #[arg(long)]
+        report: Option<PathBuf>,
+        /// write the markdown triage table here
+        #[arg(long)]
+        triage: Option<PathBuf>,
+        /// corpus name for the triage title
+        #[arg(long, default_value = "corpus")]
+        title: String,
+    },
     /// golden-check every corpus vector with a decoded-md5 (a conformance run)
     Conformance {
         #[arg(long, default_value = "corpus/vectors.toml")]
@@ -108,6 +141,8 @@ enum Command {
         report: Option<PathBuf>,
     },
 }
+
+const DEFAULT_ENGINES: [&str; 3] = ["ffmpeg", "gstreamer", "g2g"];
 
 fn all_engines() -> Vec<Arc<dyn Engine>> {
     vec![
@@ -263,22 +298,47 @@ async fn main() -> Result<ExitCode> {
         }
         Command::CorpusImport {
             fluster,
+            fate,
+            gst_medias,
             out,
             limit,
             allow_driver_fork,
         } => {
-            if let Some(warning) = calliope_core::fluster::driver_fork_warning(&fluster) {
-                if allow_driver_fork {
-                    eprintln!("warning: {warning}");
-                } else {
-                    bail!("{warning}\n(pass --allow-driver-fork to import anyway)");
+            let mut imported = Vec::new();
+            if let Some(fluster) = fluster {
+                if let Some(warning) = calliope_core::fluster::driver_fork_warning(&fluster) {
+                    if allow_driver_fork {
+                        eprintln!("warning: {warning}");
+                    } else {
+                        bail!("{warning}\n(pass --allow-driver-fork to import anyway)");
+                    }
                 }
+                imported.extend(if fluster.is_dir() {
+                    calliope_core::fluster::import_dir(&fluster)?
+                } else {
+                    calliope_core::fluster::import_suite_json(&std::fs::read_to_string(&fluster)?)?
+                });
             }
-            let mut imported = if fluster.is_dir() {
-                calliope_core::fluster::import_dir(&fluster)?
-            } else {
-                calliope_core::fluster::import_suite_json(&std::fs::read_to_string(&fluster)?)?
-            };
+            let sample_trees = [
+                (fate, SampleTree::FateSuite),
+                (gst_medias, SampleTree::GstMedias),
+            ];
+            for (root, tree) in sample_trees {
+                let Some(root) = root else { continue };
+                let cached = corpus::cache_dir().join(tree.id_prefix());
+                if std::fs::canonicalize(&root).ok() != std::fs::canonicalize(&cached).ok() {
+                    eprintln!(
+                        "note: {} is not {}, sweeps will download every sample",
+                        root.display(),
+                        cached.display()
+                    );
+                }
+                imported.extend(calliope_core::sample_tree::import_tree(
+                    &root,
+                    tree,
+                    calliope_core::probe::probe_media,
+                )?);
+            }
             if limit > 0 {
                 imported.truncate(limit);
             }
@@ -389,6 +449,43 @@ async fn main() -> Result<ExitCode> {
                 ExitCode::FAILURE
             })
         }
+        Command::Sweep {
+            corpus,
+            engines,
+            limit,
+            jobs,
+            workdir,
+            report,
+            triage,
+            title,
+        } => {
+            let engines = if engines.is_empty() {
+                DEFAULT_ENGINES.map(String::from).to_vec()
+            } else {
+                engines
+            };
+            if !engines.iter().any(|e| e == sweep::REFERENCE_ENGINE) {
+                bail!(
+                    "sweep needs the reference engine {}",
+                    sweep::REFERENCE_ENGINE
+                );
+            }
+            let entries = sweep::run(&corpus, &engines, limit, jobs, &workdir).await?;
+            let markdown = sweep::triage_markdown(&title, &entries);
+            print!("{markdown}");
+            if let Some(path) = report {
+                std::fs::write(&path, serde_json::to_vec_pretty(&entries)?)?;
+                println!("report: {}", path.display());
+            }
+            if let Some(path) = triage {
+                if let Some(parent) = path.parent() {
+                    std::fs::create_dir_all(parent)?;
+                }
+                std::fs::write(&path, &markdown)?;
+                println!("triage: {}", path.display());
+            }
+            Ok(ExitCode::SUCCESS)
+        }
         Command::Conformance {
             corpus,
             engines,
@@ -399,7 +496,7 @@ async fn main() -> Result<ExitCode> {
         } => {
             let manifest = Manifest::load(&corpus)?;
             let engines = if engines.is_empty() {
-                vec!["ffmpeg".into(), "gstreamer".into(), "g2g".into()]
+                DEFAULT_ENGINES.map(String::from).to_vec()
             } else {
                 engines
             };
@@ -858,6 +955,7 @@ mod tests {
             output_format: golden.then_some(calliope_core::scenario::PixelFormat::I420),
             license: "l".into(),
             notes: String::new(),
+            media: None,
         }
     }
 

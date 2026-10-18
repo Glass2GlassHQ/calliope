@@ -145,6 +145,7 @@ dependencies = [
  "calliope-core",
  "clap",
  "futures",
+ "serde",
  "serde_json",
  "tokio",
  "toml",
