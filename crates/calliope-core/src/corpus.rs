@@ -46,6 +46,38 @@ pub struct Vector {
     pub license: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub notes: String,
+    // what ffprobe found in a real-world sample, drives the sweep's scenario choice
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub media: Option<Media>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct Media {
+    // ffprobe format_name, e.g. "mov,mp4,m4a,3gp,3g2,mj2"
+    pub container: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub video: Option<VideoStream>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audio: Option<AudioStream>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct VideoStream {
+    pub codec: String,
+    pub width: u32,
+    pub height: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pix_fmt: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct AudioStream {
+    pub codec: String,
+    pub sample_rate: u32,
+    pub channels: u32,
 }
 
 impl Manifest {
@@ -227,6 +259,7 @@ mod tests {
             output_format: None,
             license: "l".into(),
             notes: String::new(),
+            media: None,
         };
         assert!(v.validate().is_err());
     }
@@ -242,6 +275,7 @@ mod tests {
             output_format: None,
             license: "conformance".into(),
             notes: String::new(),
+            media: None,
         }
     }
 

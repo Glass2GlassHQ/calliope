@@ -32,8 +32,8 @@ impl DecodeOutcome {
             RunStatus::Ok => match run.decoded {
                 Some(true) => Self::Decoded,
                 Some(false) => Self::Rejected,
-                // outcome-diff always sets `decoded` on an Ok run; absent means
-                // this run was not an outcome-diff run, so we cannot judge it
+                // the runner sets `decoded` on every run it spawned; absent
+                // means the engine never ran, so we cannot judge it
                 None => Self::HarnessError,
             },
         }

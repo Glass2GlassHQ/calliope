@@ -409,6 +409,7 @@ impl SampleFormat {
 ///   to those two.
 /// - Aac / Vorbis: not bit-exact across decoders (g2g decodes vorbis via
 ///   symphonia), determinism (self-comparison) only.
+/// - Other: any codec without a bit-exact policy, determinism only.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, serde::Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum AudioCodec {
@@ -418,9 +419,28 @@ pub enum AudioCodec {
     Vorbis,
     Ac3,
     Mp2,
+    Other,
 }
 
 impl AudioCodec {
+    // map an ffprobe `codec_name`, unlisted codecs fall to `Other`
+    pub fn from_codec_name(codec_name: &str) -> Self {
+        match codec_name {
+            "opus" => Self::Opus,
+            "aac" => Self::Aac,
+            "flac" => Self::Flac,
+            "vorbis" => Self::Vorbis,
+            "ac3" => Self::Ac3,
+            "mp2" => Self::Mp2,
+            _ => Self::Other,
+        }
+    }
+
+    // ac3 / mp2 match only where every engine decodes through the same libavcodec
+    pub fn needs_shared_libavcodec(self) -> bool {
+        matches!(self, Self::Ac3 | Self::Mp2)
+    }
+
     /// ffmpeg decoder to force so ffmpeg matches the other engines' reference
     /// library. Opus pins libopus (ffmpeg's native opus decoder differs by ~1
     /// LSB in the float->s16 path); every other codec has a single ffmpeg
@@ -436,7 +456,7 @@ impl AudioCodec {
     /// (see the enum docs for which engines that is per codec). AAC and Vorbis
     /// are not, and must self-compare via determinism.
     pub fn differential_eligible(self) -> bool {
-        !matches!(self, Self::Aac | Self::Vorbis)
+        !matches!(self, Self::Aac | Self::Vorbis | Self::Other)
     }
 }
 
@@ -1102,6 +1122,8 @@ mod tests {
         // float decoders with no shared reference library self-compare only
         assert!(!AudioCodec::Aac.differential_eligible());
         assert!(!AudioCodec::Vorbis.differential_eligible());
+        assert!(!AudioCodec::from_codec_name("mp3").differential_eligible());
+        assert_eq!(AudioCodec::from_codec_name("flac"), AudioCodec::Flac);
 
         let toml = r#"
             id = "vorbis-diff"
