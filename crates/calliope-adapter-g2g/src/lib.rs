@@ -99,9 +99,10 @@ fn mux_and_sink(produce: &Produce, workdir: &Path, engine: &str) -> Result<Strin
 }
 
 // g2g-launch's parse errors for input it has no typefind match, demuxer, or decoder for
-const UNSUPPORTED_INPUT_ERRORS: [&str; 2] = [
+const UNSUPPORTED_INPUT_ERRORS: [&str; 3] = [
     "unrecognized content, no media type matches",
     "no decoder chain from",
+    "decodebin: no decoder for",
 ];
 
 // true when a g2g-launch stderr log says the build cannot handle the input at all

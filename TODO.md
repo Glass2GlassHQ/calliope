@@ -21,9 +21,8 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
   flv muxers and require the remuxed file to decode the same.
 
 ## Mutation testing
-- cargo-mutants over g2g-core, then the g2g-plugins parsers the fuzz targets
-  cover. Report mutants caught / missed / timeout, add tests for missed
-  mutants that mark real gaps.
+- Add g2g-plugins tests for the missed parser mutants that mark real gaps,
+  h265parse.rs and h264parse.rs first.
 
 ## Network impairment against reference peers
 - Compose file with reference peers: mediamtx, gst-rtsp-server, janus, livekit,

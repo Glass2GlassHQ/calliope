@@ -25,57 +25,62 @@ ORDER = list(TITLES)
 def bug(n, detail=''):
     return f'g2g bug {n}' + (f': {detail}' if detail else '')
 
+FFMPEG_EXTRA_LAST_FRAME = 'reference quirk: ffmpeg emits one more final frame, gstreamer and g2g emit the same length. g2g is bit-exact with ffmpeg over every common sample'
+
+def resolution_change(frames):
+    return f'harness: resolution changes mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with ffmpeg -noautoscale on all {frames} frames'
+
 OVERRIDES = {
     # fate-suite g2g diverges
     'ac3/diatonis_invisible_order_anfos_ac3-small.wav/audio': 'reference quirk: the WAV header says 2 ch PCM, the payload is S/PDIF-wrapped AC-3. ffmpeg sniffs and decodes the AC-3, gstreamer and g2g play the PCM',
     'ac3/monsters_inc_2.0_192_small.ac3/audio': 'reference quirk: ffmpeg decodes the truncated last frame (1536 samples more), gstreamer and g2g drop it. g2g is bit-exact with ffmpeg over every common sample',
     'ac3/monsters_inc_5.1_448_small.ac3/audio': 'reference quirk: ffmpeg decodes the truncated last frame (1536 samples more), gstreamer and g2g drop it. g2g is bit-exact with ffmpeg over every common sample',
-    'mpegts/mpegts_sdt_data_stream.ts/audio': 'reference quirk: ffmpeg emits one more MP2 frame (1152 samples), gstreamer and g2g emit the same length. g2g is bit-exact with ffmpeg over every common sample',
+    'mpegts/mpegts_sdt_data_stream.ts/audio': FFMPEG_EXTRA_LAST_FRAME,
+    'cavs/cavs.mpg/audio': FFMPEG_EXTRA_LAST_FRAME,
+    'probe-format/roundup1414/audio': FFMPEG_EXTRA_LAST_FRAME,
+    'h264/h264_intra_first-small.ts/audio': 'reference quirk: ffmpeg emits one more final MP2 frame, gstreamer fails. g2g is bit-exact with ffmpeg over every common sample',
+    'mpegts/pmtchange.ts/audio': bug(13),
+    'ogg-flac/chained-meta.ogg/audio': bug(10),
     'audiomatch/tones_opus_48000_stereo.mka/audio': 'reference quirk: Opus is not bit-exact across decoders (TESTING.md section 13). gstreamer and g2g differ by at most 4, ffmpeg by up to 126',
     'audiomatch/tones_opus_48000_stereo.opus/audio': 'reference quirk: Opus is not bit-exact across decoders (TESTING.md section 13)',
     'ogg-opus/chained-meta.ogg/audio': 'reference quirk: Opus is not bit-exact across decoders and gstreamer stops at the chain boundary, so there is no third vote. Lengths match',
-    'av1-test-vectors/av1-1-b8-03-sizedown.ivf/video': 'harness: resolution changes mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with ffmpeg -noautoscale on all 20 frames',
-    'av1-test-vectors/av1-1-b8-03-sizeup.ivf/video': 'harness: resolution change, g2g is bit-exact with ffmpeg -noautoscale on all 20 frames',
-    'av1/switch_frame.ivf/video': 'harness: resolution change, g2g is bit-exact with ffmpeg -noautoscale on all 32 frames',
-    'h264/reinit-large_420_8-to-small_420_8.h264/video': 'harness: resolution change, g2g is bit-exact with ffmpeg -noautoscale on all 100 frames',
-    'vp8/frame_size_change.webm/video': 'harness: resolution change, g2g is bit-exact with ffmpeg -noautoscale on all 300 frames',
-    'vp9-test-vectors/vp90-2-05-resize.ivf/video': 'harness: resolution change, g2g is bit-exact with ffmpeg -noautoscale on all 10 frames',
+    'av1-test-vectors/av1-1-b8-03-sizedown.ivf/video': resolution_change(20),
+    'av1-test-vectors/av1-1-b8-03-sizeup.ivf/video': resolution_change(20),
+    'av1/switch_frame.ivf/video': resolution_change(32),
+    'h264/reinit-large_420_8-to-small_420_8.h264/video': resolution_change(100),
+    'mpeg4/resize_down-down.h263/video': resolution_change(150),
+    'mpeg4/resize_down-up.h263/video': resolution_change(150),
+    'mpeg4/resize_up-down.h263/video': resolution_change(150),
+    'mpeg4/resize_up-up.h263/video': resolution_change(150),
+    'vp8/frame_size_change.webm/video': resolution_change(300),
+    'vp9-test-vectors/vp90-2-05-resize.ivf/video': resolution_change(10),
     'h264-conformance/FM1_FT_E.264/video': 'reference quirk: FMO / ASO baseline stream libavcodec does not support. All three engines conceal differently from frame 119',
-    'h264/extradata-reload-multi-stsd.mov/video': bug(6),
-    'hevc/extradata-reload-multi-stsd.mov/video': bug(6),
-    'mkv/1242-small.mkv/video': bug(11),
-    'mkv/flac_channel_layouts.mka/audio': bug(10),
+    'h264/data_partitioning.h264/video': 'reference quirk: libavcodec does not support data partitioning, ffmpeg and gstreamer fail. g2g output unverified',
+    'h264/data_partitioning_ab.h264/video': 'reference quirk: data partitioning, see h264/data_partitioning.h264',
+    'h264/data_partitioning_cip.h264/video': 'reference quirk: data partitioning, see h264/data_partitioning.h264',
     'mov/dovi-p7.mp4/video': 'reference quirk: framemd5 drops a frame with a repeated timestamp. g2g is bit-exact with ffmpeg -fps_mode passthrough on all 10 frames',
-    'mov/elst_ends_betn_b_and_i.mp4/video': bug(5, 'one frame past the edit end'),
-    'mov/empty_edit_5s.mp4/video': bug(5, 'diverges from frame 1, ffmpeg and gstreamer agree to frame 10'),
-    'mov/mov-1elist-ends-last-bframe.mov/video': bug(5, 'one frame past the edit end'),
-    'mov/mov-2elist-elist1-ends-bframe.mov/video': bug(5, 'diverges at frame 18'),
-    'mov/mov_ibi_elst_starts_b.mov/video': bug(5, 'one extra leading frame, then frames match ffmpeg shifted by one'),
-    'mov/mov_neg_first_pts_discard.mov/video': bug(5, '30 frames, the edit keeps 15'),
-    'mov/mov_stream_shorter_than_movie.mov/video': bug(5, '48 frames, the edit keeps 24'),
-    'mov/mp4-init-nonkeyframe.mp4/video': bug(5, 'first 27 frames match ffmpeg, 2 extra after the edit end'),
-    'mpeg2/mpeg2_field_encoding.ts/video': bug(12),
-    'mpeg2/t.mpg/video': bug(13),
+    'mov/empty_edit_5s.mp4/video': 'open: the stream has decode errors from frame 0 and gstreamer fails. ffmpeg threaded and single-thread decodes differ from frame 10, g2g differs from frame 1',
+    'mov/mov-2elist-elist1-ends-bframe.mov/video': bug(9, '48 frames for 42, the 6 at frame 18 are cut by the first edit'),
+    'flv/Enigma_Principles_of_Lust-part.flv/video': bug(8, '295 frames for 350, frames lost after a corrupt NAL at frame 34'),
+    'nellymoser/nellymoser-discont.flv/video': bug(8, '447 frames for 511 at the timestamp discontinuity, gstreamer agrees with ffmpeg'),
+    'mpeg4/mpeg4_sstp_dpcm.m4v/video': 'open: Studio profile 4:2:2 10-bit, 25% of samples differ from ffmpeg with the same libavcodec 62, gstreamer fails',
     'probe-format/mp3-with-art/audio': 'reference quirk: ffmpeg n8.1 probes this MP3 as MPEG-PS and fails. With -f mp3 it decodes. gstreamer fails too',
     'webp/anim.webp/video': 'reference quirk: neither ffmpeg n8.1 nor gstreamer decodes animated WebP. g2g output unverified',
     'webp/anim_rgb_yuv.webp/video': 'reference quirk: animated WebP, see webp/anim.webp',
     'webp/anim_yuv_rgb.webp/video': 'reference quirk: animated WebP, see webp/anim.webp',
     # fate-suite no output, cases the rules below would get wrong
-    'aac/id3v2.aac/audio': bug(3, 'ID3-tagged ADTS'),
-    'mpeg4/demo.m4v/video': bug(4, 'raw MPEG-4 elementary stream typefound as MP4'),
-    'mpeg4/mpeg4_sstp_dpcm.m4v/video': 'unsupported: MPEG-4 Studio profile 4:2:2 10-bit',
-    'h264/crew_cif.nal/video': bug(16),
+    'ac3/mp3ac325-4864-small.ts/audio': bug(5),
+    'jpg/jpg-8930-3.jpg/video': 'open: progressive 4:4:4 JPEG, MjpegDec fails CapsMismatch',
+    'mxpeg/m1.mxg/audio': 'unsupported container: MxPEG, the audio request gets the still-image video chain (bug 11)',
     'probe-format/mpegts-png-prefix/video': 'unsupported: PNG behind a junk prefix (an ffmpeg probe test)',
     'probe-format/mpegts-png-prefix-unaligned/video': 'unsupported: PNG behind a junk prefix (an ffmpeg probe test)',
-    'vcr2/VCR2test.avi/video': 'unsupported codec: VCR2 (ffprobe labels it mpeg2video), reported as a caps error (bug 21)',
-    'smv/clock.smv/audio': 'unsupported codec: IMA ADPCM has no g2g decoder, decodebin passes it through (bug 21)',
-    'mov/mov-frag-encrypted.mp4/video': bug(4, 'encrypted, gstreamer fails too'),
-    'mov/mov-piff-cenc-hybrid.mp4/video': bug(4, 'encrypted, gstreamer fails too'),
-    'mov/mov-piff-encrypted.mp4/video': bug(4, 'encrypted, gstreamer fails too'),
     # gst-medias
-    'mpegts/cm5000_hevc_1080i_colorbars.ts/video': 'open: ffmpeg drops every frame (RPS errors, no IRAP at the start), gstreamer fails, g2g emits frames. g2g output unverified',
     'edit-lists/simple/edit_list_video_23456789_implicit_duration.mp4/video': 'reference quirk: the track has duration 0 and ffmpeg emits nothing, gstreamer and g2g decode',
+    'mpegps/sample_mpeg_program_stream_scr.mpg/audio': bug(4, 'twice the samples, the two MP2 streams interleave'),
 }
+
+# ffprobe codec names g2g decodes when the demuxer maps them
+DEMUXER_UNMAPPED = set('pcm_s16le pcm_s16be pcm_s32le pcm_s8 pcm_u8 pcm_alaw pcm_mulaw mp3 vorbis'.split())
 
 def short_id(scenario):
     return scenario.split('/', 1)[1].removeprefix('defaults/')
@@ -107,57 +112,44 @@ def diagnose(e):
         return 'reference quirk: gstreamer and g2g agree, ffmpeg is the outlier'
     if cls == 'g2g-diverges' and codec == 'opus':
         return 'reference quirk: Opus is not bit-exact across decoders. All three emit the same length and no two are bit-exact, the RFC 6716 vectors need opus_compare'
+    # M1492's error, which calliope sweep before 2026-10-18 filed as no output
+    if 'decodebin: no decoder for' in note:
+        return bug(6) if kind == 'audio' and codec in DEMUXER_UNMAPPED else 'unsupported codec'
     if cls == 'unsupported-codec':
-        if kind == 'audio' and 'no decoder chain from Audio { format: PcmU8' in note:
-            return bug(22)
         if 'unrecognized content' in note:
             return 'unsupported container' if codec in SUPPORTED else 'unsupported container or codec'
         return 'unsupported codec'
     if cls != 'g2g-no-output':
         return ''
-    if codec not in SUPPORTED:
-        if 'FfmpegVideoDec0: CapsMismatch' in note or 'MjpegDec0: CapsMismatch' in note:
-            return 'unsupported pixel format'
-        return 'unsupported codec, reported as a caps error (bug 21)'
-    wants_audio_got_video = kind == 'audio' and 'for video/' in note
-    wants_video_got_audio = kind == 'video' and ('for audio/' in note or 'OpusDec and CapsFilter' in note or 'FfmpegAudioDec and CapsFilter' in note)
-    if container == 'ogg' and 'OpusDec' in note:
-        return bug(20)
-    if wants_audio_got_video and has_video:
-        return bug(1)
-    if wants_video_got_audio and has_audio:
-        return bug(20) if container == 'ogg' else bug(1)
-    if wants_audio_got_video:
-        return bug(3) if container in ('aac', 'eac3', 'dtshd') else bug(2)
-    if 'Mp4Demux' in note:
-        return bug(4)
-    if note == 'no output':
-        if container == 'ogg':
-            return bug(20)
-        return bug(7)
-    if 'FfmpegAudioDec0: Hardware(Other)' in note:
-        return bug(19) if codec == 'flac' else bug(8)
-    if container == 'wav' and ('AudioResample' in note or 'AudioConvert0: CapsMismatch' in note or 'WavParse' in note):
-        return bug(9)
-    if 'FfmpegVideoDec0: CapsMismatch' in note or 'MjpegDec0: CapsMismatch' in note:
+    if 'AviDemux0: CapsMismatch' in note:
+        return bug(3)
+    if 'Mp4Demux0: CapsMismatch' in note:
+        return bug(2) if codec == 'aac' else 'unsupported codec, reported as a caps error by Mp4Demux (bug 11)'
+    if 'MjpegDec0: CapsMismatch' in note:
+        return bug(7) if container == 'avi' else 'unsupported pixel format'
+    if 'FfmpegVideoDec0: CapsMismatch' in note:
         return 'unsupported pixel format'
-    if 'NotConfigured' in note:
-        return bug(14)
-    if 'FfmpegVideoDec0: Hardware(Other)' in note:
-        return bug(15)
-    if 'NalParse0: CapsMismatch' in note:
-        return bug(3, f'{container} typefound as H.264')
-    if 'StillImageParse0' in note:
-        return bug(17)
-    if 'OpusDec0: CapsMismatch' in note:
-        return bug(18)
     if 'rejected mid-stream caps video/x-raw' in note:
         return 'harness: pixel format changes mid-stream and the capsfilter pins one format'
     if 'WebPDec and CapsFilter' in note:
         return 'harness: g2g decodes lossy WebP to RGBA, the differential pins I420 without a converter'
-    if 'VideoConvert produces no output for video/x-h' in note or 'no caps overlap between AviDemux' in note:
-        return bug(2, 'AVI MJPEG')
-    raise SystemExit(f'no diagnosis for {scenario}: {note}')
+    if 'FfmpegAudioDec0: Hardware(Other)' in note:
+        return bug(12)
+    if note == 'no output':
+        if container == 'matroska,webm' and codec == 'aac':
+            return bug(1)
+        return f'unsupported codec, {codec} decodes to nothing with exit status 0 (bug 11)'
+    if container == 'ogg' and ('OpusDec and CapsFilter' in note or 'VorbisDec and CapsFilter' in note):
+        return bug(6, 'VP8 in Ogg') if codec == 'vp8' else f'unsupported codec, the {codec} video request gets an audio chain (bug 11)'
+    if kind == 'video' and 'for audio/' in note and codec in ('mjpeg', 'png'):
+        return 'unsupported: attached picture, the video request gets the audio chain (bug 11)'
+    if codec in SUPPORTED:
+        raise SystemExit(f'no diagnosis for {scenario}: {note}')
+    if kind == 'audio' and 'for video/' in note:
+        return 'unsupported codec, the audio request gets the video chain (bug 11)'
+    if kind == 'video' and 'for audio/' in note:
+        return 'unsupported codec, the video request gets the audio chain (bug 11)'
+    return 'unsupported codec, reported as a caps error (bug 11)'
 
 def reproducer(e):
     program, _, args = (e.get('reproducer') or '').partition(' ')
@@ -201,13 +193,13 @@ for name in ('g2g bug', 'unsupported', 'harness', 'reference quirk', 'gstreamer 
         out.append(f'| {name} | {by_bucket[name]} |')
 by_bug = collections.Counter(int(m.group(1)) for e in entries if (m := re.match(r'g2g bug (\d+)', e['diagnosis'])))
 out += ['', 'Scenarios per g2g bug:', '', '| bug | scenarios |', '| ---: | ---: |']
-misreported = sum('(bug 21)' in e['diagnosis'] for e in entries)
+misreported = sum('(bug 11)' in e['diagnosis'] for e in entries)
 if misreported:
-    by_bug[21] = misreported
+    by_bug[11] = misreported
 for n in sorted(by_bug):
     out.append(f'| {n} | {by_bug[n]} |')
 if misreported:
-    out += ['', 'Bug 21 rows are also counted under unsupported, the codec is missing either way.']
+    out += ['', 'Bug 11 rows are also counted under unsupported, the codec is missing either way.']
 if bugs_text:
     out += ['', bugs_text.strip()]
 for cls in ORDER:

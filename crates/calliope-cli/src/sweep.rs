@@ -713,6 +713,12 @@ mod tests {
         assert_eq!(class, TriageClass::UnsupportedCodec);
         // the note is g2g's own error, not libav's decoder chatter before it
         assert!(note.starts_with("parse error: decodebin"), "{note}");
+        const NO_STREAM_DECODER: &str =
+            "parse error: decodebin: no decoder for sowt in /media/surge-2-16-L-sowt.mov";
+        assert_eq!(
+            with_g2g(rejected(), NO_STREAM_DECODER).0,
+            TriageClass::UnsupportedCodec
+        );
         let (class, note) = with_g2g(rejected(), CAPS_FAILURE);
         assert_eq!(class, TriageClass::G2gNoOutput);
         assert_eq!(

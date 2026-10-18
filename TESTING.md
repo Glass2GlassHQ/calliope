@@ -299,42 +299,50 @@ decode outcome is the oracle.
 calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
 calliope sweep --corpus corpus/gst-medias.toml --title gst-medias --report runs/gst-medias.json
 python3 -I tools/sweep-triage.py runs/fate-suite.json corpus/fate-suite.toml fate-suite \
-  "master 42c0a809 built with linux-full in release" triage/fate-suite.md
+  "master b84a510a built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
 ```
 Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
 gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
-space in its name and is skipped. g2g-launch was g2g master 42c0a809,
-linux-full, release.
+space in its name and is skipped. g2g-launch is linux-full in release. The
+first sweep ran g2g master 42c0a809. The current one runs b84a510a without
+vaapi, pipewire and portal, which do not build on the Fedora 44 sweep host.
 
-Result, fate-suite: 948 scenarios agree (627 differential, 255 determinism, 66
-rejected by every engine). Of the other 1463, 176 are g2g bugs, 1109 are codecs,
-containers or pixel formats g2g does not support, 98 are harness limits, 38 are
-reference quirks and 42 are GStreamer-only failures. gst-medias: 149 agree (36
-differential, 103 determinism, 10 rejected by every engine). Of the other 135, 86
-are g2g bugs, 36 unsupported, 6 reference quirks, 6 GStreamer-only and 1 open.
-In the open case ffmpeg drops every frame of an HEVC TS and g2g decodes it,
-unverified.
+Result at 42c0a809: 948 fate-suite and 149 gst-medias scenarios agreed, and
+262 failed from 22 g2g bugs. All 22 are fixed (bugs 7 to 28 below). The
+re-sweeps at e4629017 and 5f25e5b8 found four more, also fixed (29 to 32).
 
-The 262 g2g-bug scenarios come from 22 bugs, listed with a reproducer in
-`triage/fate-suite.md`. The largest are decodebin decoding the video stream when
-the pipeline asks for audio (104 scenarios), Mp4Demux CapsMismatch on H.264,
-HEVC, MPEG-4, AV1, VP8 and MJPEG tracks (43), and audio-only files getting a
-video chain (20). Edit lists are not applied (8 MOV / MP4 files), and 18 MP4
-AAC conformance files decode to nothing with exit status 0. None is fixed yet,
-so they are not in the list below.
+Result at b84a510a, fate-suite: 1048 scenarios agree. Of the other 1363, 43
+are g2g bugs, 1130 are codecs, containers or pixel formats g2g does not
+support, 101 are harness limits, 34 are reference quirks, 52 are
+GStreamer-only failures and 3 are open. gst-medias: 216 agree. Of the other
+68, 13 are g2g bugs, 43 unsupported, 3 reference quirks and 9 GStreamer-only.
 
-Harness limits: 6 resolution-changing streams cannot be hashed at one geometry,
-and g2g is bit-exact with `ffmpeg -noautoscale` on all of them. GStreamer pads
-raw rows to 4 bytes or changes resolution mid-stream, so 88 of its dumps do not
-split into frames. Determinism scenarios pin I420, so the g2g adapter inserts
-`videoconvert` when a scenario has no `[video]` table. Without it every
-packed-RGB decoder (PNG, APNG) fails the capsfilter.
+The 56 g2g-bug scenarios come from 13 bugs, listed with a reproducer in
+`triage/fate-suite.md`. The largest are demuxers that do not map PCM, MP3,
+Vorbis or VP8 tracks g2g decodes (30 scenarios) and AviDemux refusing
+truncated files (10). 66 unsupported scenarios fail with a pipeline error
+instead of naming the missing decoder (bug 11). The b84a510a sweep ran before
+calliope matched g2g's `decodebin: no decoder for` error, so it filed 280
+unsupported scenarios as "g2g no output" and the triage rules move them.
+
+Open: an MPEG-4 Studio profile stream decodes to different samples than
+ffmpeg with the same libavcodec, `mov/empty_edit_5s.mp4` has decode errors
+from frame 0 where even ffmpeg's threaded and single-thread decodes differ,
+and a progressive 4:4:4 JPEG fails in MjpegDec.
+
+Harness limits: 10 resolution-changing streams cannot be hashed at one
+geometry, and g2g is bit-exact with `ffmpeg -noautoscale` on all of them.
+GStreamer pads raw rows to 4 bytes or changes resolution mid-stream, so 87 of
+its dumps do not split into frames. Determinism scenarios pin I420, so the g2g
+adapter inserts `videoconvert` when a scenario has no `[video]` table. Without
+it every packed-RGB decoder (PNG, APNG) fails the capsfilter.
 
 Reference quirks: ffmpeg decodes the truncated last AC-3 or MP2 frame where
 GStreamer and g2g drop it, and g2g is bit-exact over every common sample. ffmpeg
 sniffs S/PDIF AC-3 inside a PCM WAV. Opus is not bit-exact across any two of
 the three engines on the RFC 6716 vectors. ffmpeg n8.1 decodes neither
-animated WebP nor `probe-format/mp3-with-art`.
+animated WebP, H.264 data partitioning nor `probe-format/mp3-with-art`.
+
 ### 16. Output validators and browser playback
 A scenario with a `[produce]` table has each engine encode or remux one input
 into a container, then external validators judge the file or live stream it
@@ -505,7 +513,9 @@ h264parse.rs (52%) are the weakest. The missed plugin mutants have no tests yet.
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
 decode differential (technique 13), bugs 5-6 by the interlace / audio surface
-added 2026-08 (techniques 1 and 13). All are fixed in g2g with regression tests.
+added 2026-08 (techniques 1 and 13), bugs 7-28 by the corpus sweep at 42c0a809
+and bugs 29-32 by its re-sweeps (technique 15). All are fixed in g2g with
+regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -545,6 +555,47 @@ added 2026-08 (techniques 1 and 13). All are fixed in g2g with regression tests.
    scale, so any float-codec decode (AC-3, AAC) differed from ffmpeg's decode of
    the same stream on ~75% of samples, a permanent quantization bias. Found by
    the ac3 differential. Fixed in g2g M937 (swresample-matching round-to-even).
+7. **decodebin decoded the wrong stream.** `decodebin ! audioconvert` on a file
+   with audio and video built the video chain (M1490).
+8. **Demuxers dropped streams they did not map** and leaked the default H.264
+   port, so audio-only MP4 and WebM files got a video decoder (M1492, M1495).
+9. **Typefind took non-H.264 data for H.264,** including ID3-tagged ADTS and
+   MXF (M1494).
+10. **Mp4Demux failed CapsMismatch** on fragmented, truncated and version 1
+    files and on a video track behind an audio track (M1500).
+11. **Edit lists were ignored,** so frames the edit cuts were emitted (M1548,
+    M1553).
+12. **Mp4Demux used only the first sample description** (M1501).
+13. **MP4 AAC with a program config element decoded to nothing** and g2g-launch
+    exited 0 (M1502).
+14. **ER AAC, AAC-ELD and USAC failed decoder setup** (M1549).
+15. **WavParse failed on extra RIFF chunks** and decoded the bytes after the
+    `data` chunk (M1510).
+16. **MkvDemux merged two audio tracks into one stream** (M1511).
+17. **A Matroska file cut inside a Cluster lost frames** (M1543).
+18. **Field-coded MPEG-2 in TS decoded wrong** because no parser reassembled
+    pictures split across PES packets (M1544).
+19. **PsDemux stopped after the first frame** of `mpeg2/t.mpg` (M1545).
+20. **VP6, VP6A and other FLV, TS and IV8 streams failed NotConfigured** (M1546,
+    M1550, M1551, M1552).
+21. **FfmpegVideoDec failed the stream on an access unit libavcodec rejects**
+    (M1542).
+22. **NalParse failed on a raw H.264 file with bytes before its first start
+    code** (M1541).
+23. **JPEG with padding between images failed in the parser** (M1540).
+24. **Multichannel Opus failed in OpusDec** (M1512).
+25. **FlacParse split frames wrong** (M1513).
+26. **OggDemux plugged OpusDec for any Ogg file with a video stream** (M1491).
+27. **Unsupported codecs failed with a caps error** instead of naming the
+    missing decoder, when a demuxer drops the stream (M1492).
+28. **decodebin had no chain for PCM U8 in AVI** (M1493).
+29. **Version 0 `ctts` and `trun` offsets were read unsigned,** so the segment
+    clip dropped every other frame of three MOV files (M1558).
+30. **TsDemux forwarded every PID of a codec on one port** (M1559).
+31. **TS and PS opened the segment at the first PTS,** which cut open-GOP B
+    frames ahead of the first I frame (M1560).
+32. **AC-3, AAC and MP3 parsers lost the demuxer time** when frames arrived one
+    per chunk, so the segment clip dropped TS audio (M1561).
 
 ## Not a gap
 
