@@ -1,0 +1,21 @@
+[Unit]
+Description=g2g canary: ffmpeg publishing the self-hosted clip over rtsp and srt
+Requires=g2g-canary-mediamtx.service
+After=g2g-canary-mediamtx.service
+
+[Container]
+Image=docker.io/bluenviron/mediamtx:1.21.2-ffmpeg
+ContainerName=g2g-canary-feeder
+Network=host
+RunInit=true
+Entrypoint=/bin/sh
+Exec=/feeder.sh
+Volume=%h/g2g-canary/feeder.sh:/feeder.sh:ro,Z
+Volume=g2g-canary-clip:/clip
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

@@ -29,6 +29,14 @@ id = "unified-live-hls"
 tier = "public"
 launch = "hlssrc location=https://demo.unified-streaming.com/k8s/live/stable/live.isml/.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
 
+# a public webcam in slovakia, h264 1280x720 over rtsp on port 1935
+[[pipeline]]
+id = "strba-rtsp"
+tier = "public"
+launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream ! decodebin ! fakesink"
+
+# no public srt entry: g2g's srtsrc only listens, a public srt server never calls in
+
 # vod streams loop: clocksync paces them to real time, the lowest variant keeps bandwidth down
 [[pipeline]]
 id = "mux-vod-hls"

@@ -12,7 +12,9 @@ mkdir -p "$context/g2g" "$context/calliope"
 git -C "$g2g_dir" archive HEAD | tar -x -C "$context/g2g"
 git -C "$calliope_dir" archive HEAD | tar -x -C "$context/calliope"
 
+# CANARY_PLATFORM=linux/arm64 builds for an arm host, through qemu-user-static on x86
 podman build \
+    ${CANARY_PLATFORM:+--platform "$CANARY_PLATFORM"} \
     --build-context g2g="$context/g2g" \
     --build-arg CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-4}" \
     -f "$context/calliope/deploy/canary/Containerfile" \
