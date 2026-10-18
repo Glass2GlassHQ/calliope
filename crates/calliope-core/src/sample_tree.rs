@@ -7,6 +7,9 @@ use sha2::{Digest, Sha256};
 use crate::corpus::{Media, Vector};
 use crate::{Error, Result};
 
+// gst-validate's expected decoded frames sit beside the inputs as png directories
+const GST_REFERENCE_FRAMES_SUFFIX: &str = "_reference_frames";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SampleTree {
     FateSuite,
@@ -31,6 +34,11 @@ impl SampleTree {
         }
     }
 
+    // directories of generated outputs rather than samples
+    fn skips_dir(self, name: &str) -> bool {
+        self == Self::GstMedias && name.ends_with(GST_REFERENCE_FRAMES_SUFFIX)
+    }
+
     fn license(self) -> &'static str {
         match self {
             Self::FateSuite => {
@@ -50,7 +58,7 @@ pub fn import_tree(
     mut probe: impl FnMut(&Path) -> Result<Option<Media>>,
 ) -> Result<Vec<Vector>> {
     let mut vectors = Vec::new();
-    for path in sample_files(root)? {
+    for path in sample_files(root, tree)? {
         let Some(media) = probe(&path)? else {
             continue;
         };
@@ -77,19 +85,22 @@ pub fn import_tree(
     Ok(vectors)
 }
 
-// every regular file under `root`, skipping hidden entries such as `.git`
-fn sample_files(root: &Path) -> Result<Vec<PathBuf>> {
+// every regular file under `root`, skipping hidden entries such as `.git` and generated outputs
+fn sample_files(root: &Path, tree: SampleTree) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     let mut stack = vec![root.to_path_buf()];
     while let Some(dir) = stack.pop() {
         for entry in std::fs::read_dir(&dir)? {
             let entry = entry?;
-            if entry.file_name().to_string_lossy().starts_with('.') {
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name.starts_with('.') {
                 continue;
             }
             let file_type = entry.file_type()?;
             if file_type.is_dir() {
-                stack.push(entry.path());
+                if !tree.skips_dir(&name) {
+                    stack.push(entry.path());
+                }
             } else if file_type.is_file() {
                 files.push(entry.path());
             }
@@ -171,6 +182,11 @@ mod tests {
         let _ = std::fs::remove_dir_all(&root);
         write(&root, "mp4/a.h264", b"x");
         write(&root, "flac/b.wav", b"y");
+        write(
+            &root,
+            "mp4/a_mp4_reference_frames/0.h264",
+            b"expected frame",
+        );
         let vectors = import_tree(&root, SampleTree::GstMedias, fake_probe).unwrap();
         let manifest = Manifest { vector: vectors };
         let path = root.join("vectors.toml");
