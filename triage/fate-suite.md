@@ -1,42 +1,29 @@
 # fate-suite sweep triage
 
-2221 files, 2411 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master 6c675bef built with linux-full minus vaapi, pipewire and portal in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/fate-suite`.
+2221 files, 2411 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master b97fa5da built with linux-full minus vaapi, pipewire and portal in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/fate-suite`.
 
 | class | scenarios |
 | :--- | ---: |
-| g2g diverges | 31 |
-| g2g no output | 28 |
-| gstreamer diverges | 144 |
+| g2g diverges | 33 |
+| g2g no output | 29 |
+| gstreamer diverges | 146 |
 | reference quirk | 14 |
-| unsupported codec | 1109 |
-| agree | 1085 |
+| unsupported codec | 1095 |
+| agree | 1094 |
 
 Every scenario outside the agree class, by diagnosis:
 
 | diagnosis | scenarios |
 | :--- | ---: |
-| g2g bug | 12 |
-| unsupported | 1120 |
+| unsupported | 1119 |
 | harness | 102 |
-| reference quirk | 35 |
-| gstreamer only | 54 |
+| reference quirk | 37 |
+| gstreamer only | 56 |
 | open | 3 |
-
-Scenarios per g2g bug:
-
-| bug | scenarios |
-| ---: | ---: |
-| 1 | 4 |
-| 2 | 5 |
-| 3 | 3 |
 
 ## g2g bugs
 
-Each bug names one reproducer. `S=$HOME/.cache/calliope` in every command. The tables below list every affected scenario with its own reproducer. "Expected" is what ffmpeg n8.1 and gstreamer 1.28 do with the same file. The bugs of the 42c0a809 and b84a510a sweeps are fixed and listed in TESTING.md "Bugs found".
-
-1. **Typefind does not recognize an MPEG-1/2 video elementary stream.** Reproducer: `g2g-launch -q filesrc location=$S/fate-suite/sub/Closedcaption_rollup.m2v ! decodebin ! videoconvert ! fakesink` (starts with the `00 00 01 B3` sequence header). Expected: 135 frames, gstreamer bit-exact with ffmpeg. Got: `filesrc: unrecognized content, no media type matches its leading bytes`. Also `mpeg2/hhi_burst_422_short.bits`, `mpeg2/tcela-6.bits` and `mpeg2/sony-ct3.bs` (zero bytes ahead of the first start code).
-2. **Typefind only looks for an elementary stream at byte 0 or right behind an ID3v2 tag.** Reproducer: `g2g-launch -q filesrc location=$S/fate-suite/aac/id3v1.aac ! decodebin ! audioconvert ! fakesink` (the first ADTS frame is at byte 253). Expected: the AAC decodes, as in ffmpeg and gstreamer. Got: `filesrc: unrecognized content`. Also `mp3-conformance/sin1k0db.bit` (MP3 behind 215 zero bytes), `probe-format/roundup1383` (MP3 626 bytes past the ID3v2 tag) and `probe-format/roundup997` (an MPEG-PS pack header at byte 1192).
-3. **AviDemux does not map `VP60` and the mp4 demuxer does not map `AVDJ`.** g2g decodes both codecs, VP6 and motion JPEG. Reproducer: `g2g-launch -q filesrc location=$S/fate-suite/vp6/interlaced32x32.avi ! decodebin ! videoconvert ! fakesink`. Expected: the VP6 frames, gstreamer bit-exact with ffmpeg. Got: `decodebin: no decoder for VP60`. Also `vp6/interlaced32x64.avi` and `avid/avidmeridianntsc.mov` (`no decoder for AVDJ`, gstreamer decodes it).
+None open. The bugs of the 42c0a809, b84a510a and 6c675bef sweeps are fixed and listed in TESTING.md "Bugs found".
 
 ## g2g diverges
 
@@ -53,8 +40,8 @@ Each bug names one reproducer. `S=$HOME/.cache/calliope` in every command. The t
 | `fate-suite/mpeg4/resize_up-up.h263/video` | mpeg4 yuv420p | trailing partial frame (106560 of 152064 bytes), wrong geometry or truncated output | harness: resolution changes mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with ffmpeg -noautoscale on all 150 frames | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg4/resize_up-up.h263 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/vp8/frame_size_change.webm/video` | vp8 yuv420p | trailing partial frame (1468800 of 3110400 bytes), wrong geometry or truncated output | harness: resolution changes mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with ffmpeg -noautoscale on all 300 frames | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/vp8/frame_size_change.webm ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mpeg4/mpeg4_sstp_dpcm.m4v/video` | mpeg4 yuv422p10le | diverged at frame 0 of 1 | open: Studio profile 4:2:2 10-bit, 25% of samples differ from ffmpeg with the same libavcodec 62, gstreamer fails | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg4/mpeg4_sstp_dpcm.m4v ! decodebin ! video/x-raw,format=I422_10LE ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/mov/empty_edit_5s.mp4/video` | h264 yuv444p | diverged at frame 1 of 100 | open: the stream has decode errors from frame 0 and gstreamer fails. ffmpeg threaded and single-thread decodes differ from frame 10, g2g differs from frame 1 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mov/empty_edit_5s.mp4 ! decodebin ! video/x-raw,format=Y444 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/h264-conformance/FM1_FT_E.264/video` | h264 yuv420p | diverged at frame 136 of 305 | reference quirk: FMO / ASO baseline stream libavcodec does not support. All three engines conceal differently from frame 119 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264-conformance/FM1_FT_E.264 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
+| `fate-suite/mov/empty_edit_5s.mp4/video` | h264 yuv444p | diverged at frame 7 of 100 | open: the stream has decode errors from frame 0 and gstreamer fails. ffmpeg threaded and single-thread decodes differ from frame 10, g2g differs from frame 1 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mov/empty_edit_5s.mp4 ! decodebin ! video/x-raw,format=Y444 ! filesink location=/tmp/calliope-repro/out.yuv` |
+| `fate-suite/h264-conformance/FM1_FT_E.264/video` | h264 yuv420p | diverged at frame 121 of 305 | reference quirk: FMO / ASO baseline stream libavcodec does not support. All three engines conceal differently from frame 119 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264-conformance/FM1_FT_E.264 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/ogg-opus/chained-meta.ogg/audio` | opus | diverged at frame 0 of 1 | reference quirk: Opus is not bit-exact across decoders and gstreamer stops at the chain boundary, so there is no third vote. Lengths match | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ogg-opus/chained-meta.ogg ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=1 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/webp/anim_rgb_yuv.webp/video` | webp none | lenient: decoded input ffmpeg exit 69 | reference quirk: animated WebP, see webp/anim.webp | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/webp/anim_rgb_yuv.webp ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/webp/anim_yuv_rgb.webp/video` | webp none | lenient: decoded input ffmpeg exit 69 | reference quirk: animated WebP, see webp/anim.webp | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/webp/anim_yuv_rgb.webp ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
@@ -62,6 +49,7 @@ Each bug names one reproducer. `S=$HOME/.cache/calliope` in every command. The t
 | `fate-suite/h264/data_partitioning_cip.h264/video` | h264 yuv420p | lenient: decoded input ffmpeg exit 69 | reference quirk: data partitioning, see h264/data_partitioning.h264 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264/data_partitioning_cip.h264 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/ac3/monsters_inc_2.0_192_small.ac3/audio` | ac3 | diverged at frame 0 of 1 | reference quirk: ffmpeg decodes the truncated last frame (1536 samples more), gstreamer and g2g drop it. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ac3/monsters_inc_2.0_192_small.ac3 ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/ac3/monsters_inc_5.1_448_small.ac3/audio` | ac3 | diverged at frame 0 of 1 | reference quirk: ffmpeg decodes the truncated last frame (1536 samples more), gstreamer and g2g drop it. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ac3/monsters_inc_5.1_448_small.ac3 ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=6 ! filesink location=/tmp/calliope-repro/out.pcm` |
+| `fate-suite/probe-format/roundup997/video` | mpeg2video yuv420p | diverged at frame 0 of 4 | reference quirk: ffmpeg drops the first B-frame by timestamp in its default constant frame rate mode. g2g is bit-exact with ffmpeg -fps_mode passthrough on all 5 frames | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/probe-format/roundup997 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/h264/h264_intra_first-small.ts/audio` | mp2 | diverged at frame 0 of 1 | reference quirk: ffmpeg emits one more final MP2 frame, gstreamer fails. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264/h264_intra_first-small.ts ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/cavs/cavs.mpg/audio` | mp2 | diverged at frame 0 of 1 | reference quirk: ffmpeg emits one more final frame, gstreamer and g2g emit the same length. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/cavs/cavs.mpg ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/mpegts/mpegts_sdt_data_stream.ts/audio` | mp2 | diverged at frame 0 of 1 | reference quirk: ffmpeg emits one more final frame, gstreamer and g2g emit the same length. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpegts/mpegts_sdt_data_stream.ts ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
@@ -71,6 +59,7 @@ Each bug names one reproducer. `S=$HOME/.cache/calliope` in every command. The t
 | `fate-suite/h264/data_partitioning.h264/video` | h264 yuv420p | lenient: decoded input ffmpeg exit 69 | reference quirk: libavcodec does not support data partitioning, ffmpeg and gstreamer fail. g2g output unverified | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264/data_partitioning.h264 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/webp/anim.webp/video` | webp none | lenient: decoded input ffmpeg exit 69 | reference quirk: neither ffmpeg n8.1 nor gstreamer decodes animated WebP. g2g output unverified | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/webp/anim.webp ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/ac3/diatonis_invisible_order_anfos_ac3-small.wav/audio` | ac3 | diverged at frame 0 of 1 | reference quirk: the WAV header says 2 ch PCM, the payload is S/PDIF-wrapped AC-3. ffmpeg sniffs and decodes the AC-3, gstreamer and g2g play the PCM | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ac3/diatonis_invisible_order_anfos_ac3-small.wav ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=6 ! filesink location=/tmp/calliope-repro/out.pcm` |
+| `fate-suite/probe-format/roundup997/audio` | mp2 | diverged at frame 0 of 1 | reference quirk: the first PS audio packet opens on a partial MP2 frame and ffmpeg rejects the whole packet, losing the first whole frame, then decodes the truncated last one. g2g decodes the 7 whole frames, bit-exact with ffmpeg on the same frames | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/probe-format/roundup997 ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/ac3/mp3ac325-4864-small.ts/audio` | ac3 | diverged at frame 0 of 1 | reference quirk: the last AC-3 packet is truncated and ffmpeg decodes it (1536 samples more), g2g drops it. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ac3/mp3ac325-4864-small.ts ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=6 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/mpegts/pmtchange.ts/audio` | ac3 | diverged at frame 0 of 1 | reference quirk: the last AC-3 packet is truncated and ffmpeg decodes it (1536 samples more), g2g drops it. g2g is bit-exact with ffmpeg over every common sample | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpegts/pmtchange.ts ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=6 ! filesink location=/tmp/calliope-repro/out.pcm` |
 
@@ -84,6 +73,7 @@ Each bug names one reproducer. `S=$HOME/.cache/calliope` in every command. The t
 | `fate-suite/hevc/paramchange_yuv420p_yuv420p10.hevc/video` | hevc yuv420p | ERROR caps <CapsFilter0> rejected mid-stream caps video/x-raw,format=I420_10LE,width=416,height=240: CapsMismatch | harness: pixel format changes mid-stream and the capsfilter pins one format | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/hevc/paramchange_yuv420p_yuv420p10.hevc ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/jpg/jpg-8930-3.jpg/video` | mjpeg yuvj444p | ERROR runtime pipeline error in MjpegDec0: CapsMismatch | open: progressive 4:4:4 JPEG, MjpegDec fails CapsMismatch | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/jpg/jpg-8930-3.jpg ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/smv/clock.smv/video` | smvjpeg yuvj420p | parse error: decodebin: /home/aaron/.cache/calliope/fate-suite/smv/clock.smv has no video stream to decode | unsupported codec | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/smv/clock.smv ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
+| `fate-suite/pmp/demo.pmp/video` | mpeg4 yuv420p | parse error: decodebin: /home/aaron/.cache/calliope/fate-suite/pmp/demo.pmp has no video stream to decode | unsupported container: typefind finds the MP3 audio, PMP is not demuxed | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/pmp/demo.pmp ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/av1/still_picture_rgb.obu/video` | av1 gbrp | ERROR runtime pipeline error in FfmpegVideoDec0: CapsMismatch | unsupported pixel format | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/av1/still_picture_rgb.obu ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/h264-444/444_9bit_cabac.h264/video` | h264 yuv444p9le | ERROR runtime pipeline error in FfmpegVideoDec0: CapsMismatch | unsupported pixel format | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264-444/444_9bit_cabac.h264 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/h264-444/444_9bit_cavlc.h264/video` | h264 yuv444p9le | ERROR runtime pipeline error in FfmpegVideoDec0: CapsMismatch | unsupported pixel format | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264-444/444_9bit_cavlc.h264 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
@@ -160,6 +150,8 @@ Each bug names one reproducer. `S=$HOME/.cache/calliope` in every command. The t
 | `fate-suite/opus/testvector09.mka/audio` | opus | diverged at frame 0 of 1 | gstreamer fails or differs, g2g agrees with ffmpeg | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/opus/testvector09.mka ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/opus/testvector11.mka/audio` | opus | diverged at frame 0 of 1 | gstreamer fails or differs, g2g agrees with ffmpeg | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/opus/testvector11.mka ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/opus/tron.6ch.tinypkts.mka/audio` | opus | diverged at frame 0 of 1 | gstreamer fails or differs, g2g agrees with ffmpeg | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/opus/tron.6ch.tinypkts.mka ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=6 ! filesink location=/tmp/calliope-repro/out.pcm` |
+| `fate-suite/pmp/demo.pmp/audio` | mp3 | exit 1 | gstreamer fails or differs, g2g agrees with ffmpeg | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/pmp/demo.pmp ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
+| `fate-suite/png1/feed_4x_concat.png/video` | png rgba | nondeterministic output | gstreamer fails or differs, g2g agrees with ffmpeg | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/png1/feed_4x_concat.png ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mkv/h264_tta_undecodable.mkv/audio` | tta | timeout after 60s | gstreamer timeout, not a g2g divergence | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mkv/h264_tta_undecodable.mkv ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/mov/mp4-with-mov-in24-ver.mp4/video` | h264 none | timeout after 60s | gstreamer timeout, not a g2g divergence | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mov/mp4-with-mov-in24-ver.mp4 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/ogg-flac/chained-meta.ogg/audio` | flac | timeout after 60s | gstreamer timeout, not a g2g divergence | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ogg-flac/chained-meta.ogg ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=1 ! filesink location=/tmp/calliope-repro/out.pcm` |
@@ -286,7 +278,6 @@ g2g-launch reports these itself: no typefind match for the container, or no deco
 | 4xm rgb565le | unsupported container or codec | 3 |
 | 8bps pal8 | unsupported codec | 1 |
 | 8svx_fib | unsupported container or codec | 2 |
-| aac | g2g bug 2: the first ADTS frame is at byte 253 | 1 |
 | aac | unsupported container | 2 |
 | aac_latm | unsupported codec | 3 |
 | aasc bgr24 | unsupported codec | 1 |
@@ -518,27 +509,19 @@ g2g-launch reports these itself: no typefind match for the container, or no deco
 | media100 yuvj422p | unsupported codec | 1 |
 | mimic yuv420p | unsupported container or codec | 1 |
 | mjpeg yuvj420p | unsupported container | 4 |
-| mjpeg yuvj422p | g2g bug 3 | 1 |
 | mjpeg yuvj444p | unsupported container | 2 |
 | mjpegb yuvj422p | unsupported codec | 1 |
 | mlp | unsupported container or codec | 1 |
 | mmvideo pal8 | unsupported container or codec | 1 |
 | mobiclip yuv420p | unsupported container or codec | 1 |
 | motionpixels rgb555le | unsupported container or codec | 1 |
-| mp2 | g2g bug 2: the first MPEG-PS pack header is at byte 1192 | 1 |
 | mp2 | unsupported container | 3 |
-| mp3 | g2g bug 2: the first MP3 frame is 626 bytes past the ID3v2 tag | 1 |
-| mp3 | g2g bug 2: the first MP3 frame is at byte 215, behind zero bytes | 1 |
-| mp3 | unsupported container | 5 |
+| mp3 | unsupported container | 4 |
 | mp4als | unsupported codec | 8 |
-| mpeg2video yuv420p | g2g bug 1 | 2 |
-| mpeg2video yuv420p | g2g bug 1: zero bytes ahead of the first start code | 1 |
-| mpeg2video yuv420p | g2g bug 2: the first MPEG-PS pack header is at byte 1192 | 1 |
 | mpeg2video yuv420p | unsupported codec | 1 |
 | mpeg2video yuv420p | unsupported container | 3 |
-| mpeg2video yuv422p | g2g bug 1 | 1 |
 | mpeg2video yuv422p | unsupported container | 2 |
-| mpeg4 yuv420p | unsupported container | 4 |
+| mpeg4 yuv420p | unsupported container | 3 |
 | msmpeg4v1 yuv420p | unsupported codec | 1 |
 | msmpeg4v3 yuv420p | unsupported container or codec | 1 |
 | msnsiren | unsupported codec | 1 |
@@ -704,7 +687,6 @@ g2g-launch reports these itself: no typefind match for the container, or no deco
 | vp3 yuv420p | unsupported container or codec | 1 |
 | vp4 yuv420p | unsupported codec | 1 |
 | vp5 yuv420p | unsupported codec | 1 |
-| vp6 yuv420p | g2g bug 3 | 2 |
 | vp6 yuv420p | unsupported container or codec | 4 |
 | vp6a yuva420p | unsupported codec | 1 |
 | vp7 yuv420p | unsupported codec | 1 |
@@ -742,20 +724,3 @@ g2g-launch reports these itself: no typefind match for the container, or no deco
 | zmbv pal8 | unsupported codec | 1 |
 | zmbv rgb555le | unsupported codec | 1 |
 | zmbv rgb565le | unsupported codec | 1 |
-
-Rows the sweep filed as unsupported that are g2g bugs:
-
-| scenario | codec | diagnosis | reproducer |
-| :--- | :--- | :--- | :--- |
-| `fate-suite/aac/id3v1.aac/audio` | aac | g2g bug 2: the first ADTS frame is at byte 253 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/aac/id3v1.aac ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
-| `fate-suite/avid/avidmeridianntsc.mov/video` | mjpeg yuvj422p | g2g bug 3 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/avid/avidmeridianntsc.mov ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/mp3-conformance/sin1k0db.bit/audio` | mp3 | g2g bug 2: the first MP3 frame is at byte 215, behind zero bytes | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mp3-conformance/sin1k0db.bit ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
-| `fate-suite/mpeg2/hhi_burst_422_short.bits/video` | mpeg2video yuv422p | g2g bug 1 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg2/hhi_burst_422_short.bits ! decodebin ! video/x-raw,format=Y42B ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/mpeg2/sony-ct3.bs/video` | mpeg2video yuv420p | g2g bug 1: zero bytes ahead of the first start code | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg2/sony-ct3.bs ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/mpeg2/tcela-6.bits/video` | mpeg2video yuv420p | g2g bug 1 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg2/tcela-6.bits ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/probe-format/roundup1383/audio` | mp3 | g2g bug 2: the first MP3 frame is 626 bytes past the ID3v2 tag | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/probe-format/roundup1383 ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
-| `fate-suite/probe-format/roundup997/video` | mpeg2video yuv420p | g2g bug 2: the first MPEG-PS pack header is at byte 1192 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/probe-format/roundup997 ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/probe-format/roundup997/audio` | mp2 | g2g bug 2: the first MPEG-PS pack header is at byte 1192 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/probe-format/roundup997 ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=44100,channels=2 ! filesink location=/tmp/calliope-repro/out.pcm` |
-| `fate-suite/sub/Closedcaption_rollup.m2v/video` | mpeg2video yuv420p | g2g bug 1 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/sub/Closedcaption_rollup.m2v ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/vp6/interlaced32x32.avi/video` | vp6 yuv420p | g2g bug 3 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/vp6/interlaced32x32.avi ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/vp6/interlaced32x64.avi/video` | vp6 yuv420p | g2g bug 3 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/vp6/interlaced32x64.avi ! decodebin ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |

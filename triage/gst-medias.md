@@ -1,6 +1,6 @@
 # gst-medias sweep triage
 
-218 files, 284 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master 6c675bef built with linux-full minus vaapi, pipewire and portal in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/gst-medias`.
+218 files, 284 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master b97fa5da built with linux-full minus vaapi, pipewire and portal in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/gst-medias`.
 
 | class | scenarios |
 | :--- | ---: |
@@ -16,11 +16,6 @@ Every scenario outside the agree class, by diagnosis:
 | unsupported | 43 |
 | reference quirk | 3 |
 | gstreamer only | 9 |
-
-Scenarios per g2g bug:
-
-| bug | scenarios |
-| ---: | ---: |
 
 ## g2g bugs
 

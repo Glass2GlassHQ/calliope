@@ -21,9 +21,6 @@ TITLES = {
 }
 ORDER = list(TITLES)
 
-def bug(n, detail=''):
-    return f'g2g bug {n}' + (f': {detail}' if detail else '')
-
 FFMPEG_EXTRA_LAST_FRAME = 'reference quirk: ffmpeg emits one more final frame, gstreamer and g2g emit the same length. g2g is bit-exact with ffmpeg over every common sample'
 
 FFMPEG_DECODES_TRUNCATED_AC3 = 'reference quirk: the last AC-3 packet is truncated and ffmpeg decodes it (1536 samples more), g2g drops it. g2g is bit-exact with ffmpeg over every common sample'
@@ -68,18 +65,9 @@ OVERRIDES = {
     'webp/anim_yuv_rgb.webp/video': 'reference quirk: animated WebP, see webp/anim.webp',
     # fate-suite no output and unsupported, cases the rules below would get wrong
     'jpg/jpg-8930-3.jpg/video': 'open: progressive 4:4:4 JPEG, MjpegDec fails CapsMismatch',
-    'mpeg2/hhi_burst_422_short.bits/video': bug(1),
-    'mpeg2/sony-ct3.bs/video': bug(1, 'zero bytes ahead of the first start code'),
-    'mpeg2/tcela-6.bits/video': bug(1),
-    'sub/Closedcaption_rollup.m2v/video': bug(1),
-    'aac/id3v1.aac/audio': bug(2, 'the first ADTS frame is at byte 253'),
-    'mp3-conformance/sin1k0db.bit/audio': bug(2, 'the first MP3 frame is at byte 215, behind zero bytes'),
-    'probe-format/roundup1383/audio': bug(2, 'the first MP3 frame is 626 bytes past the ID3v2 tag'),
-    'probe-format/roundup997/audio': bug(2, 'the first MPEG-PS pack header is at byte 1192'),
-    'probe-format/roundup997/video': bug(2, 'the first MPEG-PS pack header is at byte 1192'),
-    'vp6/interlaced32x32.avi/video': bug(3),
-    'vp6/interlaced32x64.avi/video': bug(3),
-    'avid/avidmeridianntsc.mov/video': bug(3),
+    'probe-format/roundup997/video': 'reference quirk: ffmpeg drops the first B-frame by timestamp in its default constant frame rate mode. g2g is bit-exact with ffmpeg -fps_mode passthrough on all 5 frames',
+    'probe-format/roundup997/audio': 'reference quirk: the first PS audio packet opens on a partial MP2 frame and ffmpeg rejects the whole packet, losing the first whole frame, then decodes the truncated last one. g2g decodes the 7 whole frames, bit-exact with ffmpeg on the same frames',
+    'pmp/demo.pmp/video': 'unsupported container: typefind finds the MP3 audio, PMP is not demuxed',
     'probe-format/mpegts-png-prefix/video': 'unsupported: PNG behind a junk prefix (an ffmpeg probe test)',
     'probe-format/mpegts-png-prefix-unaligned/video': 'unsupported: PNG behind a junk prefix (an ffmpeg probe test)',
     # gst-medias
@@ -173,7 +161,8 @@ for name in ('g2g bug', 'unsupported', 'harness', 'reference quirk', 'gstreamer 
     if by_bucket[name]:
         out.append(f'| {name} | {by_bucket[name]} |')
 by_bug = collections.Counter(int(m.group(1)) for e in entries if (m := re.match(r'g2g bug (\d+)', e['diagnosis'])))
-out += ['', 'Scenarios per g2g bug:', '', '| bug | scenarios |', '| ---: | ---: |']
+if by_bug:
+    out += ['', 'Scenarios per g2g bug:', '', '| bug | scenarios |', '| ---: | ---: |']
 for n in sorted(by_bug):
     out.append(f'| {n} | {by_bug[n]} |')
 if bugs_text:

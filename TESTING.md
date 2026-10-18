@@ -299,12 +299,12 @@ decode outcome is the oracle.
 calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
 calliope sweep --corpus corpus/gst-medias.toml --title gst-medias --report runs/gst-medias.json
 python3 -I tools/sweep-triage.py runs/fate-suite.json fate-suite \
-  "master 6c675bef built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
+  "master b97fa5da built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
 ```
 Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
 gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
 space in its name and is skipped. g2g-launch is linux-full in release. The
-first sweep ran g2g master 42c0a809. The current one runs 6c675bef without
+first sweep ran g2g master 42c0a809. The current one runs b97fa5da without
 vaapi, pipewire and portal, which do not build on the Fedora 44 sweep host.
 
 Result at 42c0a809: 948 fate-suite and 149 gst-medias scenarios agreed, and
@@ -312,17 +312,14 @@ Result at 42c0a809: 948 fate-suite and 149 gst-medias scenarios agreed, and
 re-sweeps at e4629017 and 5f25e5b8 found four more, also fixed (29 to 32).
 
 The sweep at b84a510a found 13 more, fixed in M1562 to M1582 (38 to 57).
+The sweep at 6c675bef found 3 more and checking them by hand found a fourth,
+fixed in M1583 to M1586 (59 to 62).
 
-Result at 6c675bef, fate-suite: 1085 scenarios agree. Of the other 1326, 12
-are g2g bugs, 1120 are codecs, containers or pixel formats g2g does not
-support, 102 are harness limits, 35 are reference quirks, 54 are
+Result at b97fa5da, fate-suite: 1094 scenarios agree. Of the other 1317,
+none are g2g bugs, 1119 are codecs, containers or pixel formats g2g does not
+support, 102 are harness limits, 37 are reference quirks, 56 are
 GStreamer-only failures and 3 are open. gst-medias: 229 agree. Of the other
 55, 43 are unsupported, 3 reference quirks and 9 GStreamer-only.
-
-The 12 g2g-bug scenarios come from 3 bugs, listed with a reproducer in
-`triage/fate-suite.md`: typefind misses MPEG-1/2 video elementary streams (4)
-and elementary streams that do not start at byte 0 (5), and two video fourccs
-of codecs g2g decodes are not mapped (3).
 
 Open: an MPEG-4 Studio profile stream decodes to different samples than
 ffmpeg with the same libavcodec, `mov/empty_edit_5s.mp4` has decode errors
@@ -627,6 +624,10 @@ by the canary (technique 17). All are fixed in g2g with regression tests.
 56. **AviDemux ignored the `avcC` H.264 framing** (M1581).
 57. **A truncated MOV PCM track was refused** (M1582).
 58. **whepsrc passed P-frames ahead of the first keyframe** (M1523).
+59. **Typefind missed MPEG-1/2 video elementary streams** (M1583).
+60. **Typefind missed elementary streams that do not start at byte 0** (M1584).
+61. **AviDemux did not map `VP60` and the mp4 demuxers did not map `AVDJ`** (M1585).
+62. **aacparse dropped the last ADTS frame of a file ending in an ID3v1 tag** (M1586).
 
 ## Not a gap
 
