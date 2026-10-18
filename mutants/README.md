@@ -26,3 +26,7 @@ compile.
 | Scope | Mutants | Caught | Missed | Timeout | Unviable | Score | Wall |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | g2g-core (caps, solver, clock, memory, frame, channel, runner) | 1114 | 516 | 351 | 26 | 221 | 59% | 3h |
+
+The g2g-core row is the suite before g2g M1530 and M1531, which added tests for
+245 of its 351 missed mutants. The other 106 are formatting, log lines, test
+helper code, equivalent mutants or results the caller discards.
