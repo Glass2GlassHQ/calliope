@@ -3,7 +3,9 @@
 set -euo pipefail
 
 host=${1:?usage: canary-deploy.sh <ssh-host | local>}
-image=${CANARY_IMAGE:-localhost/g2g-canary:latest}
+# the tag g2g-canary.container runs
+deployed_image=localhost/g2g-canary:latest
+image=${CANARY_IMAGE:-$deployed_image}
 calliope_dir=$(cd "$(dirname "$0")/.." && pwd)
 deploy_dir=$calliope_dir/deploy/canary
 install_dir=g2g-canary
@@ -21,7 +23,7 @@ copy_to() {
 }
 
 if [ "$host" != local ]; then
-    podman save "$image" | gzip | ssh "$host" 'gunzip | podman load'
+    podman save "$image" | gzip | ssh "$host" "gunzip | podman load && podman tag $image $deployed_image"
 fi
 on_host "mkdir -p $install_dir/data $quadlet_dir $unit_dir"
 copy_to "$install_dir" "$deploy_dir"/{mediamtx.yml,feeder.sh,canary.toml} "$calliope_dir/tools/canary-publish.sh"

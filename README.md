@@ -239,6 +239,82 @@ Timing and RSS are recorded per run for within-engine regression tracking;
 they are never compared across engines (different buffering models make that
 meaningless).
 
+## Canary
+
+`calliope canary --config deploy/canary/canary.toml` keeps every `[[pipeline]]`
+in the config running as a `g2g-launch --observe` subprocess. It restarts a run
+that exits or decodes no frame for `stall-secs`, with exponential backoff. Once
+per `sample-secs` it appends one line per pipeline to
+`log/samples-<utc-date>.jsonl` with frames decoded, fps, decoder p50 latency, RSS
+and restart count. Each failure opens an incident in
+`log/incidents-<utc-date>.jsonl` with the stderr tail under `log/stderr/`, and the
+incident closes when frames flow again. The status page is
+`status/index.html` plus `status/status.json`, rewritten every sample.
+
+The `self-hosted` tier decodes a looped clip that mediamtx and an ffmpeg feeder
+serve on the same host over RTSP, HLS and SRT. A failure there is g2g's. The
+`public` tier pulls third-party HLS and RTSP streams with no uptime promise.
+There is no public SRT entry because g2g's `srtsrc` only listens.
+
+### Deploy
+
+The image bundles `calliope` and a `g2g-launch` built from the g2g checkout's
+committed `HEAD`. Three podman Quadlet units run it under the user's systemd:
+`g2g-canary-mediamtx`, `g2g-canary-feeder` and `g2g-canary`. A
+`canary-publish.timer` copies the status page every 5 minutes.
+
+```sh
+tools/canary-image.sh ~/src/glass2glass    # builds localhost/g2g-canary:latest
+tools/canary-deploy.sh local               # or <ssh-host>
+```
+
+`canary-deploy.sh` copies `deploy/canary/*.container` to
+`~/.config/containers/systemd/`, the publish units to `~/.config/systemd/user/`,
+and the config, `mediamtx.yml`, `feeder.sh` and `canary-publish.sh` to
+`~/g2g-canary/`. Logs and the status page land in `~/g2g-canary/data/canary-out/`.
+The publish timer starts only when `~/g2g-canary/publish.env` exists, see
+`deploy/canary/publish.env.example`. Its destination is an `s3://` url or a local
+directory.
+
+### EC2
+
+The canary runs on a t4g.small (2 Graviton vCPU, 2 GB) with the Fedora Cloud 43
+aarch64 AMI from fedoraproject.org/cloud/download, default user `fedora`, a 20 GB
+gp3 root volume, and a security group that allows inbound ssh only. Every
+pipeline pulls outbound and mediamtx binds loopback.
+
+The image is built here for arm64 under qemu and copied over ssh with
+`podman save | ssh podman load`, so no registry is involved. The emulated g2g
+build is slow, expect hours.
+
+```sh
+sudo dnf install qemu-user-static-aarch64
+CANARY_PLATFORM=linux/arm64 CANARY_IMAGE=localhost/g2g-canary:arm64 \
+    tools/canary-image.sh ~/src/glass2glass
+ssh fedora@<host> 'sudo dnf -y install podman awscli2 && sudo loginctl enable-linger fedora'
+CANARY_IMAGE=localhost/g2g-canary:arm64 tools/canary-deploy.sh fedora@<host>
+```
+
+Linger starts the user units at boot without a login. The deploy script tags the
+loaded image `localhost/g2g-canary:latest` on the instance, which is the tag
+`g2g-canary.container` runs.
+
+The status page goes to an S3 bucket and the g2g docs site links to it. Create a
+bucket, turn off "block public access" for it, and add a bucket policy that
+allows public `s3:GetObject` on `g2g-canary/*`. Give the instance an IAM role
+that allows `s3:ListBucket` on the bucket and `s3:PutObject` and
+`s3:DeleteObject` on `g2g-canary/*`. Then enable the timer on the instance:
+
+```sh
+ssh fedora@<host> 'echo CANARY_PUBLISH_DESTINATION=s3://<bucket>/g2g-canary > g2g-canary/publish.env \
+    && systemctl --user enable --now canary-publish.timer'
+```
+
+The page is then at `https://<bucket>.s3.<region>.amazonaws.com/g2g-canary/index.html`.
+Add that url as a link in `docs/index.html` in the g2g repo, which GitHub Pages
+serves. Pushing the page into the g2g repo instead would make a commit every
+5 minutes.
+
 ## CI vs local
 
 CI runs the file-corpus subset with ffmpeg + GStreamer. g2g, GPU, and

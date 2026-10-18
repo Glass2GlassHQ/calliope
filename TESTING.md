@@ -287,6 +287,51 @@ gstreamer's `deinterlace method=yadif fields=top mode=interlaced` emitted 52
 frames for these 50 and diverged from frame 0, so it stays out of the scenario
 (the 3-engine run named it the outlier, conclusively).
 
+### 17. Canary (24/7 public streams)
+`calliope canary` keeps g2g pipelines decoding live streams and restarts each
+one when it exits or decodes no frame for 30 s. Once a minute it appends frames,
+fps, decoder latency, RSS and restart count per pipeline to a jsonl log, and it
+writes a status page. The self-hosted tier decodes a looped 720p30 h264 clip
+that mediamtx and an ffmpeg feeder serve on the same host over RTSP, HLS and
+SRT, so a failure there is g2g's. The public tier pulls third-party streams. The
+deploy is a podman image under user systemd units, see the Canary section of
+the README.
+```
+tools/canary-image.sh ~/src/glass2glass
+tools/canary-deploy.sh local
+```
+Volume: a 5.5 minute foreground run, then a 40 minute run of the deployed units
+on the dev box (2026-10-18, 40 samples per pipeline), seven pipelines. The image
+carries `g2g-launch` built from g2g 439f4e31. Latency is the decoder's p50
+`process()` time as g2g's power-of-two histogram bucket, not glass-to-glass
+latency.
+
+Result: the supervisor works. A `SIGKILL` of a running `g2g-launch` was
+restarted within a second, logged as an incident with cause signal 9, and closed
+2 s later when frames flowed. Finished VOD playlists restarted without an
+incident. The publish timer copied the page every 5 minutes. Over the 40 minutes
+the whole canary container used 44% of one core on average (59% peak) and
+236 to 452 MB.
+
+Five pipelines decoded every interval. `baseline-rtsp` (30 fps, RSS 25 to 53 MB,
+decoder p50 4.2 ms) and `baseline-hls` (30 fps, 73 to 119 MB, 0.5 ms) each
+restarted twice at startup, when mediamtx returned 404 before the feeder had
+published. The public `unified-live-hls` (25 fps, 65 to 110 MB, 0.5 ms),
+`mux-vod-hls` (480p60, 56 to 110 MB, 0.3 to 1.0 ms) and `apple-vod-hls` (30 fps,
+38 to 82 MB, 0.3 ms) never restarted.
+
+Two pipelines found g2g bugs. `baseline-srt` was up in 14 of 40 intervals with
+13 stall restarts: each run delivers about 8192 SRT packets (about 30 s of this
+clip) and then no more, while ffmpeg's own SRT listener receives the same push
+for 2 minutes without a gap. The count matches the 8192 packet flow window g2g
+advertises in its handshake. The public `strba-rtsp` webcam
+(`rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream`, h264 1280x720) was
+up in 0 of 40 intervals with 16 restarts: every run fails negotiation with
+`RtspSrc -> NalParse: video/x-h264,width=1280,height=720 cannot fixate` and
+exits `CapsMismatch`. The stream's SPS carries no frame rate (ffprobe reports
+`avg_frame_rate=0/0`). No public SRT stream is in the config because g2g's
+`srtsrc` only listens.
+
 ## Bugs found
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
