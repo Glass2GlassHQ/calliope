@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::time::Duration;
 
 use calliope_core::engine::binary;
 use calliope_core::produce::{Container, Expectation, Validation, Validator};
@@ -6,6 +7,8 @@ use serde::Deserialize;
 
 use crate::{hls, run_tool};
 
+// matroska's default millisecond timestamps are the coarsest any container here stores
+const FRAME_INTERVAL_TOLERANCE: Duration = Duration::from_millis(1);
 // EXTINF sums to the media duration, within audio priming and frame rounding
 const PLAYLIST_DURATION_TOLERANCE_SECONDS: f64 = 0.5;
 
@@ -38,6 +41,27 @@ pub fn validate(artifact: &Path, container: Container, expected: &Expectation) -
         Err(skipped) => return skipped,
     };
     let mut findings = findings(&output.stdout, &output.stderr, expected);
+    let timestamps = run_tool(
+        Validator::Ffprobe,
+        &program,
+        &[
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "packet=pts_time",
+            "-of",
+            "csv=p=0",
+        ],
+        artifact,
+    );
+    if let Ok(timestamps) = timestamps {
+        findings.extend(frame_interval_findings(
+            &timestamps.stdout,
+            expected.frame_rate,
+        ));
+    }
     // ffprobe takes an hls duration from the playlist, so check the playlist against the media
     if matches!(container, Container::HlsTs | Container::HlsFmp4) {
         match std::fs::read_to_string(artifact) {
@@ -46,6 +70,30 @@ pub fn validate(artifact: &Path, container: Container, expected: &Expectation) -
         }
     }
     Validation::from_findings(Validator::Ffprobe, findings)
+}
+
+// the input is constant rate, so every output frame should start one frame interval after the last
+fn frame_interval_findings(pts_csv: &str, frame_rate: f64) -> Option<String> {
+    let mut pts: Vec<f64> = pts_csv
+        .lines()
+        .filter_map(|l| l.trim().parse().ok())
+        .collect();
+    pts.sort_by(f64::total_cmp);
+    let interval = 1.0 / frame_rate;
+    let irregular: Vec<(usize, f64)> = pts
+        .windows(2)
+        .map(|pair| pair[1] - pair[0])
+        .enumerate()
+        .filter(|(_, delta)| (delta - interval).abs() > FRAME_INTERVAL_TOLERANCE.as_secs_f64())
+        .collect();
+    let &(first, delta) = irregular.first()?;
+    Some(format!(
+        "{} irregular frame intervals, frame {} starts {} us after frame {first} where the input's interval is {} us",
+        irregular.len(),
+        first + 1,
+        Duration::from_secs_f64(delta.max(0.0)).as_micros(),
+        Duration::from_secs_f64(interval).as_micros()
+    ))
 }
 
 fn playlist_findings(playlist: &str, expected: &Expectation) -> Option<String> {
@@ -151,6 +199,19 @@ mod tests {
             findings
                 .iter()
                 .any(|f| f.contains(&format!("the input has {INPUT_FRAMES}")))
+        );
+    }
+
+    #[test]
+    fn frames_must_keep_the_input_interval() {
+        let ffmpeg = include_str!("../testdata/ffprobe-pts-ffmpeg-mp4.csv");
+        assert_eq!(frame_interval_findings(ffmpeg, 25.0), None);
+        let shifted = include_str!("../testdata/ffprobe-pts-g2g-mp4.csv");
+        let finding = frame_interval_findings(shifted, 25.0).unwrap();
+        assert!(finding.starts_with("1 irregular"), "{finding}");
+        assert!(
+            finding.contains("frame 1 starts 33333 us after frame 0"),
+            "{finding}"
         );
     }
 

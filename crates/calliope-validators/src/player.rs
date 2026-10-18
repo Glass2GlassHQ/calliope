@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::process::Command;
+use std::sync::Mutex;
 
 use calliope_core::engine::{OutputSpec, binary};
 use calliope_core::produce::{Container, Expectation, Validation, Validator};
@@ -15,6 +16,9 @@ const LIVE_WATCH_SECONDS: u64 = 6;
 const LIVE_MINIMUM_FRAME_FRACTION: f64 = 0.5;
 // headroom past the clip's own duration for browser start and segment fetches
 const PLAYBACK_STARTUP_SECONDS: u64 = 30;
+
+// realtime playback stalls when browsers compete for the cpu, a live read cannot wait
+static FILE_PLAYBACK: Mutex<()> = Mutex::new(());
 
 #[derive(Debug, Deserialize)]
 struct PlayerReport {
@@ -62,7 +66,10 @@ pub fn validate(container: Container, output: &OutputSpec, expected: &Expectatio
             "--timeout",
             &(clip_seconds + PLAYBACK_STARTUP_SECONDS).to_string(),
         ]);
-    let output = match run_command(Validator::Player, &mut command) {
+    let one_at_a_time = (!container.is_live()).then(|| FILE_PLAYBACK.lock());
+    let output = run_command(Validator::Player, &mut command);
+    drop(one_at_a_time);
+    let output = match output {
         Ok(output) => output,
         Err(skipped) => return skipped,
     };
