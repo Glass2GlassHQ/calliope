@@ -1,3 +1,4 @@
+mod canary;
 mod parity;
 
 use std::path::{Path, PathBuf};
@@ -89,6 +90,11 @@ enum Command {
         /// write a JSON report here
         #[arg(long)]
         report: Option<PathBuf>,
+    },
+    /// keep g2g pipelines decoding live streams, logging uptime and incidents
+    Canary {
+        #[arg(long)]
+        config: PathBuf,
     },
     /// golden-check every corpus vector with a decoded-md5 (a conformance run)
     Conformance {
@@ -343,6 +349,10 @@ async fn main() -> Result<ExitCode> {
                 minimized.len(),
                 out.display()
             );
+            Ok(ExitCode::SUCCESS)
+        }
+        Command::Canary { config } => {
+            canary::run(&config).await?;
             Ok(ExitCode::SUCCESS)
         }
         Command::GstParity {

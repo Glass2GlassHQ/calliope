@@ -3,6 +3,7 @@
 //! hashes. g2g-launch is not usually on PATH; point CALLIOPE_G2G_LAUNCH at a
 //! built binary.
 
+pub mod observe;
 pub mod validate;
 
 use std::path::Path;
@@ -12,6 +13,10 @@ use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, 
 use calliope_core::scenario::Scenario;
 
 const G2G_PLUGIN_FEATURE_RANK_VARIABLE: &str = "G2G_PLUGIN_FEATURE_RANK";
+
+pub fn g2g_launch_binary() -> String {
+    binary("CALLIOPE_G2G_LAUNCH", "g2g-launch")
+}
 
 #[derive(Debug, Default)]
 pub struct G2g;
@@ -23,11 +28,7 @@ impl Engine for G2g {
 
     fn probe(&self) -> Result<EngineInfo> {
         // g2g-launch has no --version; a successful --help means present
-        probe_first_line(
-            self.id(),
-            &binary("CALLIOPE_G2G_LAUNCH", "g2g-launch"),
-            &["--help"],
-        )
+        probe_first_line(self.id(), &g2g_launch_binary(), &["--help"])
     }
 
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
@@ -73,7 +74,7 @@ impl G2g {
         let mut args = vec!["-q".to_string()];
         args.extend(pipeline.split(' ').map(str::to_string));
         Invocation {
-            program: binary("CALLIOPE_G2G_LAUNCH", "g2g-launch"),
+            program: g2g_launch_binary(),
             args,
             output: OutputSpec::EncodedFile(out),
         }
@@ -104,7 +105,7 @@ impl G2g {
         args.push("-q".to_string());
         args.extend(pipeline.split(' ').map(str::to_string));
         Invocation {
-            program: binary("CALLIOPE_G2G_LAUNCH", "g2g-launch"),
+            program: g2g_launch_binary(),
             args,
             output: OutputSpec::RawAudioFile(out),
         }
@@ -161,7 +162,7 @@ impl G2g {
         args.push("-q".to_string());
         args.extend(pipeline.split(' ').map(str::to_string));
         Invocation {
-            program: binary("CALLIOPE_G2G_LAUNCH", "g2g-launch"),
+            program: g2g_launch_binary(),
             args,
             output: OutputSpec::RawVideoFile(out),
         }

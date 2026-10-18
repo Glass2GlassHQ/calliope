@@ -32,6 +32,7 @@ hex = "0.4"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "http2", "stream"] }
 clap = { version = "4", features = ["derive"] }
 zip = { version = "2", default-features = false, features = ["deflate"] }
+tokio-tungstenite = { version = "0.30", default-features = false, features = ["connect"] }
 
 [workspace.lints.rust]
 warnings = "deny"
