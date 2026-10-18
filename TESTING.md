@@ -287,6 +287,75 @@ gstreamer's `deinterlace method=yadif fields=top mode=interlaced` emitted 52
 frames for these 50 and diverged from frame 0, so it stays out of the scenario
 (the 3-engine run named it the outlier, conclusively).
 
+### 16. Output validators and browser playback
+A scenario with a `[produce]` table has each engine encode or remux one input
+into a container, then external validators judge the file or live stream it
+wrote. There is no reference decode: the validator is the oracle. The input is
+`local-corpus/produce-src.mp4`, 12 s of 320x240 h264 at 25 fps (300 frames) with
+48 kHz aac, plus an h265 copy for the remux scenario. g2g re-encodes with
+`x264enc backend=software` or `av1enc` (rav1e), ffmpeg with libx264 or
+libsvtav1. ffmpeg's output is the control, so a validator failure its output
+shares is reported as advisory.
+
+The validators: ffprobe decodes every frame and checks the codecs, the video
+frame count, every frame interval against the input's 40 ms, and that HLS
+EXTINF durations add up to the media duration. GPAC MP4Box `-info` reports box
+parse errors and checks for a CMAF brand on CMAF output. mkvalidator 0.6.0
+checks matroska. TSDuck `tsp` with the analyze and pcrextract plugins checks
+sync, transport errors, continuity, PTS/DTS/PCR leaps and a PCR interval of at
+most 100 ms, on each HLS segment separately. The DASH-IF conformance tool runs
+its MPD schema and Schematron checks plus the IOP MPD and segment modules.
+Headless Chromium driven by Playwright plays HLS with hls.js and DASH with
+dash.js, reads a WHIP publish back over WHEP through mediamtx, and decodes mp4,
+fragmented mp4 and CMAF files with WebCodecs after mp4box.js demuxes them. A
+file has to render all 300 frames, a live read at least half the frames of a
+6 s window. Apple's mediastreamvalidator is wired in for both HLS scenarios but
+runs on macOS only, so it was skipped on this Linux host.
+```
+tools/validators/mediamtx.sh
+CALLIOPE_MP4BOX=$PWD/tools/validators/mp4box.sh CALLIOPE_TSP=$PWD/tools/validators/tsp.sh \
+    calliope run scenarios/*-produce.toml
+```
+Volume (2026-10-18): 12 scenarios, 23 engine runs, g2g-launch from g2g master
+42c0a809 (linux-full, release). ffprobe n8.1.2, mkvalidator 0.6.0 (built from
+source) and TSDuck 3.44-4676 (unpacked from the Fedora 43 RPM) ran natively.
+MP4Box (GPAC 26.08-DEV-rev192, `docker.io/gpac/ubuntu`), the DASH-IF tool
+(commit e311ec6, built into a local image) and mediamtx v1.21.2 ran from podman.
+The browser was Chrome for Testing 153.0.8010.12 under playwright-core 1.64.1,
+with hls.js 1.7.3, dash.js 5.2.1 and mp4box.js 2.4.1.
+
+Result: g2g fails four checks, all open in g2g at 42c0a809. ffprobe flags the
+first frame interval of every g2g mp4 output that re-encodes (mp4, fmp4, CMAF,
+HLS fmp4, AV1 mp4): frame 1 starts 33.333 ms after frame 0. mp4mux gives a
+first sample without a duration 1/30 s, and the encoders set none. The h265
+remux, whose samples carry the demuxer's duration, passes. ffprobe also flags
+g2g's HLS fmp4 playlist: its EXTINF values sum to 24.024 s for 12 s of media,
+because hlssink adds the video and audio durations of a segment together (a
+video-only run lists 11.993 s). mkvalidator fails g2g's matroska: Info has no
+MuxingApp or WritingApp, and the EBML header says DocTypeVersion 2 while the
+opus TrackEntry carries CodecDelay and SeekPreRoll, which need version 4.
+g2g's mpegtsmux has no Opus mapping, so the TS opus scenario stops with
+CapsMismatch after negotiation accepted `audio/x-opus`.
+
+Everything else passes on g2g output. MP4Box finds no box errors in any g2g
+mp4, fmp4, CMAF, AV1 or h265 file. TSDuck finds nothing in g2g's TS or in any
+of its HLS TS segments. mkvalidator's only other notes are warnings: no
+SeekHead, and clusters that start on a non-keyframe (ffmpeg's file has one of
+those too). The browser renders all 300 frames of g2g's mp4, fmp4, CMAF and AV1
+files and of both HLS variants (hls.js plays through the wrong EXTINF values),
+and reads 120 frames over WHEP from g2g's `webrtcsink` (ffmpeg: 134, minimum
+75). g2g has no DASH packager, so the DASH-IF tool and dash.js ran on ffmpeg's
+output only. dash.js renders all 300 frames. The DASH-IF tool fails ffmpeg's
+manifest on one Schematron rule: the first video SegmentTimeline entry lasts
+10 s and `maxSegmentDuration` says 5 s. ffmpeg's output passes every other
+validator.
+
+A manual probe beside the scenarios found a fifth g2g bug. Fragmented mp4mux
+writes `trun` without composition offsets, so h264 with B-frames remuxed into
+fmp4 gets pts equal to dts in decode order and plays out of order. No scenario
+catches it: g2g's x264enc output has no B-frames, and the interval check sorts
+pts.
+
 ## Bugs found
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio

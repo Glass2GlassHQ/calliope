@@ -41,6 +41,11 @@ Scenario modes:
   renegotiation, not the codec core. No pixel oracle: ffmpeg's CLI normalizes
   output geometry across a change, so it can't reference the pixels; the byte
   total catches crashes, dropped frames, and frozen / wrong resolution.
+- **produce**: each engine encodes or remuxes the input into a container
+  (`[produce]`) and external validators judge what it wrote: ffprobe, MP4Box,
+  mkvalidator, TSDuck, the DASH-IF conformance tool, Apple's
+  mediastreamvalidator and a headless browser. ffmpeg's output is the control,
+  so a validator failure it shares is advisory.
 
 All modes track crash/signal/timeout status and peak RSS. Engine-neutral by
 construction: engine knowledge lives only in `calliope-adapter-*` crates.
@@ -130,6 +135,47 @@ cargo build -p g2g-plugins --features ffmpeg --bin g2g-launch
 cp target/debug/g2g-launch ~/.local/bin/g2g-launch-ffmpeg
 export CALLIOPE_G2G_LAUNCH=~/.local/bin/g2g-launch-ffmpeg
 ```
+
+### Produce scenarios and browser playback
+
+The produce scenarios (`scenarios/*-produce.toml`) need their validators
+installed. A validator missing from the host is reported as skipped, not as a
+failure. ffprobe comes with ffmpeg. MP4Box runs from the GPAC image through a
+wrapper. mkvalidator has no package, so a script builds it from source. TSDuck
+is unpacked from its release RPM without root. The DASH-IF conformance tool
+publishes no image, so a script builds one from its Dockerfile. The browser
+check needs Playwright's Chromium, and the WHEP case needs mediamtx running:
+
+```sh
+podman pull docker.io/gpac/ubuntu:latest     # MP4Box
+tools/validators/build-mkvalidator.sh        # -> ~/.local/bin/mkvalidator
+mkdir -p ~/opt/tsduck && cd ~/opt/tsduck \
+  && curl -LO https://github.com/tsduck/tsduck/releases/download/v3.44-4676/tsduck-3.44-4676.fc43.x86_64.rpm \
+  && rpm2cpio tsduck-3.44-4676.fc43.x86_64.rpm | cpio -idm && cd -
+tools/validators/build-dashif.sh             # -> localhost/calliope-dashif
+(cd tools/playback && pnpm install && pnpm exec playwright-core install chromium)
+tools/validators/mediamtx.sh                 # WHIP in, WHEP out on :8889
+```
+
+Run them from the repo root, where the DASH-IF wrapper and the playback harness
+resolve:
+
+```sh
+export CALLIOPE_MP4BOX=$PWD/tools/validators/mp4box.sh CALLIOPE_TSP=$PWD/tools/validators/tsp.sh
+calliope run scenarios/*-produce.toml --report produce.json
+```
+
+The playback check also runs on its own and prints one JSON line with the
+frames rendered and any player error:
+
+```sh
+node tools/playback/play.mjs hls runs/hls-ts-produce/g2g/index.m3u8   # or dash, webcodecs, whep
+```
+
+It takes the newest Chromium under `~/.cache/ms-playwright`, `CALLIOPE_CHROMIUM`
+names another. `TSDUCK_ROOT`, `CALLIOPE_CONTAINER_RUNTIME`, `CALLIOPE_GPAC_IMAGE`
+and `CALLIOPE_DASHIF_IMAGE` override the wrappers' defaults. mediastreamvalidator
+ships only with Apple's macOS HLS tools, so it is skipped elsewhere.
 
 ## Scenarios
 
