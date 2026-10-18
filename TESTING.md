@@ -477,6 +477,25 @@ IDR, so the decoder gets slices before any SPS and PPS and fails the pipeline.
 The other g2g WebRTC receivers drop video until the first keyframe and
 `whepsrc` does not. A run that joins the stream on an IDR decodes: the run that
 started 19 minutes in decoded 30 fps (RSS 29 to 51 MB, 4.2 ms) to the end.
+### 18. Mutation testing (cargo-mutants)
+The other techniques look for bugs in g2g. This one checks the g2g test suite
+instead. cargo-mutants injects one bug at a time into g2g's source (a function
+body replaced by a default value, an operator swapped, a match arm or a `!`
+deleted), rebuilds, and runs the tests. A mutant the tests fail on is caught. A
+mutant they pass is missed: no test pins down that behavior. g2g-core runs
+against its in-crate suite with every feature that compiles code in (a mutant
+in cfg'd-out code would count as missed). The g2g-plugins parsers the fuzz
+targets cover run one file at a time against the module's unit tests plus the
+integration tests that use the module directly.
+```
+tools/mutants-g2g.sh g2g-core -p g2g-core \
+    --features std,multi-thread,runtime,metadata,dyn-slot,tracing -- --lib --tests
+tools/mutants-g2g.sh g2g-plugins-mpegts -p g2g-plugins -f g2g-plugins/src/mpegts.rs \
+    --features std,metadata,mp4-cenc -E fuzz_parse \
+    --cargo-arg=--lib --cargo-arg=--test=m108_mpegts ...
+```
+Per-scope lists, commands and wall times are in `mutants/README.md`.
+Result: pending.
 
 ## Bugs found
 
