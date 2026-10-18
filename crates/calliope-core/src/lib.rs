@@ -15,6 +15,7 @@ pub mod probe;
 pub mod produce;
 pub mod report;
 pub mod runner;
+pub mod sample_tree;
 pub mod scenario;
 
 pub use engine::{Engine, EngineInfo, Invocation, OutputSpec};

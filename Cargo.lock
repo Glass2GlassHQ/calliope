@@ -146,6 +146,7 @@ dependencies = [
  "calliope-validators",
  "clap",
  "futures",
+ "serde",
  "serde_json",
  "tokio",
  "toml",

@@ -97,6 +97,19 @@ fn mux_and_sink(produce: &Produce, workdir: &Path, engine: &str) -> Result<Strin
     })
 }
 
+// g2g-launch's parse errors for input it has no typefind match, demuxer, or decoder for
+const UNSUPPORTED_INPUT_ERRORS: [&str; 2] = [
+    "unrecognized content, no media type matches",
+    "no decoder chain from",
+];
+
+// true when a g2g-launch stderr log says the build cannot handle the input at all
+pub fn reports_unsupported_input(stderr: &str) -> bool {
+    UNSUPPORTED_INPUT_ERRORS
+        .iter()
+        .any(|error| stderr.contains(error))
+}
+
 #[derive(Debug, Default)]
 pub struct G2g;
 
@@ -275,6 +288,8 @@ impl G2g {
         let pinned = std::env::var_os(G2G_PLUGIN_FEATURE_RANK_VARIABLE).is_some();
         let convert = match scenario.video {
             Some(v) if !v.format.is_planar_yuv() => "videoconvert ! ",
+            // a self-compare pins I420 whatever the decoder emits, packed RGB included
+            None => "videoconvert ! ",
             _ if pinned => "videoconvert ! ",
             _ => "",
         };

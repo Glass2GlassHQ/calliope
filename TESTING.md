@@ -287,6 +287,54 @@ gstreamer's `deinterlace method=yadif fields=top mode=interlaced` emitted 52
 frames for these 50 and diverged from frame 0, so it stays out of the scenario
 (the 3-engine run named it the outlier, conclusively).
 
+### 15. Real-world corpus differential (fate-suite + gst-medias)
+Every file in the ffmpeg fate-suite and the gst-integration-testsuites medias
+that ffprobe finds a video or audio stream in is imported as a corpus vector,
+and `calliope sweep` runs one scenario per stream on ffmpeg, GStreamer and g2g
+with ffmpeg as the reference. Planar YUV video gets the per-frame differential
+and the bit-exact audio codecs the whole-stream differential. Packed video and
+the other audio codecs get a determinism run. When ffmpeg rejects a file the
+decode outcome is the oracle.
+```
+calliope sweep --corpus corpus/fate-suite.toml --title fate-suite \
+  --report runs/fate-suite.json --triage triage/fate-suite.md
+calliope sweep --corpus corpus/gst-medias.toml --title gst-medias \
+  --report runs/gst-medias.json --triage triage/gst-medias.md
+```
+Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
+gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
+space in its name and is skipped. g2g-launch was g2g master 42c0a809,
+linux-full, release.
+
+Result, fate-suite: 948 scenarios agree (627 differential, 255 determinism, 66
+rejected by every engine). Of the other 1463, 176 are g2g bugs, 1109 are codecs,
+containers or pixel formats g2g does not support, 98 are harness limits, 38 are
+reference quirks and 42 are GStreamer-only failures. gst-medias: 149 agree (36
+differential, 103 determinism, 10 rejected by every engine). Of the other 135, 86
+are g2g bugs, 36 unsupported, 6 reference quirks, 6 GStreamer-only and 1 open.
+In the open case ffmpeg drops every frame of an HEVC TS and g2g decodes it,
+unverified.
+
+The 262 g2g-bug scenarios come from 22 bugs, listed with a reproducer in
+`triage/fate-suite.md`. The largest are decodebin decoding the video stream when
+the pipeline asks for audio (104 scenarios), Mp4Demux CapsMismatch on H.264,
+HEVC, MPEG-4, AV1, VP8 and MJPEG tracks (43), and audio-only files getting a
+video chain (20). Edit lists are not applied (8 MOV / MP4 files), and 18 MP4
+AAC conformance files decode to nothing with exit status 0. None is fixed yet,
+so they are not in the list below.
+
+Harness limits: 6 resolution-changing streams cannot be hashed at one geometry,
+and g2g is bit-exact with `ffmpeg -noautoscale` on all of them. GStreamer pads
+raw rows to 4 bytes or changes resolution mid-stream, so 88 of its dumps do not
+split into frames. Determinism scenarios pin I420, so the g2g adapter inserts
+`videoconvert` when a scenario has no `[video]` table. Without it every
+packed-RGB decoder (PNG, APNG) fails the capsfilter.
+
+Reference quirks: ffmpeg decodes the truncated last AC-3 or MP2 frame where
+GStreamer and g2g drop it, and g2g is bit-exact over every common sample. ffmpeg
+sniffs S/PDIF AC-3 inside a PCM WAV. Opus is not bit-exact across any two of
+the three engines on the RFC 6716 vectors. ffmpeg n8.1 decodes neither
+animated WebP nor `probe-format/mp3-with-art`.
 ### 16. Output validators and browser playback
 A scenario with a `[produce]` table has each engine encode or remux one input
 into a container, then external validators judge the file or live stream it

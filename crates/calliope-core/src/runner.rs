@@ -63,9 +63,9 @@ pub struct RunResult {
     /// reference decode of the original. Filled by the CLI after ffmpeg validates.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub psnr: Option<f64>,
-    /// outcome-diff only: did this engine actually decode frames from the
-    /// corrupt input (`Some(true)`) or exit clean without producing any
-    /// (`Some(false)`)? `None` outside outcome-diff. A crash / hang / non-zero
+    /// did this engine write any decoded output (`Some(true)`) or none
+    /// (`Some(false)`)? `None` when the engine never ran. Outcome-diff reads it
+    /// on a clean exit to tell decoded from rejected; a crash / hang / non-zero
     /// exit is carried by `status`, not here.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub decoded: Option<bool>,
@@ -179,12 +179,19 @@ async fn exec(
     let peak = peak_rss.load(Ordering::Relaxed);
     let peak_rss_kb = (peak > 0).then_some(peak);
 
+    let decoded = Some(produced_output(&invocation.output));
+
     // only a differential scenario compares frames; robustness / soak judge the
     // exit status only, so skip hash extraction for them
     let frame_hashes = if scenario.judges_frames() && matches!(status, RunStatus::Ok) {
         match extract_hashes(&invocation.output, scenario) {
             Ok(h) => Some(h),
-            Err(e) => return fail(e.to_string()),
+            Err(e) => {
+                return RunResult {
+                    decoded,
+                    ..fail(e.to_string())
+                };
+            }
         }
     } else {
         None
@@ -214,15 +221,6 @@ async fn exec(
         } else {
             (None, None)
         };
-
-    // outcome-diff: classify decoded (produced frames) vs rejected (clean exit,
-    // no frames) on the corrupt input. A pixel compare is noise here, so the
-    // cross-engine signal is this structural outcome.
-    let decoded = if scenario.is_outcome_diff() && matches!(status, RunStatus::Ok) {
-        Some(produced_output(&invocation.output))
-    } else {
-        None
-    };
 
     RunResult {
         engine: engine_id.to_string(),

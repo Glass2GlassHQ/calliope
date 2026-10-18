@@ -6,9 +6,91 @@
 
 use std::path::Path;
 
+use serde::Deserialize;
+
+use crate::corpus::{AudioStream, Media, VideoStream};
 use crate::engine::binary;
 use crate::scenario::{PixelFormat, Video};
 use crate::{Error, Result};
+
+const FFPROBE_STREAM_ENTRIES: &str =
+    "format=format_name:stream=codec_type,codec_name,width,height,pix_fmt,sample_rate,channels";
+
+// probe the container and first video / audio stream; None when ffprobe cannot open it as media
+pub fn probe_media(input: &Path) -> Result<Option<Media>> {
+    let program = binary("CALLIOPE_FFPROBE", "ffprobe");
+    let out = std::process::Command::new(&program)
+        .args(["-v", "error", "-show_entries", FFPROBE_STREAM_ENTRIES])
+        .args(["-of", "json"])
+        .arg(input)
+        .output()
+        .map_err(|e| Error::Parse(format!("ffprobe ({program}): {e}")))?;
+    if !out.status.success() {
+        return Ok(None);
+    }
+    parse_ffprobe_media(&String::from_utf8_lossy(&out.stdout))
+}
+
+#[derive(Debug, Deserialize)]
+struct ProbeOutput {
+    #[serde(default)]
+    streams: Vec<ProbeStream>,
+    format: Option<ProbeFormat>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ProbeFormat {
+    format_name: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ProbeStream {
+    codec_type: Option<String>,
+    codec_name: Option<String>,
+    width: Option<u32>,
+    height: Option<u32>,
+    pix_fmt: Option<String>,
+    // ffprobe prints the sample rate as a string
+    sample_rate: Option<String>,
+    channels: Option<u32>,
+}
+
+fn parse_ffprobe_media(json: &str) -> Result<Option<Media>> {
+    let probe: ProbeOutput =
+        serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
+    let Some(format) = probe.format else {
+        return Ok(None);
+    };
+    let first_of = |kind: &str| {
+        probe
+            .streams
+            .iter()
+            .find(|s| s.codec_type.as_deref() == Some(kind) && s.codec_name.is_some())
+    };
+    let video = first_of("video").and_then(|s| {
+        Some(VideoStream {
+            codec: s.codec_name.clone()?,
+            width: s.width?,
+            height: s.height?,
+            pix_fmt: s.pix_fmt.clone(),
+        })
+    });
+    let audio = first_of("audio").and_then(|s| {
+        Some(AudioStream {
+            codec: s.codec_name.clone()?,
+            sample_rate: s.sample_rate.as_deref()?.parse().ok()?,
+            channels: s.channels?,
+        })
+    });
+    if video.is_none() && audio.is_none() {
+        return Ok(None);
+    }
+    Ok(Some(Media {
+        container: format.format_name,
+        video,
+        audio,
+    }))
+}
 
 /// probe the first video stream of `input` for its decoded geometry
 pub fn probe_geometry(input: &Path) -> Result<Video> {
@@ -76,15 +158,15 @@ pub fn probe_frame_geometry(input: &Path) -> Result<Vec<Video>> {
     Ok(frames)
 }
 
-// the input's first video stream as a producer sees it
+// the input's first video stream as a producer sees it: its frame count and rate
 #[derive(Debug, Clone, PartialEq)]
-pub struct VideoStream {
+pub struct VideoFrameCount {
     pub codec: String,
     pub frames: u64,
     pub frame_rate: f64,
 }
 
-pub fn probe_video_stream(input: &Path) -> Result<VideoStream> {
+pub fn probe_video_frame_count(input: &Path) -> Result<VideoFrameCount> {
     let program = binary("CALLIOPE_FFPROBE", "ffprobe");
     let out = std::process::Command::new(&program)
         .args([
@@ -108,11 +190,11 @@ pub fn probe_video_stream(input: &Path) -> Result<VideoStream> {
             String::from_utf8_lossy(&out.stderr).trim()
         )));
     }
-    parse_video_stream(&String::from_utf8_lossy(&out.stdout))
+    parse_video_frame_count(&String::from_utf8_lossy(&out.stdout))
 }
 
 // ffprobe `key=value` lines for codec_name, r_frame_rate (a ratio) and nb_read_packets
-fn parse_video_stream(text: &str) -> Result<VideoStream> {
+fn parse_video_frame_count(text: &str) -> Result<VideoFrameCount> {
     let field = |key: &str| {
         text.lines()
             .find_map(|l| l.trim().strip_prefix(key)?.strip_prefix('='))
@@ -124,7 +206,7 @@ fn parse_video_stream(text: &str) -> Result<VideoStream> {
         .ok_or_else(|| bad("r_frame_rate"))?;
     let numerator: f64 = numerator.parse().map_err(|_| bad("r_frame_rate"))?;
     let denominator: f64 = denominator.parse().map_err(|_| bad("r_frame_rate"))?;
-    Ok(VideoStream {
+    Ok(VideoFrameCount {
         codec: field("codec_name")?.to_string(),
         frames: field("nb_read_packets")?
             .parse()
@@ -197,6 +279,41 @@ mod tests {
     }
 
     #[test]
+    fn media_probe_keeps_first_video_and_audio_stream() {
+        let json = r#"{"streams": [
+            {"codec_name": "mov_text", "codec_type": "subtitle"},
+            {"codec_name": "h264", "codec_type": "video", "width": 320, "height": 240, "pix_fmt": "yuv420p"},
+            {"codec_name": "aac", "codec_type": "audio", "sample_rate": "44100", "channels": 2},
+            {"codec_name": "mp3", "codec_type": "audio", "sample_rate": "22050", "channels": 1}
+        ], "format": {"format_name": "mov,mp4,m4a,3gp,3g2,mj2"}}"#;
+        let media = parse_ffprobe_media(json).unwrap().unwrap();
+        assert_eq!(media.container, "mov,mp4,m4a,3gp,3g2,mj2");
+        let video = media.video.unwrap();
+        assert_eq!(
+            (video.codec.as_str(), video.width, video.height),
+            ("h264", 320, 240)
+        );
+        assert_eq!(video.pix_fmt.as_deref(), Some("yuv420p"));
+        let audio = media.audio.unwrap();
+        assert_eq!(
+            (audio.codec.as_str(), audio.sample_rate, audio.channels),
+            ("aac", 44100, 2)
+        );
+    }
+
+    #[test]
+    fn media_probe_drops_files_without_audio_or_video() {
+        let subtitles_only = r#"{"streams": [{"codec_name": "subrip", "codec_type": "subtitle"}],
+            "format": {"format_name": "srt"}}"#;
+        assert!(parse_ffprobe_media(subtitles_only).unwrap().is_none());
+        // a stream ffprobe could not name has no decoder to compare
+        let unnamed = r#"{"streams": [{"codec_type": "video", "width": 16, "height": 16}],
+            "format": {"format_name": "avi"}}"#;
+        assert!(parse_ffprobe_media(unnamed).unwrap().is_none());
+        assert!(parse_ffprobe_media("{}").unwrap().is_none());
+    }
+
+    #[test]
     fn rejects_unsupported_or_malformed() {
         // packed RGB is not bit-exact across engines, so it stays unsupported
         assert!(parse_ffprobe_csv("1920,1080,rgb24").is_err());
@@ -207,12 +324,13 @@ mod tests {
 
     #[test]
     fn parses_video_stream_counts() {
-        let v =
-            parse_video_stream("codec_name=h264\nr_frame_rate=30000/1001\nnb_read_packets=300\n")
-                .unwrap();
+        let v = parse_video_frame_count(
+            "codec_name=h264\nr_frame_rate=30000/1001\nnb_read_packets=300\n",
+        )
+        .unwrap();
         assert_eq!(v.codec, "h264");
         assert_eq!(v.frames, 300);
         assert!((v.frame_rate - 29.97).abs() < 0.01);
-        assert!(parse_video_stream("codec_name=h264\nr_frame_rate=25/1\n").is_err());
+        assert!(parse_video_frame_count("codec_name=h264\nr_frame_rate=25/1\n").is_err());
     }
 }

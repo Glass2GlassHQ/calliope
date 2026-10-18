@@ -247,6 +247,8 @@ impl Engine for Ffmpeg {
             args.push(input.display().to_string());
             args.extend([
                 "-vn".into(),
+                "-sn".into(),
+                "-dn".into(),
                 "-f".into(),
                 audio.format.ffmpeg_fmt().into(),
                 "-ar".into(),
@@ -268,6 +270,9 @@ impl Engine for Ffmpeg {
             "-i".into(),
             input.display().to_string(),
             "-an".into(),
+            // a mapped subtitle / data stream would fail the framemd5 / rawvideo output
+            "-sn".into(),
+            "-dn".into(),
         ];
         // golden: whole decoded output as raw video in the vector's format, so
         // the runner's whole-file MD5 reproduces the conformance `result`

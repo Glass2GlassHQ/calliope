@@ -118,6 +118,7 @@ impl Suite {
                 .and_then(crate::scenario::PixelFormat::from_pix_fmt),
             license: format!("{} conformance (Fluster suite {})", self.codec, self.name),
             notes: String::new(),
+            media: None,
         })
     }
 }
