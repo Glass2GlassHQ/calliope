@@ -1,0 +1,6 @@
+g2g-plugins/src/h264parse.rs:63:9: replace <impl NalCodec for H264Codec>::unit_role -> Option<StartCodeRole> with Some(Default::default())
+g2g-plugins/src/h264parse.rs:80:9: replace <impl NalCodec for H264Codec>::sps_info -> Option<SpsGeometry> with Some(Default::default())
+g2g-plugins/src/h264parse.rs:87:5: replace sps_info -> Option<SpsGeometry> with Some(Default::default())
+g2g-plugins/src/h264parse.rs:143:5: replace parse_h264_sps_head -> Option<(H264SpsHead, BitReader<'_>)> with Some((Default::default(), Default::default()))
+g2g-plugins/src/h264parse.rs:223:5: replace parse_sps -> Option<SpsGeometry> with Some(Default::default())
+g2g-plugins/src/h264parse.rs:236:9: delete match arm 1 in parse_sps

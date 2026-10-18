@@ -495,7 +495,11 @@ tools/mutants-g2g.sh g2g-plugins-mpegts -p g2g-plugins -f g2g-plugins/src/mpegts
     --cargo-arg=--lib --cargo-arg=--test=m108_mpegts ...
 ```
 Per-scope lists, commands and wall times are in `mutants/README.md`.
-Result: pending.
+Result: g2g-core scored 59% (1114 mutants, 516 caught, 351 missed). g2g M1530
+and M1531 added tests for 245 of the missed ones, and the other 106 are not gaps.
+18 g2g-plugins parser files scored 79% (4886 mutants, 3365 caught, 882 missed,
+59 timeouts, 580 unviable) against g2g 439f4e3. h265parse.rs (26%) and
+h264parse.rs (52%) are the weakest. The missed plugin mutants have no tests yet.
 
 ## Bugs found
 

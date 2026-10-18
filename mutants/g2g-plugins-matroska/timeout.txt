@@ -1,0 +1,6 @@
+g2g-plugins/src/matroska.rs:559:9: replace MatroskaDemuxer::consume with ()
+g2g-plugins/src/matroska.rs:638:33: replace + with - in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:878:9: replace <impl Iterator for EbmlChildren<'a>>::next -> Option<Self::Item> with Some(Default::default())
+g2g-plugins/src/matroska.rs:1425:17: replace += with *= in split_xiph
+g2g-plugins/src/matroska.rs:2542:13: replace += with *= in encode_vint
+g2g-plugins/src/matroska.rs:2562:15: replace += with *= in int_bytes

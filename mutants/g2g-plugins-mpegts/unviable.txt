@@ -1,0 +1,101 @@
+g2g-plugins/src/mpegts.rs:825:9: replace TsDemuxer::streams -> &[ElementaryStream] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/mpegts.rs:832:9: replace TsDemuxer::programs -> impl Iterator<Item =(u16, &[ElementaryStream])>+'_ with ::std::iter::once((0, Vec::leak(Vec::new())))
+g2g-plugins/src/mpegts.rs:816:9: replace TsDemuxer::active_program -> Option<&TsProgram> with Some(Box::leak(Box::new(Default::default())))
+g2g-plugins/src/mpegts.rs:832:9: replace TsDemuxer::programs -> impl Iterator<Item =(u16, &[ElementaryStream])>+'_ with ::std::iter::once((1, Vec::leak(Vec::new())))
+g2g-plugins/src/mpegts.rs:832:9: replace TsDemuxer::programs -> impl Iterator<Item =(u16, &[ElementaryStream])>+'_ with ::std::iter::once((0, Vec::leak(vec![Default::default()])))
+g2g-plugins/src/mpegts.rs:832:9: replace TsDemuxer::programs -> impl Iterator<Item =(u16, &[ElementaryStream])>+'_ with ::std::iter::once((1, Vec::leak(vec![Default::default()])))
+g2g-plugins/src/mpegts.rs:841:9: replace TsDemuxer::service -> Option<&ServiceInfo> with Some(Box::leak(Box::new(Default::default())))
+g2g-plugins/src/mpegts.rs:853:9: replace TsDemuxer::services -> impl Iterator<Item =(u16, &ServiceInfo)>+'_ with ::std::iter::once((0, Box::leak(Box::new(Default::default()))))
+g2g-plugins/src/mpegts.rs:853:9: replace TsDemuxer::services -> impl Iterator<Item =(u16, &ServiceInfo)>+'_ with ::std::iter::once((1, Box::leak(Box::new(Default::default()))))
+g2g-plugins/src/mpegts.rs:859:9: replace TsDemuxer::eit_events -> &[EitEvent] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/mpegts.rs:866:9: replace TsDemuxer::take_eit_schedule -> Vec<EitEvent> with vec![]
+g2g-plugins/src/mpegts.rs:866:9: replace TsDemuxer::take_eit_schedule -> Vec<EitEvent> with vec![Default::default()]
+g2g-plugins/src/mpegts.rs:924:9: replace TsDemuxer::teletext -> Option<TeletextService> with Some(Default::default())
+g2g-plugins/src/mpegts.rs:998:9: replace TsDemuxer::check_continuity -> Continuity with Default::default()
+g2g-plugins/src/mpegts.rs:1036:9: replace TsDemuxer::psi_table_of -> Option<PsiTable> with Some(Default::default())
+g2g-plugins/src/mpegts.rs:1055:9: replace TsDemuxer::collect_sections -> Vec<Vec<u8>> with vec![]
+g2g-plugins/src/mpegts.rs:1055:9: replace TsDemuxer::collect_sections -> Vec<Vec<u8>> with vec![vec![]]
+g2g-plugins/src/mpegts.rs:1055:9: replace TsDemuxer::collect_sections -> Vec<Vec<u8>> with vec![vec![0]]
+g2g-plugins/src/mpegts.rs:1055:9: replace TsDemuxer::collect_sections -> Vec<Vec<u8>> with vec![vec![1]]
+g2g-plugins/src/mpegts.rs:1081:9: replace TsDemuxer::take_units -> Vec<EsUnit> with vec![]
+g2g-plugins/src/mpegts.rs:1081:9: replace TsDemuxer::take_units -> Vec<EsUnit> with vec![Default::default()]
+g2g-plugins/src/mpegts.rs:1130:9: replace TsDemuxer::section_body -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1130:9: replace TsDemuxer::section_body -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1149:9: replace TsDemuxer::checked_section_body -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1149:9: replace TsDemuxer::checked_section_body -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1476:5: replace collect_sections -> Vec<Vec<u8>> with vec![vec![]]
+g2g-plugins/src/mpegts.rs:1476:5: replace collect_sections -> Vec<Vec<u8>> with vec![vec![0]]
+g2g-plugins/src/mpegts.rs:1476:5: replace collect_sections -> Vec<Vec<u8>> with vec![]
+g2g-plugins/src/mpegts.rs:1476:5: replace collect_sections -> Vec<Vec<u8>> with vec![vec![1]]
+g2g-plugins/src/mpegts.rs:1601:5: replace probe_stride -> StrideProbe with Default::default()
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, None, Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, None, Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, Some(0), Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, Some(0), Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, Some(1), Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, Some(1), Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), None, Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), None, Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), Some(0), Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), Some(0), Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), Some(1), Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), Some(1), Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), None, Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), None, Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), Some(0), Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), Some(0), Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), Some(1), Vec::leak(vec![0]))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), Some(1), Vec::leak(vec![1]))
+g2g-plugins/src/mpegts.rs:1852:5: replace parse_teletext_descriptor -> Option<TeletextService> with Some(Default::default())
+g2g-plugins/src/mpegts.rs:1973:5: replace unwrap_metadata_au_cells -> Option<Vec<u8>> with Some(vec![])
+g2g-plugins/src/mpegts.rs:1973:5: replace unwrap_metadata_au_cells -> Option<Vec<u8>> with Some(vec![0])
+g2g-plugins/src/mpegts.rs:1973:5: replace unwrap_metadata_au_cells -> Option<Vec<u8>> with Some(vec![1])
+g2g-plugins/src/mpegts.rs:2005:5: replace opus_ts_packets -> Vec<&[u8]> with vec![]
+g2g-plugins/src/mpegts.rs:2005:5: replace opus_ts_packets -> Vec<&[u8]> with vec![Vec::leak(Vec::new())]
+g2g-plugins/src/mpegts.rs:2005:5: replace opus_ts_packets -> Vec<&[u8]> with vec![Vec::leak(vec![0])]
+g2g-plugins/src/mpegts.rs:2005:5: replace opus_ts_packets -> Vec<&[u8]> with vec![Vec::leak(vec![1])]
+g2g-plugins/src/mpegts.rs:2209:9: replace TsMuxer::with_streams -> Self with Default::default()
+g2g-plugins/src/mpegts.rs:2221:9: replace TsMuxer::with_programs -> Self with Default::default()
+g2g-plugins/src/mpegts.rs:2339:9: replace TsMuxer::program_service -> Option<&ServiceInfo> with Some(Box::leak(Box::new(Default::default())))
+g2g-plugins/src/mpegts.rs:2560:9: replace TsMuxer::push_au -> Vec<u8> with vec![0]
+g2g-plugins/src/mpegts.rs:2560:9: replace TsMuxer::push_au -> Vec<u8> with vec![]
+g2g-plugins/src/mpegts.rs:2560:9: replace TsMuxer::push_au -> Vec<u8> with vec![1]
+g2g-plugins/src/mpegts.rs:2578:9: replace TsMuxer::push_au_on -> Vec<u8> with vec![]
+g2g-plugins/src/mpegts.rs:2578:9: replace TsMuxer::push_au_on -> Vec<u8> with vec![0]
+g2g-plugins/src/mpegts.rs:2578:9: replace TsMuxer::push_au_on -> Vec<u8> with vec![1]
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![], Cow::Owned(Vec::leak(Vec::new()).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![], Cow::Borrowed(Vec::leak(Vec::new())))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![], Cow::Borrowed(Vec::leak(vec![0])))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![], Cow::Owned(Vec::leak(vec![0]).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![], Cow::Borrowed(Vec::leak(vec![1])))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![], Cow::Owned(Vec::leak(vec![1]).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![0], Cow::Borrowed(Vec::leak(Vec::new())))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![0], Cow::Owned(Vec::leak(Vec::new()).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![0], Cow::Borrowed(Vec::leak(vec![0])))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![0], Cow::Owned(Vec::leak(vec![0]).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![0], Cow::Borrowed(Vec::leak(vec![1])))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![1], Cow::Borrowed(Vec::leak(Vec::new())))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![0], Cow::Owned(Vec::leak(vec![1]).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![1], Cow::Owned(Vec::leak(Vec::new()).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![1], Cow::Borrowed(Vec::leak(vec![0])))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![1], Cow::Owned(Vec::leak(vec![0]).to_owned()))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![1], Cow::Borrowed(Vec::leak(vec![1])))
+g2g-plugins/src/mpegts.rs:2687:9: replace TsMuxer::pes_for -> (Vec<u8>, Cow<'a, [u8]>) with (vec![1], Cow::Owned(Vec::leak(vec![1]).to_owned()))
+g2g-plugins/src/mpegts.rs:2884:9: replace TsMuxer::sdt_body -> Vec<u8> with vec![]
+g2g-plugins/src/mpegts.rs:2884:9: replace TsMuxer::sdt_body -> Vec<u8> with vec![0]
+g2g-plugins/src/mpegts.rs:2884:9: replace TsMuxer::sdt_body -> Vec<u8> with vec![1]
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::new())
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::from_iter([0]))
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::new(0))
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::from(0))
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::from_iter([1]))
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::new(1))
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with Some(RangeInclusive::from(1))
+g2g-plugins/src/mpegts.rs:2973:5: replace dvb_field -> &[u8] with Vec::leak(vec![0])
+g2g-plugins/src/mpegts.rs:2973:5: replace dvb_field -> &[u8] with Vec::leak(vec![1])
+g2g-plugins/src/mpegts.rs:2991:5: replace metadata_au_cell -> Vec<u8> with vec![0]
+g2g-plugins/src/mpegts.rs:2991:5: replace metadata_au_cell -> Vec<u8> with vec![]
+g2g-plugins/src/mpegts.rs:2991:5: replace metadata_au_cell -> Vec<u8> with vec![1]
+g2g-plugins/src/mpegts.rs:3012:5: replace pes_header -> Vec<u8> with vec![]
+g2g-plugins/src/mpegts.rs:3012:5: replace pes_header -> Vec<u8> with vec![0]
+g2g-plugins/src/mpegts.rs:3012:5: replace pes_header -> Vec<u8> with vec![1]

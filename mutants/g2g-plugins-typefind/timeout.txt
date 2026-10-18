@@ -1,0 +1,1 @@
+g2g-plugins/src/typefind.rs:461:11: replace += with *= in find_start_code

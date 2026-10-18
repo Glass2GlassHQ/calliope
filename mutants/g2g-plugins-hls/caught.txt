@@ -1,0 +1,109 @@
+g2g-plugins/src/hls.rs:194:52: replace && with || in MasterPlaylist::renditions_in
+g2g-plugins/src/hls.rs:194:66: replace == with != in MasterPlaylist::renditions_in
+g2g-plugins/src/hls.rs:228:9: replace MediaPlaylist::low_latency -> bool with false
+g2g-plugins/src/hls.rs:229:13: replace && with || in MediaPlaylist::low_latency
+g2g-plugins/src/hls.rs:194:38: replace == with != in MasterPlaylist::renditions_in
+g2g-plugins/src/hls.rs:164:9: replace Segment::incomplete -> bool with true
+g2g-plugins/src/hls.rs:237:9: replace MediaPlaylist::part_hold_back_ms -> u32 with 0
+g2g-plugins/src/hls.rs:164:9: replace Segment::incomplete -> bool with false
+g2g-plugins/src/hls.rs:237:9: replace MediaPlaylist::part_hold_back_ms -> u32 with 1
+g2g-plugins/src/hls.rs:46:29: delete ! in Variant::codec_list
+g2g-plugins/src/hls.rs:269:9: replace MasterPlaylist::select -> Option<&Variant> with None
+g2g-plugins/src/hls.rs:269:79: replace <= with > in MasterPlaylist::select
+g2g-plugins/src/hls.rs:228:9: replace MediaPlaylist::low_latency -> bool with true
+g2g-plugins/src/hls.rs:290:9: replace MasterPlaylist::pick_rendition -> Option<&Rendition> with None
+g2g-plugins/src/hls.rs:291:64: delete ! in MasterPlaylist::pick_rendition
+g2g-plugins/src/hls.rs:319:5: replace lang_prefix_match -> bool with true
+g2g-plugins/src/hls.rs:320:49: replace && with || in lang_prefix_match
+g2g-plugins/src/hls.rs:319:5: replace lang_prefix_match -> bool with false
+g2g-plugins/src/hls.rs:320:25: replace && with || in lang_prefix_match
+g2g-plugins/src/hls.rs:320:14: replace > with < in lang_prefix_match
+g2g-plugins/src/hls.rs:320:41: replace == with != in lang_prefix_match
+g2g-plugins/src/hls.rs:320:14: replace > with == in lang_prefix_match
+g2g-plugins/src/hls.rs:325:60: delete ! in parse
+g2g-plugins/src/hls.rs:378:35: replace == with != in parse
+g2g-plugins/src/hls.rs:320:14: replace > with >= in lang_prefix_match
+g2g-plugins/src/hls.rs:382:35: replace == with != in parse
+g2g-plugins/src/hls.rs:385:29: replace > with == in parse
+g2g-plugins/src/hls.rs:385:29: replace > with < in parse
+g2g-plugins/src/hls.rs:328:9: delete match arm Some("#EXTM3U") in parse
+g2g-plugins/src/hls.rs:397:35: replace == with != in parse
+g2g-plugins/src/hls.rs:401:67: replace == with != in parse
+g2g-plugins/src/hls.rs:403:60: replace == with != in parse
+g2g-plugins/src/hls.rs:406:24: replace == with != in parse
+g2g-plugins/src/hls.rs:408:24: replace == with != in parse
+g2g-plugins/src/hls.rs:441:34: replace || with && in parse
+g2g-plugins/src/hls.rs:461:29: replace || with && in parse
+g2g-plugins/src/hls.rs:447:8: delete ! in parse
+g2g-plugins/src/hls.rs:461:8: delete ! in parse
+g2g-plugins/src/hls.rs:461:32: delete ! in parse
+g2g-plugins/src/hls.rs:423:54: replace == with != in parse
+g2g-plugins/src/hls.rs:486:59: replace == with != in parse_part
+g2g-plugins/src/hls.rs:495:33: replace == with != in parse_part
+g2g-plugins/src/hls.rs:499:17: replace > with == in parse_part
+g2g-plugins/src/hls.rs:499:17: replace > with < in parse_part
+g2g-plugins/src/hls.rs:485:5: replace parse_part -> Option<Part> with None
+g2g-plugins/src/hls.rs:505:42: replace == with != in parse_part
+g2g-plugins/src/hls.rs:506:26: replace == with != in parse_part
+g2g-plugins/src/hls.rs:522:13: delete match arm "BANDWIDTH" in parse_stream_inf
+g2g-plugins/src/hls.rs:524:13: delete match arm "CODECS" in parse_stream_inf
+g2g-plugins/src/hls.rs:525:13: delete match arm "AUDIO" in parse_stream_inf
+g2g-plugins/src/hls.rs:526:13: delete match arm "SUBTITLES" in parse_stream_inf
+g2g-plugins/src/hls.rs:523:13: delete match arm "RESOLUTION" in parse_stream_inf
+g2g-plugins/src/hls.rs:550:9: delete match arm "AUDIO" in parse_media
+g2g-plugins/src/hls.rs:546:5: replace parse_media -> Option<Rendition> with None
+g2g-plugins/src/hls.rs:547:59: replace == with != in parse_media
+g2g-plugins/src/hls.rs:552:9: delete match arm "SUBTITLES" in parse_media
+g2g-plugins/src/hls.rs:562:34: replace == with != in parse_media
+g2g-plugins/src/hls.rs:573:9: delete match arm "AES-128" in parse_key
+g2g-plugins/src/hls.rs:571:59: replace == with != in parse_key
+g2g-plugins/src/hls.rs:570:5: replace parse_key -> Option<SegmentKey> with None
+g2g-plugins/src/hls.rs:590:5: replace parse_iv -> Option<[u8; 16]> with None
+g2g-plugins/src/hls.rs:590:5: replace parse_iv -> Option<[u8; 16]> with Some([0; 16])
+g2g-plugins/src/hls.rs:590:5: replace parse_iv -> Option<[u8; 16]> with Some([1; 16])
+g2g-plugins/src/hls.rs:605:20: replace && with || in attr_pairs
+g2g-plugins/src/hls.rs:603:13: replace <= with > in attr_pairs
+g2g-plugins/src/hls.rs:604:24: replace == with != in attr_pairs
+g2g-plugins/src/hls.rs:605:12: delete ! in attr_pairs
+g2g-plugins/src/hls.rs:605:32: replace == with != in attr_pairs
+g2g-plugins/src/hls.rs:608:40: replace && with || in attr_pairs
+g2g-plugins/src/hls.rs:608:32: replace == with != in attr_pairs
+g2g-plugins/src/hls.rs:606:25: delete ! in attr_pairs
+g2g-plugins/src/hls.rs:608:19: replace || with && in attr_pairs
+g2g-plugins/src/hls.rs:608:43: delete ! in attr_pairs
+g2g-plugins/src/hls.rs:612:23: replace + with - in attr_pairs
+g2g-plugins/src/hls.rs:612:23: replace + with * in attr_pairs
+g2g-plugins/src/hls.rs:614:11: replace += with -= in attr_pairs
+g2g-plugins/src/hls.rs:620:5: replace parse_resolution -> Option<(u32, u32)> with None
+g2g-plugins/src/hls.rs:620:5: replace parse_resolution -> Option<(u32, u32)> with Some((0, 0))
+g2g-plugins/src/hls.rs:620:5: replace parse_resolution -> Option<(u32, u32)> with Some((0, 1))
+g2g-plugins/src/hls.rs:620:5: replace parse_resolution -> Option<(u32, u32)> with Some((1, 0))
+g2g-plugins/src/hls.rs:620:5: replace parse_resolution -> Option<(u32, u32)> with Some((1, 1))
+g2g-plugins/src/hls.rs:628:5: replace parse_byterange -> (u64, Option<u64>) with (0, None)
+g2g-plugins/src/hls.rs:628:5: replace parse_byterange -> (u64, Option<u64>) with (0, Some(0))
+g2g-plugins/src/hls.rs:628:5: replace parse_byterange -> (u64, Option<u64>) with (0, Some(1))
+g2g-plugins/src/hls.rs:628:5: replace parse_byterange -> (u64, Option<u64>) with (1, None)
+g2g-plugins/src/hls.rs:628:5: replace parse_byterange -> (u64, Option<u64>) with (1, Some(0))
+g2g-plugins/src/hls.rs:639:5: replace parse_extinf_ms -> u32 with 1
+g2g-plugins/src/hls.rs:648:5: replace parse_secs_ms -> Option<u32> with None
+g2g-plugins/src/hls.rs:639:5: replace parse_extinf_ms -> u32 with 0
+g2g-plugins/src/hls.rs:628:5: replace parse_byterange -> (u64, Option<u64>) with (1, Some(1))
+g2g-plugins/src/hls.rs:648:5: replace parse_secs_ms -> Option<u32> with Some(0)
+g2g-plugins/src/hls.rs:649:18: replace match guard s.is_finite() && s >= 0.0 with true in parse_secs_ms
+g2g-plugins/src/hls.rs:648:5: replace parse_secs_ms -> Option<u32> with Some(1)
+g2g-plugins/src/hls.rs:649:18: replace match guard s.is_finite() && s >= 0.0 with false in parse_secs_ms
+g2g-plugins/src/hls.rs:649:32: replace && with || in parse_secs_ms
+g2g-plugins/src/hls.rs:649:64: replace + with - in parse_secs_ms
+g2g-plugins/src/hls.rs:649:37: replace >= with < in parse_secs_ms
+g2g-plugins/src/hls.rs:649:64: replace + with * in parse_secs_ms
+g2g-plugins/src/hls.rs:649:55: replace * with + in parse_secs_ms
+g2g-plugins/src/hls.rs:649:55: replace * with / in parse_secs_ms
+g2g-plugins/src/hls.rs:688:51: replace / with % in write_media
+g2g-plugins/src/hls.rs:684:33: replace != with == in write_media
+g2g-plugins/src/hls.rs:688:51: replace / with * in write_media
+g2g-plugins/src/hls.rs:660:5: replace write_media -> String with String::new()
+g2g-plugins/src/hls.rs:688:79: replace % with / in write_media
+g2g-plugins/src/hls.rs:660:5: replace write_media -> String with "xyzzy".into()
+g2g-plugins/src/hls.rs:688:79: replace % with + in write_media
+g2g-plugins/src/hls.rs:703:5: replace key_tag -> String with String::new()
+g2g-plugins/src/hls.rs:703:5: replace key_tag -> String with "xyzzy".into()

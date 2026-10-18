@@ -1,0 +1,1 @@
+g2g-plugins/src/aacparse.rs:483:9: replace <impl SyncFrameHeader for AdtsHeader>::coded_bytes -> usize with 0

@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/opusparse.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=m133_opusparse --cargo-arg=--test=m425_h265_opus -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 5m
+exit: 2
+101 mutants tested in 5m: 12 missed, 70 caught, 19 unviable

@@ -1,0 +1,5 @@
+g2g-plugins/src/ogg.rs:388:16: replace += with *= in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:407:16: replace += with *= in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:801:22: replace -= with += in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:824:21: replace < with <= in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:825:31: replace + with * in OggPageWriter::emit

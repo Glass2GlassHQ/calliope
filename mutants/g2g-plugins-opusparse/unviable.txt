@@ -1,0 +1,19 @@
+g2g-plugins/src/opusparse.rs:87:5: replace synth_opus_head -> Vec<u8> with vec![]
+g2g-plugins/src/opusparse.rs:87:5: replace synth_opus_head -> Vec<u8> with vec![0]
+g2g-plugins/src/opusparse.rs:87:5: replace synth_opus_head -> Vec<u8> with vec![1]
+g2g-plugins/src/opusparse.rs:145:5: replace opus_head_from_dops -> Option<Vec<u8>> with Some(vec![])
+g2g-plugins/src/opusparse.rs:145:5: replace opus_head_from_dops -> Option<Vec<u8>> with Some(vec![1])
+g2g-plugins/src/opusparse.rs:145:5: replace opus_head_from_dops -> Option<Vec<u8>> with Some(vec![0])
+g2g-plugins/src/opusparse.rs:176:5: replace dops_from_opus_head -> Option<Vec<u8>> with Some(vec![])
+g2g-plugins/src/opusparse.rs:176:5: replace dops_from_opus_head -> Option<Vec<u8>> with Some(vec![0])
+g2g-plugins/src/opusparse.rs:176:5: replace dops_from_opus_head -> Option<Vec<u8>> with Some(vec![1])
+g2g-plugins/src/opusparse.rs:234:9: replace OpusParse::caps_update -> Option<Caps> with Some(Default::default())
+g2g-plugins/src/opusparse.rs:256:9: replace <impl AsyncElement for OpusParse>::intercept_caps -> Result<Caps, G2gError> with Ok(Default::default())
+g2g-plugins/src/opusparse.rs:270:9: replace <impl AsyncElement for OpusParse>::caps_constraint_as_transform -> CapsConstraint<'_> with Default::default()
+g2g-plugins/src/opusparse.rs:274:9: replace <impl AsyncElement for OpusParse>::configure_pipeline -> Result<ConfigureOutcome, G2gError> with Ok(Default::default())
+g2g-plugins/src/opusparse.rs:300:9: replace <impl AsyncElement for OpusParse>::process -> Self::ProcessFuture<'a> with Default::default()
+g2g-plugins/src/opusparse.rs:355:9: replace <impl PadTemplates for OpusParse>::pad_templates -> Vec<PadTemplate> with vec![]
+g2g-plugins/src/opusparse.rs:355:9: replace <impl PadTemplates for OpusParse>::pad_templates -> Vec<PadTemplate> with vec![Default::default()]
+g2g-plugins/src/opusparse.rs:400:5: replace parse_toc -> Option<OpusToc> with Some(Default::default())
+g2g-plugins/src/opusparse.rs:418:5: replace decode_config -> (OpusMode, OpusBandwidth, u32) with (Default::default(), Default::default(), 0)
+g2g-plugins/src/opusparse.rs:418:5: replace decode_config -> (OpusMode, OpusBandwidth, u32) with (Default::default(), Default::default(), 1)

@@ -1,0 +1,57 @@
+g2g-plugins/src/mp4demuxn.rs:50:5: replace stream_id -> alloc::string::String with Default::default()
+g2g-plugins/src/mp4demuxn.rs:164:21: delete ! in forwardable_streams
+g2g-plugins/src/mp4demuxn.rs:99:34: replace << with >> in nego_caps
+g2g-plugins/src/mp4demuxn.rs:350:9: replace Mp4DemuxN::apply_stream_selection with ()
+g2g-plugins/src/mp4demuxn.rs:376:42: replace != with == in Mp4DemuxN::apply_stream_selection
+g2g-plugins/src/mp4demuxn.rs:444:9: replace Mp4DemuxN::emitted -> u64 with 0
+g2g-plugins/src/mp4demuxn.rs:451:9: replace Mp4DemuxN::accepts -> bool with false
+g2g-plugins/src/mp4demuxn.rs:382:12: delete ! in Mp4DemuxN::apply_stream_selection
+g2g-plugins/src/mp4demuxn.rs:444:9: replace Mp4DemuxN::emitted -> u64 with 1
+g2g-plugins/src/mp4demuxn.rs:465:9: replace Mp4DemuxN::post_metadata with ()
+g2g-plugins/src/mp4demuxn.rs:472:9: replace Mp4DemuxN::post_stream_collection with ()
+g2g-plugins/src/mp4demuxn.rs:506:9: replace Mp4DemuxN::post_tags with ()
+g2g-plugins/src/mp4demuxn.rs:513:16: delete ! in Mp4DemuxN::post_tags
+g2g-plugins/src/mp4demuxn.rs:530:12: delete ! in Mp4DemuxN::post_tags
+g2g-plugins/src/mp4demuxn.rs:583:28: replace != with == in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:601:17: delete match arm b"moof" in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:570:9: replace Mp4DemuxN::advance -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/mp4demuxn.rs:605:17: delete match arm b"mdat" in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:603:25: replace += with -= in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:611:35: replace + with * in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:611:35: replace + with - in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:630:21: replace > with == in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:630:21: replace > with < in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:624:25: replace += with -= in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:646:39: replace == with != in Mp4DemuxN::learn_held_fragment
+g2g-plugins/src/mp4demuxn.rs:639:9: replace Mp4DemuxN::learn_held_fragment with ()
+g2g-plugins/src/mp4demuxn.rs:656:44: replace > with == in Mp4DemuxN::learn_held_fragment
+g2g-plugins/src/mp4demuxn.rs:656:44: replace > with < in Mp4DemuxN::learn_held_fragment
+g2g-plugins/src/mp4demuxn.rs:656:59: replace <= with > in Mp4DemuxN::learn_held_fragment
+g2g-plugins/src/mp4demuxn.rs:677:9: replace Mp4DemuxN::parse_and_emit_whole -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/mp4demuxn.rs:699:47: replace == with != in Mp4DemuxN::forwarded_tracks
+g2g-plugins/src/mp4demuxn.rs:723:38: replace == with != in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:727:16: delete ! in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:718:72: replace == with != in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:717:9: replace Mp4DemuxN::emit_samples -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/mp4demuxn.rs:744:26: replace match guard *format != AudioFormat::Opus && t.media_start > 0 with true in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:744:72: replace > with < in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:766:47: replace && with || in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:766:50: delete ! in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:784:47: replace && with || in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:784:50: delete ! in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:832:22: replace += with -= in Mp4DemuxN::next_frame
+g2g-plugins/src/mp4demuxn.rs:832:22: replace += with *= in Mp4DemuxN::next_frame
+g2g-plugins/src/mp4demuxn.rs:842:5: replace next_box -> Option<([u8; 4], usize)> with None
+g2g-plugins/src/mp4demuxn.rs:842:35: replace + with - in next_box
+g2g-plugins/src/mp4demuxn.rs:844:17: replace || with && in next_box
+g2g-plugins/src/mp4demuxn.rs:842:35: replace + with * in next_box
+g2g-plugins/src/mp4demuxn.rs:844:13: replace < with > in next_box
+g2g-plugins/src/mp4demuxn.rs:844:31: replace > with == in next_box
+g2g-plugins/src/mp4demuxn.rs:844:31: replace > with < in next_box
+g2g-plugins/src/mp4demuxn.rs:844:31: replace > with >= in next_box
+g2g-plugins/src/mp4demuxn.rs:844:24: replace + with - in next_box
+g2g-plugins/src/mp4demuxn.rs:844:24: replace + with * in next_box
+g2g-plugins/src/mp4demuxn.rs:898:17: delete match arm PipelinePacket::DataFrame(frame) in <impl MultiOutputElement for Mp4DemuxN>::process
+g2g-plugins/src/mp4demuxn.rs:911:17: delete match arm PipelinePacket::Eos in <impl MultiOutputElement for Mp4DemuxN>::process
+g2g-plugins/src/mp4demuxn.rs:913:40: replace != with == in <impl MultiOutputElement for Mp4DemuxN>::process
+g2g-plugins/src/mp4demuxn.rs:952:9: replace <impl MultiOutputElement for Mp4DemuxN>::latency -> LatencyReport with Default::default()

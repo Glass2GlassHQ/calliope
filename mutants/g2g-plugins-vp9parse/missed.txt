@@ -1,0 +1,5 @@
+g2g-plugins/src/vp9parse.rs:63:9: replace <impl AsyncElement for Vp9Parse>::metadata -> ElementMetadata with Default::default()
+g2g-plugins/src/vp9parse.rs:204:40: replace | with ^ in parse_keyframe
+g2g-plugins/src/vp9parse.rs:232:28: replace || with && in parse_keyframe
+g2g-plugins/src/vp9parse.rs:232:23: replace == with != in parse_keyframe
+g2g-plugins/src/vp9parse.rs:232:39: replace == with != in parse_keyframe

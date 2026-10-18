@@ -1,0 +1,19 @@
+g2g-plugins/src/subparse.rs:1545:34: replace + with * in ass_inline_pos
+g2g-plugins/src/subparse.rs:1614:34: replace + with * in ass_inline_alignment
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("", "", Some("")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("", "", None))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("", "xyzzy", None))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("", "xyzzy", Some("")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("", "", Some("xyzzy")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("", "xyzzy", Some("xyzzy")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("xyzzy", "", Some("")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("xyzzy", "", None))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("xyzzy", "", Some("xyzzy")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("xyzzy", "xyzzy", None))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("xyzzy", "xyzzy", Some("")))
+g2g-plugins/src/subparse.rs:1827:9: replace TtmlParagraphs<'a>::next -> Option<(&'a str, &'a str, Option<&'a str>)> with Some(("xyzzy", "xyzzy", Some("xyzzy")))
+g2g-plugins/src/subparse.rs:1986:40: replace + with * in find_paragraph_close
+g2g-plugins/src/subparse.rs:1994:19: replace + with - in find_paragraph_close
+g2g-plugins/src/subparse.rs:2078:31: replace + with - in decode_entities
+g2g-plugins/src/subparse.rs:2078:31: replace + with * in decode_entities
+g2g-plugins/src/subparse.rs:2497:15: replace += with *= in frac_millis

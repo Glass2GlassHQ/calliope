@@ -1,0 +1,35 @@
+g2g-plugins/src/st2110sdp.rs:72:5: replace sampling_sdp -> (&'static str, u8) with ("", 0)
+g2g-plugins/src/st2110sdp.rs:82:9: delete match arm ("RGBA", 8) in sampling_from_sdp
+g2g-plugins/src/st2110sdp.rs:83:9: delete match arm ("YCbCr-4:2:2", 8) in sampling_from_sdp
+g2g-plugins/src/st2110sdp.rs:84:9: delete match arm ("YCbCr-4:2:2", 10) in sampling_from_sdp
+g2g-plugins/src/st2110sdp.rs:94:9: replace St2110Sdp::to_sdp -> String with String::new()
+g2g-plugins/src/st2110sdp.rs:81:5: replace sampling_from_sdp -> Option<Sampling> with None
+g2g-plugins/src/st2110sdp.rs:94:9: replace St2110Sdp::to_sdp -> String with "xyzzy".into()
+g2g-plugins/src/st2110sdp.rs:185:9: replace St2110Sdp::parse -> Option<Self> with None
+g2g-plugins/src/st2110sdp.rs:105:9: replace St2110Sdp::push_media with ()
+g2g-plugins/src/st2110sdp.rs:190:9: replace St2110Sdp::from_section -> Option<Self> with None
+g2g-plugins/src/st2110sdp.rs:72:5: replace sampling_sdp -> (&'static str, u8) with ("xyzzy", 0)
+g2g-plugins/src/st2110sdp.rs:211:13: delete match arm ("audio", Some(enc)) in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:72:5: replace sampling_sdp -> (&'static str, u8) with ("xyzzy", 1)
+g2g-plugins/src/st2110sdp.rs:72:5: replace sampling_sdp -> (&'static str, u8) with ("", 1)
+g2g-plugins/src/st2110sdp.rs:192:37: replace match guard enc.starts_with("raw/") with false in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:201:37: replace match guard enc.starts_with("jxsv/") with true in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:210:37: replace match guard enc.starts_with("smpte291/") with false in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:210:37: replace match guard enc.starts_with("smpte291/") with true in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:201:37: replace match guard enc.starts_with("jxsv/") with false in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:227:5: replace push_session_header with ()
+g2g-plugins/src/st2110sdp.rs:257:9: replace St2110Session::to_sdp -> String with String::new()
+g2g-plugins/src/st2110sdp.rs:257:9: replace St2110Session::to_sdp -> String with "xyzzy".into()
+g2g-plugins/src/st2110sdp.rs:316:5: replace fps_str -> String with String::new()
+g2g-plugins/src/st2110sdp.rs:275:9: replace St2110Session::parse -> Option<Self> with None
+g2g-plugins/src/st2110sdp.rs:192:37: replace match guard enc.starts_with("raw/") with true in St2110Sdp::from_section
+g2g-plugins/src/st2110sdp.rs:290:20: delete ! in St2110Session::parse
+g2g-plugins/src/st2110sdp.rs:316:5: replace fps_str -> String with "xyzzy".into()
+g2g-plugins/src/st2110sdp.rs:329:5: replace parse_video_fmtp -> Option<(Sampling, u32, u32, (u32, u32))> with None
+g2g-plugins/src/st2110sdp.rs:316:12: replace <= with > in fps_str
+g2g-plugins/src/st2110sdp.rs:340:13: delete match arm "height" in parse_video_fmtp
+g2g-plugins/src/st2110sdp.rs:339:13: delete match arm "width" in parse_video_fmtp
+g2g-plugins/src/st2110sdp.rs:342:13: delete match arm "exactframerate" in parse_video_fmtp
+g2g-plugins/src/st2110sdp.rs:357:5: replace parse_audio_rtpmap -> Option<St2110Essence> with None
+g2g-plugins/src/st2110sdp.rs:341:13: delete match arm "depth" in parse_video_fmtp
+g2g-plugins/src/st2110sdp.rs:360:9: delete match arm "L24" in parse_audio_rtpmap

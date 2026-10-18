@@ -1,0 +1,159 @@
+g2g-plugins/src/flv.rs:96:13: delete match arm 4 in FlvCodec::from_video_id
+g2g-plugins/src/flv.rs:97:13: delete match arm 5 in FlvCodec::from_video_id
+g2g-plugins/src/flv.rs:98:13: delete match arm VIDEO_CODEC_AVC in FlvCodec::from_video_id
+g2g-plugins/src/flv.rs:109:13: delete match arm 2 | 14 in FlvCodec::from_sound_format
+g2g-plugins/src/flv.rs:80:9: replace FlvCodec::tag_id -> u8 with 0
+g2g-plugins/src/flv.rs:110:13: delete match arm SOUND_FORMAT_AAC in FlvCodec::from_sound_format
+g2g-plugins/src/flv.rs:111:13: delete match arm 11 in FlvCodec::from_sound_format
+g2g-plugins/src/flv.rs:123:5: replace payload_offset -> usize with 0
+g2g-plugins/src/flv.rs:94:9: replace FlvCodec::from_video_id -> Option<Self> with None
+g2g-plugins/src/flv.rs:123:5: replace payload_offset -> usize with 1
+g2g-plugins/src/flv.rs:137:5: replace audio_tag_params -> Option<(u8, u32)> with None
+g2g-plugins/src/flv.rs:95:13: delete match arm 2 in FlvCodec::from_video_id
+g2g-plugins/src/flv.rs:137:5: replace audio_tag_params -> Option<(u8, u32)> with Some((0, 0))
+g2g-plugins/src/flv.rs:137:5: replace audio_tag_params -> Option<(u8, u32)> with Some((0, 1))
+g2g-plugins/src/flv.rs:137:5: replace audio_tag_params -> Option<(u8, u32)> with Some((1, 0))
+g2g-plugins/src/flv.rs:80:9: replace FlvCodec::tag_id -> u8 with 1
+g2g-plugins/src/flv.rs:137:5: replace audio_tag_params -> Option<(u8, u32)> with Some((1, 1))
+g2g-plugins/src/flv.rs:137:36: replace == with != in audio_tag_params
+g2g-plugins/src/flv.rs:106:9: replace FlvCodec::from_sound_format -> Option<Self> with None
+g2g-plugins/src/flv.rs:137:29: replace & with | in audio_tag_params
+g2g-plugins/src/flv.rs:137:29: replace & with ^ in audio_tag_params
+g2g-plugins/src/flv.rs:138:26: replace >> with << in audio_tag_params
+g2g-plugins/src/flv.rs:138:32: replace - with / in audio_tag_params
+g2g-plugins/src/flv.rs:138:48: replace & with ^ in audio_tag_params
+g2g-plugins/src/flv.rs:138:48: replace & with | in audio_tag_params
+g2g-plugins/src/flv.rs:138:32: replace - with + in audio_tag_params
+g2g-plugins/src/flv.rs:141:9: delete match arm FlvCodec::Mp3 in audio_tag_params
+g2g-plugins/src/flv.rs:142:9: delete match arm FlvCodec::Speex in audio_tag_params
+g2g-plugins/src/flv.rs:138:42: replace >> with << in audio_tag_params
+g2g-plugins/src/flv.rs:140:26: replace match guard first >> 4 == 14 with true in audio_tag_params
+g2g-plugins/src/flv.rs:140:26: replace match guard first >> 4 == 14 with false in audio_tag_params
+g2g-plugins/src/flv.rs:140:37: replace == with != in audio_tag_params
+g2g-plugins/src/flv.rs:140:32: replace >> with << in audio_tag_params
+g2g-plugins/src/flv.rs:154:5: replace audio_tag_flags -> u8 with 0
+g2g-plugins/src/flv.rs:154:5: replace audio_tag_flags -> u8 with 1
+g2g-plugins/src/flv.rs:161:38: replace >> with << in audio_tag_flags
+g2g-plugins/src/flv.rs:161:49: replace <= with > in audio_tag_flags
+g2g-plugins/src/flv.rs:161:44: replace - with + in audio_tag_flags
+g2g-plugins/src/flv.rs:161:44: replace - with / in audio_tag_flags
+g2g-plugins/src/flv.rs:166:46: replace | with & in audio_tag_flags
+g2g-plugins/src/flv.rs:163:38: replace >= with < in audio_tag_flags
+g2g-plugins/src/flv.rs:166:53: replace | with & in audio_tag_flags
+g2g-plugins/src/flv.rs:166:27: replace | with & in audio_tag_flags
+g2g-plugins/src/flv.rs:166:21: replace << with >> in audio_tag_flags
+g2g-plugins/src/flv.rs:166:40: replace << with >> in audio_tag_flags
+g2g-plugins/src/flv.rs:191:5: replace put_file_header with ()
+g2g-plugins/src/flv.rs:200:5: replace file_header_len -> Option<usize> with None
+g2g-plugins/src/flv.rs:203:16: replace >= with < in file_header_len
+g2g-plugins/src/flv.rs:200:5: replace file_header_len -> Option<usize> with Some(0)
+g2g-plugins/src/flv.rs:200:5: replace file_header_len -> Option<usize> with Some(1)
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with None
+g2g-plugins/src/flv.rs:220:53: replace | with & in tag_at
+g2g-plugins/src/flv.rs:222:17: replace > with == in tag_at
+g2g-plugins/src/flv.rs:222:17: replace > with < in tag_at
+g2g-plugins/src/flv.rs:222:17: replace > with >= in tag_at
+g2g-plugins/src/flv.rs:226:29: replace & with ^ in tag_at
+g2g-plugins/src/flv.rs:226:29: replace & with | in tag_at
+g2g-plugins/src/flv.rs:308:9: replace FlvDemuxer::metadata -> Option<&[u8]> with None
+g2g-plugins/src/flv.rs:308:9: replace FlvDemuxer::metadata -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/flv.rs:297:9: replace FlvDemuxer::push_data with ()
+g2g-plugins/src/flv.rs:314:9: replace FlvDemuxer::video_config -> Option<&[u8]> with None
+g2g-plugins/src/flv.rs:314:9: replace FlvDemuxer::video_config -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/flv.rs:320:9: replace FlvDemuxer::audio_config -> Option<&[u8]> with None
+g2g-plugins/src/flv.rs:320:9: replace FlvDemuxer::audio_config -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/flv.rs:327:9: replace FlvDemuxer::audio_params -> Option<(u8, u32)> with None
+g2g-plugins/src/flv.rs:327:9: replace FlvDemuxer::audio_params -> Option<(u8, u32)> with Some((0, 0))
+g2g-plugins/src/flv.rs:327:9: replace FlvDemuxer::audio_params -> Option<(u8, u32)> with Some((0, 1))
+g2g-plugins/src/flv.rs:327:9: replace FlvDemuxer::audio_params -> Option<(u8, u32)> with Some((1, 0))
+g2g-plugins/src/flv.rs:327:9: replace FlvDemuxer::audio_params -> Option<(u8, u32)> with Some((1, 1))
+g2g-plugins/src/flv.rs:334:12: delete ! in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:335:31: replace < with == in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:335:31: replace < with > in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:362:25: replace == with != in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:362:39: replace && with || in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:333:9: replace FlvDemuxer::parse with ()
+g2g-plugins/src/flv.rs:338:49: replace != with == in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:376:21: replace && with || in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:375:21: replace && with || in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:380:43: replace && with || in FlvDemuxer::parse
+g2g-plugins/src/flv.rs:406:5: replace write_u24 with ()
+g2g-plugins/src/flv.rs:407:17: replace >> with << in write_u24
+g2g-plugins/src/flv.rs:505:9: replace FlvMuxer::set_video_config with ()
+g2g-plugins/src/flv.rs:489:9: replace FlvMuxer::set_audio_params with ()
+g2g-plugins/src/flv.rs:511:9: replace FlvMuxer::set_audio_config with ()
+g2g-plugins/src/flv.rs:529:9: replace FlvMuxer::video_tag_timing -> (u32, i32) with (0, 0)
+g2g-plugins/src/flv.rs:529:9: replace FlvMuxer::video_tag_timing -> (u32, i32) with (0, 1)
+g2g-plugins/src/flv.rs:529:9: replace FlvMuxer::video_tag_timing -> (u32, i32) with (0, -1)
+g2g-plugins/src/flv.rs:529:9: replace FlvMuxer::video_tag_timing -> (u32, i32) with (1, 0)
+g2g-plugins/src/flv.rs:529:9: replace FlvMuxer::video_tag_timing -> (u32, i32) with (1, 1)
+g2g-plugins/src/flv.rs:529:9: replace FlvMuxer::video_tag_timing -> (u32, i32) with (1, -1)
+g2g-plugins/src/flv.rs:529:44: replace && with || in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:529:39: replace == with != in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:534:30: replace / with % in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:535:62: replace / with * in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:535:45: replace - with + in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:529:61: replace != with == in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:534:30: replace / with * in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:535:62: replace / with % in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:535:45: replace - with / in FlvMuxer::video_tag_timing
+g2g-plugins/src/flv.rs:563:13: delete match arm FlvCodec::Vp6 | FlvCodec::Vp6Alpha in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:555:13: delete match arm FlvCodec::H264 in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:558:76: replace & with | in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:558:76: replace & with ^ in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:558:41: delete - in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:558:56: replace << with >> in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:560:66: replace >> with << in FlvMuxer::push_video
+g2g-plugins/src/flv.rs:580:23: replace == with != in FlvMuxer::push_audio
+g2g-plugins/src/flv.rs:596:19: replace |= with &= in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:599:19: replace |= with &= in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:604:12: delete ! in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:591:9: replace FlvMuxer::write_header with ()
+g2g-plugins/src/flv.rs:611:23: replace == with != in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:611:50: delete ! in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:620:23: replace == with != in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:631:56: replace + with - in FlvMuxer::emit_tag
+g2g-plugins/src/flv.rs:630:9: replace FlvMuxer::emit_tag with ()
+g2g-plugins/src/flv.rs:620:49: delete ! in FlvMuxer::write_header
+g2g-plugins/src/flv.rs:631:39: replace + with - in FlvMuxer::emit_tag
+g2g-plugins/src/flv.rs:631:39: replace + with * in FlvMuxer::emit_tag
+g2g-plugins/src/flv.rs:637:46: replace + with - in FlvMuxer::emit_tag
+g2g-plugins/src/flv.rs:637:46: replace + with * in FlvMuxer::emit_tag
+g2g-plugins/src/flv.rs:646:33: replace & with | in put_tag_header
+g2g-plugins/src/flv.rs:646:33: replace & with ^ in put_tag_header
+g2g-plugins/src/flv.rs:644:5: replace put_tag_header with ()
+g2g-plugins/src/flv.rs:676:5: replace write_amf0_string with ()
+g2g-plugins/src/flv.rs:685:5: replace sequence_header -> Option<(FlvTrack, &[u8])> with None
+g2g-plugins/src/flv.rs:686:22: replace match guard *body.first()? & 0x0F == VIDEO_CODEC_AVC && *body.get(1)? == 0 with true in sequence_header
+g2g-plugins/src/flv.rs:686:22: replace match guard *body.first()? & 0x0F == VIDEO_CODEC_AVC && *body.get(1)? == 0 with false in sequence_header
+g2g-plugins/src/flv.rs:689:22: replace match guard *body.first()? >> 4 == SOUND_FORMAT_AAC && *body.get(1)? == 0 with true in sequence_header
+g2g-plugins/src/flv.rs:686:63: replace && with || in sequence_header
+g2g-plugins/src/flv.rs:689:22: replace match guard *body.first()? >> 4 == SOUND_FORMAT_AAC && *body.get(1)? == 0 with false in sequence_header
+g2g-plugins/src/flv.rs:686:44: replace == with != in sequence_header
+g2g-plugins/src/flv.rs:686:37: replace & with | in sequence_header
+g2g-plugins/src/flv.rs:689:62: replace && with || in sequence_header
+g2g-plugins/src/flv.rs:686:37: replace & with ^ in sequence_header
+g2g-plugins/src/flv.rs:686:80: replace == with != in sequence_header
+g2g-plugins/src/flv.rs:689:42: replace == with != in sequence_header
+g2g-plugins/src/flv.rs:689:37: replace >> with << in sequence_header
+g2g-plugins/src/flv.rs:689:79: replace == with != in sequence_header
+g2g-plugins/src/flv.rs:703:9: delete match arm TAG_VIDEO in parse_tag
+g2g-plugins/src/flv.rs:703:53: replace & with | in parse_tag
+g2g-plugins/src/flv.rs:706:9: delete match arm TAG_AUDIO in parse_tag
+g2g-plugins/src/flv.rs:699:5: replace parse_tag -> Option<FlvUnit> with None
+g2g-plugins/src/flv.rs:703:53: replace & with ^ in parse_tag
+g2g-plugins/src/flv.rs:703:74: replace == with != in parse_tag
+g2g-plugins/src/flv.rs:706:57: replace >> with << in parse_tag
+g2g-plugins/src/flv.rs:703:69: replace >> with << in parse_tag
+g2g-plugins/src/flv.rs:712:56: replace && with || in parse_tag
+g2g-plugins/src/flv.rs:718:27: replace == with != in parse_tag
+g2g-plugins/src/flv.rs:722:17: replace >> with << in parse_tag
+g2g-plugins/src/flv.rs:721:17: replace << with >> in parse_tag
+g2g-plugins/src/flv.rs:720:73: replace | with & in parse_tag
+g2g-plugins/src/flv.rs:720:43: replace | with & in parse_tag
+g2g-plugins/src/flv.rs:712:73: replace != with == in parse_tag
+g2g-plugins/src/flv.rs:720:37: replace << with >> in parse_tag
+g2g-plugins/src/flv.rs:723:27: replace + with * in parse_tag
+g2g-plugins/src/flv.rs:723:27: replace + with - in parse_tag
+g2g-plugins/src/flv.rs:729:26: replace + with - in parse_tag
+g2g-plugins/src/flv.rs:729:26: replace + with * in parse_tag

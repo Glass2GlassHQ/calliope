@@ -1,0 +1,10 @@
+g2g-plugins/src/rtpdepay.rs:35:44: replace * with +
+g2g-plugins/src/rtpdepay.rs:108:18: replace match guard t == FU_A_TYPE with true in RtpH264Depayloader::depacketize
+g2g-plugins/src/rtpdepay.rs:35:37: replace * with +
+g2g-plugins/src/rtpdepay.rs:109:34: replace < with == in RtpH264Depayloader::depacketize
+g2g-plugins/src/rtpdepay.rs:109:34: replace < with <= in RtpH264Depayloader::depacketize
+g2g-plugins/src/rtpdepay.rs:119:54: replace | with ^ in RtpH264Depayloader::depacketize
+g2g-plugins/src/rtpdepay.rs:123:38: replace > with == in RtpH264Depayloader::depacketize
+g2g-plugins/src/rtpdepay.rs:123:38: replace > with >= in RtpH264Depayloader::depacketize
+g2g-plugins/src/rtpdepay.rs:170:26: replace > with == in RtpH264Depayloader::push_nal
+g2g-plugins/src/rtpdepay.rs:170:26: replace > with >= in RtpH264Depayloader::push_nal

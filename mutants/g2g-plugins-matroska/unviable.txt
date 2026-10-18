@@ -1,0 +1,139 @@
+g2g-plugins/src/matroska.rs:177:9: replace MkvCodec::from_codec_id -> MkvCodec with Default::default()
+g2g-plugins/src/matroska.rs:217:9: replace MkvCodec::codec_id -> Option<&'static[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/matroska.rs:217:9: replace MkvCodec::codec_id -> Option<&'static[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/matroska.rs:317:5: replace inflate_block -> Option<Vec<u8>> with Some(vec![])
+g2g-plugins/src/matroska.rs:317:5: replace inflate_block -> Option<Vec<u8>> with Some(vec![1])
+g2g-plugins/src/matroska.rs:317:5: replace inflate_block -> Option<Vec<u8>> with Some(vec![0])
+g2g-plugins/src/matroska.rs:325:5: replace parse_content_encodings -> Option<MkvCompression> with Some(Default::default())
+g2g-plugins/src/matroska.rs:523:9: replace MatroskaDemuxer::cues -> &[CuePoint] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/matroska.rs:565:9: replace MatroskaDemuxer::tracks -> &[MkvTrack] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/matroska.rs:577:9: replace MatroskaDemuxer::codec_private -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/matroska.rs:577:9: replace MatroskaDemuxer::codec_private -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/matroska.rs:586:9: replace MatroskaDemuxer::tags -> &TagList with Box::leak(Box::new(Default::default()))
+g2g-plugins/src/matroska.rs:594:9: replace MatroskaDemuxer::track_tags -> &[(u64, TagList)] with Vec::leak(vec![(0, Default::default())])
+g2g-plugins/src/matroska.rs:594:9: replace MatroskaDemuxer::track_tags -> &[(u64, TagList)] with Vec::leak(vec![(1, Default::default())])
+g2g-plugins/src/matroska.rs:604:9: replace MatroskaDemuxer::track_entry_tags -> &[(u64, TagList)] with Vec::leak(vec![(0, Default::default())])
+g2g-plugins/src/matroska.rs:604:9: replace MatroskaDemuxer::track_entry_tags -> &[(u64, TagList)] with Vec::leak(vec![(1, Default::default())])
+g2g-plugins/src/matroska.rs:616:9: replace MatroskaDemuxer::take_frames -> Vec<MkvFrame> with vec![]
+g2g-plugins/src/matroska.rs:611:9: replace MatroskaDemuxer::chapters -> &[Chapter] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/matroska.rs:616:9: replace MatroskaDemuxer::take_frames -> Vec<MkvFrame> with vec![Default::default()]
+g2g-plugins/src/matroska.rs:846:17: delete match arm ID_CUE_TIME in parse_cues
+g2g-plugins/src/matroska.rs:837:5: replace parse_cues -> Vec<CuePoint> with vec![]
+g2g-plugins/src/matroska.rs:837:5: replace parse_cues -> Vec<CuePoint> with vec![Default::default()]
+g2g-plugins/src/matroska.rs:891:5: replace children -> EbmlChildren<'_> with Default::default()
+g2g-plugins/src/matroska.rs:980:5: replace target_track_uids -> Vec<u64> with vec![0]
+g2g-plugins/src/matroska.rs:980:5: replace target_track_uids -> Vec<u64> with vec![1]
+g2g-plugins/src/matroska.rs:980:5: replace target_track_uids -> Vec<u64> with vec![]
+g2g-plugins/src/matroska.rs:1055:5: replace parse_chapters -> Vec<Chapter> with vec![]
+g2g-plugins/src/matroska.rs:1055:5: replace parse_chapters -> Vec<Chapter> with vec![Default::default()]
+g2g-plugins/src/matroska.rs:1126:5: replace parse_tracks -> Vec<ParsedTrack> with vec![]
+g2g-plugins/src/matroska.rs:1126:5: replace parse_tracks -> Vec<ParsedTrack> with vec![Default::default()]
+g2g-plugins/src/matroska.rs:1151:5: replace parse_track_entry -> Option<ParsedTrack> with Some(Default::default())
+g2g-plugins/src/matroska.rs:1233:5: replace parse_cluster -> Vec<MkvFrame> with vec![]
+g2g-plugins/src/matroska.rs:1233:5: replace parse_cluster -> Vec<MkvFrame> with vec![Default::default()]
+g2g-plugins/src/matroska.rs:1320:5: replace parse_block_element -> Vec<MkvFrame> with vec![Default::default()]
+g2g-plugins/src/matroska.rs:1320:5: replace parse_block_element -> Vec<MkvFrame> with vec![]
+g2g-plugins/src/matroska.rs:1398:5: replace split_laced -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(Vec::new())])
+g2g-plugins/src/matroska.rs:1398:5: replace split_laced -> Option<Vec<&[u8]>> with Some(vec![])
+g2g-plugins/src/matroska.rs:1398:5: replace split_laced -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![0])])
+g2g-plugins/src/matroska.rs:1398:5: replace split_laced -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![1])])
+g2g-plugins/src/matroska.rs:1410:5: replace split_fixed -> Option<Vec<&[u8]>> with Some(vec![])
+g2g-plugins/src/matroska.rs:1410:5: replace split_fixed -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(Vec::new())])
+g2g-plugins/src/matroska.rs:1410:5: replace split_fixed -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![0])])
+g2g-plugins/src/matroska.rs:1410:5: replace split_fixed -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![1])])
+g2g-plugins/src/matroska.rs:1419:5: replace split_xiph -> Option<Vec<&[u8]>> with Some(vec![])
+g2g-plugins/src/matroska.rs:1419:5: replace split_xiph -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(Vec::new())])
+g2g-plugins/src/matroska.rs:1419:5: replace split_xiph -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![1])])
+g2g-plugins/src/matroska.rs:1419:5: replace split_xiph -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![0])])
+g2g-plugins/src/matroska.rs:1440:5: replace split_ebml -> Option<Vec<&[u8]>> with Some(vec![])
+g2g-plugins/src/matroska.rs:1440:5: replace split_ebml -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(Vec::new())])
+g2g-plugins/src/matroska.rs:1440:5: replace split_ebml -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![0])])
+g2g-plugins/src/matroska.rs:1440:5: replace split_ebml -> Option<Vec<&[u8]>> with Some(vec![Vec::leak(vec![1])])
+g2g-plugins/src/matroska.rs:1466:5: replace slice_frames -> Option<Vec<&'a[u8]>> with Some(vec![])
+g2g-plugins/src/matroska.rs:1466:5: replace slice_frames -> Option<Vec<&'a[u8]>> with Some(vec![Vec::leak(vec![0])])
+g2g-plugins/src/matroska.rs:1466:5: replace slice_frames -> Option<Vec<&'a[u8]>> with Some(vec![Vec::leak(Vec::new())])
+g2g-plugins/src/matroska.rs:1466:5: replace slice_frames -> Option<Vec<&'a[u8]>> with Some(vec![Vec::leak(vec![1])])
+g2g-plugins/src/matroska.rs:1583:9: replace MkvTrackSpec::subtitle -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1601:5: replace subpicture_mkv_codec -> Option<MkvCodec> with Some(Default::default())
+g2g-plugins/src/matroska.rs:1614:5: replace subpicture_config -> Option<Vec<u8>> with Some(vec![])
+g2g-plugins/src/matroska.rs:1614:5: replace subpicture_config -> Option<Vec<u8>> with Some(vec![0])
+g2g-plugins/src/matroska.rs:1614:5: replace subpicture_config -> Option<Vec<u8>> with Some(vec![1])
+g2g-plugins/src/matroska.rs:1630:5: replace subpicture_block -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:1630:5: replace subpicture_block -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:1630:5: replace subpicture_block -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:1639:5: replace default_page_blob -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:1639:5: replace default_page_blob -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:1639:5: replace default_page_blob -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:1651:5: replace text_codec_private -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:1651:5: replace text_codec_private -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:1651:5: replace text_codec_private -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:1670:5: replace subtitle_format_from_str -> Option<TextFormat> with Some(Default::default())
+g2g-plugins/src/matroska.rs:1804:9: replace MatroskaMuxer::new_multi -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1840:9: replace MatroskaMuxer::with_two_pass -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1849:9: replace MatroskaMuxer::without_cues -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1856:9: replace MatroskaMuxer::with_tags -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1866:9: replace MatroskaMuxer::with_track_tags -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1877:9: replace MatroskaMuxer::with_chapters -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1884:9: replace MatroskaMuxer::with_max_cluster_span_ms -> Self with Default::default()
+g2g-plugins/src/matroska.rs:1891:9: replace MatroskaMuxer::push_frame -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:1913:9: replace MatroskaMuxer::push_frame_on -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:1891:9: replace MatroskaMuxer::push_frame -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:1891:9: replace MatroskaMuxer::push_frame -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:1913:9: replace MatroskaMuxer::push_frame_on -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:1913:9: replace MatroskaMuxer::push_frame_on -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2111:9: replace MatroskaMuxer::finish -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2111:9: replace MatroskaMuxer::finish -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2111:9: replace MatroskaMuxer::finish -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2148:9: replace MatroskaMuxer::segment_size_patch -> Option<SizePatch> with Some(Default::default())
+g2g-plugins/src/matroska.rs:2141:9: replace MatroskaMuxer::cluster_size_patches -> &[SizePatch] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/matroska.rs:2217:5: replace ebml_header -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2217:5: replace ebml_header -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2217:5: replace ebml_header -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![], None)
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![], Some(0))
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![], Some(1))
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![0], None)
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![0], Some(0))
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![0], Some(1))
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![1], None)
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![1], Some(0))
+g2g-plugins/src/matroska.rs:2233:5: replace info_element -> (Vec<u8>, Option<usize>) with (vec![1], Some(1))
+g2g-plugins/src/matroska.rs:2253:5: replace tracks_element -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2253:5: replace tracks_element -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2253:5: replace tracks_element -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2366:5: replace tags_element -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2366:5: replace tags_element -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2366:5: replace tags_element -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2402:5: replace chapters_element -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2402:5: replace chapters_element -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2402:5: replace chapters_element -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2420:5: replace chapter_atom -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2420:5: replace chapter_atom -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2420:5: replace chapter_atom -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2446:5: replace simple_tag -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2446:5: replace simple_tag -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2446:5: replace simple_tag -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed(""), Cow::Owned("".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed(""), Cow::Owned("xyzzy".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("".to_owned()), Cow::Owned("".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("".to_owned()), Cow::Borrowed(""))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("".to_owned()), Cow::Borrowed("xyzzy"))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("".to_owned()), Cow::Owned("xyzzy".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed("xyzzy"), Cow::Owned("".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed("xyzzy"), Cow::Owned("xyzzy".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("xyzzy".to_owned()), Cow::Borrowed(""))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("xyzzy".to_owned()), Cow::Borrowed("xyzzy"))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("xyzzy".to_owned()), Cow::Owned("".to_owned()))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Owned("xyzzy".to_owned()), Cow::Owned("xyzzy".to_owned()))
+g2g-plugins/src/matroska.rs:2501:5: replace elem_vec -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2501:5: replace elem_vec -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2501:5: replace elem_vec -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2540:5: replace encode_vint -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2540:5: replace encode_vint -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2540:5: replace encode_vint -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2558:5: replace int_bytes -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2558:5: replace int_bytes -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2558:5: replace int_bytes -> Vec<u8> with vec![1]
+g2g-plugins/src/matroska.rs:2569:5: replace uint_bytes -> Vec<u8> with vec![]
+g2g-plugins/src/matroska.rs:2569:5: replace uint_bytes -> Vec<u8> with vec![0]
+g2g-plugins/src/matroska.rs:2569:5: replace uint_bytes -> Vec<u8> with vec![1]

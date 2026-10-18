@@ -1,0 +1,9 @@
+g2g-plugins/src/vp8parse.rs:59:9: replace <impl AsyncElement for Vp8Parse>::metadata -> ElementMetadata with Default::default()
+g2g-plugins/src/vp8parse.rs:195:21: replace < with <= in parse_keyframe
+g2g-plugins/src/vp8parse.rs:199:60: replace | with ^ in parse_keyframe
+g2g-plugins/src/vp8parse.rs:199:60: replace | with & in parse_keyframe
+g2g-plugins/src/vp8parse.rs:199:32: replace | with ^ in parse_keyframe
+g2g-plugins/src/vp8parse.rs:199:54: replace << with >> in parse_keyframe
+g2g-plugins/src/vp8parse.rs:199:82: replace << with >> in parse_keyframe
+g2g-plugins/src/vp8parse.rs:212:35: replace | with ^ in parse_keyframe
+g2g-plugins/src/vp8parse.rs:213:36: replace | with ^ in parse_keyframe

@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/mpegts.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=klv_ffmpeg_interop --cargo-arg=--test=m1056_eit_schedule --cargo-arg=--test=m108_mpegts --cargo-arg=--test=m109_ts_streams --cargo-arg=--test=m1156_ts_single_stamp_reorder --cargo-arg=--test=m1201_ts_demux_latency --cargo-arg=--test=m1244_ts_demux_robustness --cargo-arg=--test=m1049_ts_av1_eit --cargo-arg=--test=m363_tsdemux_seek --cargo-arg=--test=m386_stream_collection --cargo-arg=--test=m388_tsdemuxn --cargo-arg=--test=m389_playbin_ts --cargo-arg=--test=m799_klv_ts --cargo-arg=--test=m804_klv_sync --cargo-arg=--test=m929_mpegps --cargo-arg=--test=m927_subpicture_mux --cargo-arg=--test=m936_ts_primary_video --cargo-arg=--test=m948_ts_video_pts --cargo-arg=--test=m952_ts_video_pts --cargo-arg=--test=m924_teletext -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 51m
+exit: 3
+1175 mutants tested in 51m: 174 missed, 884 caught, 101 unviable, 16 timeouts

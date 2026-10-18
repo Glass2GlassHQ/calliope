@@ -1,0 +1,7 @@
+g2g-plugins/src/vp8parse.rs:112:9: replace <impl AsyncElement for Vp8Parse>::process -> Self::ProcessFuture<'a> with Default::default()
+g2g-plugins/src/vp8parse.rs:95:9: replace <impl AsyncElement for Vp8Parse>::configure_pipeline -> Result<ConfigureOutcome, G2gError> with Ok(Default::default())
+g2g-plugins/src/vp8parse.rs:85:9: replace <impl AsyncElement for Vp8Parse>::caps_constraint_as_transform -> CapsConstraint<'_> with Default::default()
+g2g-plugins/src/vp8parse.rs:72:9: replace <impl AsyncElement for Vp8Parse>::intercept_caps -> Result<Caps, G2gError> with Ok(Default::default())
+g2g-plugins/src/vp8parse.rs:160:9: replace <impl PadTemplates for Vp8Parse>::pad_templates -> Vec<PadTemplate> with vec![]
+g2g-plugins/src/vp8parse.rs:195:5: replace parse_keyframe -> Option<Vp8KeyFrame> with Some(Default::default())
+g2g-plugins/src/vp8parse.rs:160:9: replace <impl PadTemplates for Vp8Parse>::pad_templates -> Vec<PadTemplate> with vec![Default::default()]

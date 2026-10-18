@@ -1,0 +1,95 @@
+g2g-plugins/src/rtcp.rs:22:31: replace << with >>
+g2g-plugins/src/rtcp.rs:45:58: replace & with | in is_rtcp
+g2g-plugins/src/rtcp.rs:45:58: replace & with ^ in is_rtcp
+g2g-plugins/src/rtcp.rs:123:5: replace push_u32 with ()
+g2g-plugins/src/rtcp.rs:129:5: replace header with ()
+g2g-plugins/src/rtcp.rs:45:15: replace >= with < in is_rtcp
+g2g-plugins/src/rtcp.rs:129:19: replace | with & in header
+g2g-plugins/src/rtcp.rs:129:28: replace & with | in header
+g2g-plugins/src/rtcp.rs:129:28: replace & with ^ in header
+g2g-plugins/src/rtcp.rs:138:42: replace - with + in patch_length
+g2g-plugins/src/rtcp.rs:138:5: replace patch_length with ()
+g2g-plugins/src/rtcp.rs:45:5: replace is_rtcp -> bool with true
+g2g-plugins/src/rtcp.rs:45:20: replace && with || in is_rtcp
+g2g-plugins/src/rtcp.rs:45:5: replace is_rtcp -> bool with false
+g2g-plugins/src/rtcp.rs:138:42: replace - with / in patch_length
+g2g-plugins/src/rtcp.rs:138:38: replace / with % in patch_length
+g2g-plugins/src/rtcp.rs:138:29: replace - with / in patch_length
+g2g-plugins/src/rtcp.rs:139:15: replace + with * in patch_length
+g2g-plugins/src/rtcp.rs:138:38: replace / with * in patch_length
+g2g-plugins/src/rtcp.rs:139:15: replace + with - in patch_length
+g2g-plugins/src/rtcp.rs:139:26: replace + with - in patch_length
+g2g-plugins/src/rtcp.rs:146:40: replace | with & in write_report_block
+g2g-plugins/src/rtcp.rs:139:26: replace + with * in patch_length
+g2g-plugins/src/rtcp.rs:146:34: replace << with >> in write_report_block
+g2g-plugins/src/rtcp.rs:143:5: replace write_report_block with ()
+g2g-plugins/src/rtcp.rs:146:61: replace & with | in write_report_block
+g2g-plugins/src/rtcp.rs:146:61: replace & with ^ in write_report_block
+g2g-plugins/src/rtcp.rs:248:13: replace < with == in build_nack
+g2g-plugins/src/rtcp.rs:248:13: replace < with > in build_nack
+g2g-plugins/src/rtcp.rs:248:13: replace < with <= in build_nack
+g2g-plugins/src/rtcp.rs:251:23: replace + with - in build_nack
+g2g-plugins/src/rtcp.rs:253:17: replace < with <= in build_nack
+g2g-plugins/src/rtcp.rs:255:27: replace || with && in build_nack
+g2g-plugins/src/rtcp.rs:253:17: replace < with == in build_nack
+g2g-plugins/src/rtcp.rs:255:36: replace > with == in build_nack
+g2g-plugins/src/rtcp.rs:255:36: replace > with < in build_nack
+g2g-plugins/src/rtcp.rs:258:17: replace |= with &= in build_nack
+g2g-plugins/src/rtcp.rs:258:22: replace << with >> in build_nack
+g2g-plugins/src/rtcp.rs:258:32: replace - with / in build_nack
+g2g-plugins/src/rtcp.rs:258:32: replace - with + in build_nack
+g2g-plugins/src/rtcp.rs:261:47: replace | with & in build_nack
+g2g-plugins/src/rtcp.rs:261:41: replace << with >> in build_nack
+g2g-plugins/src/rtcp.rs:275:36: replace + with * in parse_compound
+g2g-plugins/src/rtcp.rs:275:36: replace + with - in parse_compound
+g2g-plugins/src/rtcp.rs:275:58: replace + with - in parse_compound
+g2g-plugins/src/rtcp.rs:275:58: replace + with * in parse_compound
+g2g-plugins/src/rtcp.rs:277:28: replace & with | in parse_compound
+g2g-plugins/src/rtcp.rs:277:28: replace & with ^ in parse_compound
+g2g-plugins/src/rtcp.rs:278:23: replace + with - in parse_compound
+g2g-plugins/src/rtcp.rs:278:23: replace + with * in parse_compound
+g2g-plugins/src/rtcp.rs:278:50: replace * with + in parse_compound
+g2g-plugins/src/rtcp.rs:278:45: replace + with * in parse_compound
+g2g-plugins/src/rtcp.rs:278:45: replace + with - in parse_compound
+g2g-plugins/src/rtcp.rs:278:50: replace * with / in parse_compound
+g2g-plugins/src/rtcp.rs:279:38: replace + with - in parse_compound
+g2g-plugins/src/rtcp.rs:279:38: replace + with * in parse_compound
+g2g-plugins/src/rtcp.rs:293:9: delete match arm PT_RR in parse_packet
+g2g-plugins/src/rtcp.rs:298:9: delete match arm PT_SR in parse_packet
+g2g-plugins/src/rtcp.rs:292:5: replace parse_packet -> Option<RtcpPacket> with None
+g2g-plugins/src/rtcp.rs:330:9: delete match arm PT_BYE in parse_packet
+g2g-plugins/src/rtcp.rs:310:33: replace == with != in parse_packet
+g2g-plugins/src/rtcp.rs:310:21: replace match guard count as u8 == FMT_GENERIC_NACK with false in parse_packet
+g2g-plugins/src/rtcp.rs:319:41: replace != with == in parse_packet
+g2g-plugins/src/rtcp.rs:319:28: replace & with | in parse_packet
+g2g-plugins/src/rtcp.rs:319:33: replace << with >> in parse_packet
+g2g-plugins/src/rtcp.rs:319:28: replace & with ^ in parse_packet
+g2g-plugins/src/rtcp.rs:320:59: replace + with - in parse_packet
+g2g-plugins/src/rtcp.rs:320:59: replace + with * in parse_packet
+g2g-plugins/src/rtcp.rs:363:32: replace >> with << in parse_report_block
+g2g-plugins/src/rtcp.rs:360:5: replace parse_report_block -> Option<ReportBlock> with None
+g2g-plugins/src/rtcp.rs:364:33: replace & with | in parse_report_block
+g2g-plugins/src/rtcp.rs:360:5: replace parse_report_block -> Option<ReportBlock> with Some(Default::default())
+g2g-plugins/src/rtcp.rs:364:33: replace & with ^ in parse_report_block
+g2g-plugins/src/rtcp.rs:442:59: replace >> with << in ReceptionStats::on_rtp
+g2g-plugins/src/rtcp.rs:423:9: replace ReceptionStats::on_rtp with ()
+g2g-plugins/src/rtcp.rs:459:9: replace ReceptionStats::extended_highest -> u32 with 0
+g2g-plugins/src/rtcp.rs:460:18: replace - with + in ReceptionStats::extended_highest
+g2g-plugins/src/rtcp.rs:459:9: replace ReceptionStats::extended_highest -> u32 with 1
+g2g-plugins/src/rtcp.rs:460:18: replace - with / in ReceptionStats::extended_highest
+g2g-plugins/src/rtcp.rs:465:9: replace ReceptionStats::expected -> u32 with 1
+g2g-plugins/src/rtcp.rs:465:9: replace ReceptionStats::expected -> u32 with 0
+g2g-plugins/src/rtcp.rs:466:62: replace + with - in ReceptionStats::expected
+g2g-plugins/src/rtcp.rs:466:13: delete match arm (Some(first), Some(highest)) in ReceptionStats::expected
+g2g-plugins/src/rtcp.rs:466:62: replace + with * in ReceptionStats::expected
+g2g-plugins/src/rtcp.rs:466:54: replace - with + in ReceptionStats::expected
+g2g-plugins/src/rtcp.rs:466:54: replace - with / in ReceptionStats::expected
+g2g-plugins/src/rtcp.rs:473:9: replace ReceptionStats::cumulative_lost -> u32 with 0
+g2g-plugins/src/rtcp.rs:485:50: replace == with != in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:479:9: replace ReceptionStats::report_block -> ReportBlock with Default::default()
+g2g-plugins/src/rtcp.rs:485:72: replace == with != in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:488:35: replace / with * in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:488:29: replace << with >> in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:488:35: replace / with % in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:502:53: replace & with | in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:502:53: replace & with ^ in ReceptionStats::report_block

@@ -1,0 +1,42 @@
+g2g-plugins/src/ogg.rs:179:9: replace OggLogicalStream::info -> Option<OggStreamInfo> with Some(Default::default())
+g2g-plugins/src/ogg.rs:184:9: replace OggLogicalStream::take_packets -> Vec<Vec<u8>> with vec![]
+g2g-plugins/src/ogg.rs:184:9: replace OggLogicalStream::take_packets -> Vec<Vec<u8>> with vec![vec![]]
+g2g-plugins/src/ogg.rs:184:9: replace OggLogicalStream::take_packets -> Vec<Vec<u8>> with vec![vec![1]]
+g2g-plugins/src/ogg.rs:184:9: replace OggLogicalStream::take_packets -> Vec<Vec<u8>> with vec![vec![0]]
+g2g-plugins/src/ogg.rs:190:9: replace OggLogicalStream::comment_header -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/ogg.rs:190:9: replace OggLogicalStream::comment_header -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/ogg.rs:196:9: replace OggLogicalStream::head_header -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/ogg.rs:196:9: replace OggLogicalStream::head_header -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/ogg.rs:202:9: replace OggLogicalStream::setup_header -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/ogg.rs:202:9: replace OggLogicalStream::setup_header -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with Some((0, Vec::leak(vec![1])))
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with Some((0, Vec::leak(vec![0])))
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with Some((1, Vec::leak(vec![0])))
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with Some((1, Vec::leak(vec![1])))
+g2g-plugins/src/ogg.rs:254:9: replace OggDemuxer::streams -> &[OggLogicalStream] with Vec::leak(vec![Default::default()])
+g2g-plugins/src/ogg.rs:259:9: replace OggDemuxer::stream_mut -> Option<&mut OggLogicalStream> with Some(Box::leak(Box::new(Default::default())))
+g2g-plugins/src/ogg.rs:290:9: replace OggDemuxer::info -> Option<OggStreamInfo> with Some(Default::default())
+g2g-plugins/src/ogg.rs:295:9: replace OggDemuxer::take_packets -> Vec<Vec<u8>> with vec![]
+g2g-plugins/src/ogg.rs:295:9: replace OggDemuxer::take_packets -> Vec<Vec<u8>> with vec![vec![]]
+g2g-plugins/src/ogg.rs:295:9: replace OggDemuxer::take_packets -> Vec<Vec<u8>> with vec![vec![0]]
+g2g-plugins/src/ogg.rs:295:9: replace OggDemuxer::take_packets -> Vec<Vec<u8>> with vec![vec![1]]
+g2g-plugins/src/ogg.rs:304:9: replace OggDemuxer::comment_header -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/ogg.rs:304:9: replace OggDemuxer::comment_header -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/ogg.rs:310:9: replace OggDemuxer::head_header -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/ogg.rs:310:9: replace OggDemuxer::head_header -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/ogg.rs:316:9: replace OggDemuxer::setup_header -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/ogg.rs:316:9: replace OggDemuxer::setup_header -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/ogg.rs:594:9: replace VorbisTiming::parse -> Option<Self> with Some(Default::default())
+g2g-plugins/src/ogg.rs:643:5: replace mode_blockflags -> Option<Vec<bool>> with Some(vec![])
+g2g-plugins/src/ogg.rs:643:5: replace mode_blockflags -> Option<Vec<bool>> with Some(vec![true])
+g2g-plugins/src/ogg.rs:643:5: replace mode_blockflags -> Option<Vec<bool>> with Some(vec![false])
+g2g-plugins/src/ogg.rs:673:5: replace detect -> OggStreamInfo with Default::default()
+g2g-plugins/src/ogg.rs:772:9: replace OggPageWriter::push_packet -> Vec<u8> with vec![0]
+g2g-plugins/src/ogg.rs:772:9: replace OggPageWriter::push_packet -> Vec<u8> with vec![]
+g2g-plugins/src/ogg.rs:772:9: replace OggPageWriter::push_packet -> Vec<u8> with vec![1]
+g2g-plugins/src/ogg.rs:787:9: replace OggPageWriter::flush -> Vec<u8> with vec![]
+g2g-plugins/src/ogg.rs:787:9: replace OggPageWriter::flush -> Vec<u8> with vec![0]
+g2g-plugins/src/ogg.rs:787:9: replace OggPageWriter::flush -> Vec<u8> with vec![1]
+g2g-plugins/src/ogg.rs:796:9: replace OggPageWriter::emit -> Vec<u8> with vec![]
+g2g-plugins/src/ogg.rs:796:9: replace OggPageWriter::emit -> Vec<u8> with vec![0]
+g2g-plugins/src/ogg.rs:796:9: replace OggPageWriter::emit -> Vec<u8> with vec![1]

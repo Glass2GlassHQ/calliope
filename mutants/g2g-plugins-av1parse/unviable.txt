@@ -1,0 +1,26 @@
+g2g-plugins/src/av1parse.rs:144:9: replace <impl AsyncElement for Av1Parse>::intercept_caps -> Result<Caps, G2gError> with Ok(Default::default())
+g2g-plugins/src/av1parse.rs:157:9: replace <impl AsyncElement for Av1Parse>::caps_constraint_as_transform -> CapsConstraint<'_> with Default::default()
+g2g-plugins/src/av1parse.rs:167:9: replace <impl AsyncElement for Av1Parse>::configure_pipeline -> Result<ConfigureOutcome, G2gError> with Ok(Default::default())
+g2g-plugins/src/av1parse.rs:184:9: replace <impl AsyncElement for Av1Parse>::process -> Self::ProcessFuture<'a> with Default::default()
+g2g-plugins/src/av1parse.rs:234:9: replace <impl PadTemplates for Av1Parse>::pad_templates -> Vec<PadTemplate> with vec![]
+g2g-plugins/src/av1parse.rs:234:9: replace <impl PadTemplates for Av1Parse>::pad_templates -> Vec<PadTemplate> with vec![Default::default()]
+g2g-plugins/src/av1parse.rs:361:5: replace obu_ranges -> Option<Vec<ObuRange>> with Some(vec![])
+g2g-plugins/src/av1parse.rs:361:5: replace obu_ranges -> Option<Vec<ObuRange>> with Some(vec![Default::default()])
+g2g-plugins/src/av1parse.rs:412:5: replace obus -> Vec<Obu<'_>> with vec![]
+g2g-plugins/src/av1parse.rs:412:5: replace obus -> Vec<Obu<'_>> with vec![Default::default()]
+g2g-plugins/src/av1parse.rs:452:5: replace delimited_obu_at -> Result<Option<ObuRange>, G2gError> with Ok(Some(Default::default()))
+g2g-plugins/src/av1parse.rs:527:9: replace TemporalUnitFramer::push -> Result<Vec<FramedTemporalUnit>, G2gError> with Ok(vec![Default::default()])
+g2g-plugins/src/av1parse.rs:527:9: replace TemporalUnitFramer::push -> Result<Vec<FramedTemporalUnit>, G2gError> with Ok(vec![])
+g2g-plugins/src/av1parse.rs:566:9: replace TemporalUnitFramer::split_off -> Vec<FramedTemporalUnit> with vec![]
+g2g-plugins/src/av1parse.rs:566:9: replace TemporalUnitFramer::split_off -> Vec<FramedTemporalUnit> with vec![Default::default()]
+g2g-plugins/src/av1parse.rs:593:5: replace extract_seq_header -> Option<Av1SeqHeader> with Some(Default::default())
+g2g-plugins/src/av1parse.rs:604:5: replace seq_header_obu -> Option<(Av1SeqHeader, &[u8])> with Some((Default::default(), Vec::leak(Vec::new())))
+g2g-plugins/src/av1parse.rs:604:5: replace seq_header_obu -> Option<(Av1SeqHeader, &[u8])> with Some((Default::default(), Vec::leak(vec![0])))
+g2g-plugins/src/av1parse.rs:604:5: replace seq_header_obu -> Option<(Av1SeqHeader, &[u8])> with Some((Default::default(), Vec::leak(vec![1])))
+g2g-plugins/src/av1parse.rs:625:5: replace strip_temporal_delimiters -> Vec<u8> with vec![]
+g2g-plugins/src/av1parse.rs:625:5: replace strip_temporal_delimiters -> Vec<u8> with vec![0]
+g2g-plugins/src/av1parse.rs:625:5: replace strip_temporal_delimiters -> Vec<u8> with vec![1]
+g2g-plugins/src/av1parse.rs:670:5: replace parse_sequence_header -> Option<Av1SeqHeader> with Some(Default::default())
+g2g-plugins/src/av1parse.rs:675:5: replace parse_complete_sequence_header -> Option<Av1SeqHeader> with Some(Default::default())
+g2g-plugins/src/av1parse.rs:679:5: replace parse_sequence_header_at -> Option<Av1SeqHeader> with Some(Default::default())
+g2g-plugins/src/av1parse.rs:835:5: replace parse_color_config -> Option<(Av1SequenceTools, ColorConfig)> with Some((Default::default(), Default::default()))

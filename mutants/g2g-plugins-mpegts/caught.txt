@@ -1,0 +1,884 @@
+g2g-plugins/src/mpegts.rs:35:61: replace - with +
+g2g-plugins/src/mpegts.rs:259:9: replace TeletextService::page_number -> u16 with 0
+g2g-plugins/src/mpegts.rs:259:9: replace TeletextService::page_number -> u16 with 1
+g2g-plugins/src/mpegts.rs:125:33: replace * with /
+g2g-plugins/src/mpegts.rs:259:36: replace == with != in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:260:31: replace >> with << in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:261:32: replace & with | in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:261:32: replace & with ^ in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:262:38: replace + with - in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:125:40: replace * with /
+g2g-plugins/src/mpegts.rs:262:38: replace + with * in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:262:26: replace + with - in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:262:26: replace + with * in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:262:20: replace * with + in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:35:61: replace - with /
+g2g-plugins/src/mpegts.rs:262:20: replace * with / in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:262:33: replace * with + in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:262:33: replace * with / in TeletextService::page_number
+g2g-plugins/src/mpegts.rs:276:9: replace ElementaryStream::language_code -> Option<&str> with None
+g2g-plugins/src/mpegts.rs:276:9: replace ElementaryStream::language_code -> Option<&str> with Some("")
+g2g-plugins/src/mpegts.rs:276:9: replace ElementaryStream::language_code -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/mpegts.rs:359:5: replace mjd_bcd_to_unix_secs -> Option<u64> with Some(0)
+g2g-plugins/src/mpegts.rs:359:5: replace mjd_bcd_to_unix_secs -> Option<u64> with None
+g2g-plugins/src/mpegts.rs:359:5: replace mjd_bcd_to_unix_secs -> Option<u64> with Some(1)
+g2g-plugins/src/mpegts.rs:359:14: replace == with != in mjd_bcd_to_unix_secs
+g2g-plugins/src/mpegts.rs:371:5: replace bcd_hms_secs -> Option<u64> with None
+g2g-plugins/src/mpegts.rs:371:5: replace bcd_hms_secs -> Option<u64> with Some(1)
+g2g-plugins/src/mpegts.rs:371:5: replace bcd_hms_secs -> Option<u64> with Some(0)
+g2g-plugins/src/mpegts.rs:382:5: replace bcd_byte -> Option<u8> with None
+g2g-plugins/src/mpegts.rs:382:5: replace bcd_byte -> Option<u8> with Some(0)
+g2g-plugins/src/mpegts.rs:382:21: replace >> with << in bcd_byte
+g2g-plugins/src/mpegts.rs:382:5: replace bcd_byte -> Option<u8> with Some(1)
+g2g-plugins/src/mpegts.rs:383:22: replace & with | in bcd_byte
+g2g-plugins/src/mpegts.rs:383:22: replace & with ^ in bcd_byte
+g2g-plugins/src/mpegts.rs:384:16: replace && with || in bcd_byte
+g2g-plugins/src/mpegts.rs:384:11: replace <= with > in bcd_byte
+g2g-plugins/src/mpegts.rs:384:25: replace <= with > in bcd_byte
+g2g-plugins/src/mpegts.rs:384:51: replace + with - in bcd_byte
+g2g-plugins/src/mpegts.rs:384:51: replace + with * in bcd_byte
+g2g-plugins/src/mpegts.rs:384:46: replace * with / in bcd_byte
+g2g-plugins/src/mpegts.rs:384:46: replace * with + in bcd_byte
+g2g-plugins/src/mpegts.rs:396:42: replace << with >>
+g2g-plugins/src/mpegts.rs:398:57: replace * with /
+g2g-plugins/src/mpegts.rs:473:18: replace == with != in VideoPtsSynth::stamp
+g2g-plugins/src/mpegts.rs:480:42: replace == with != in VideoPtsSynth::stamp
+g2g-plugins/src/mpegts.rs:473:9: replace VideoPtsSynth::stamp with ()
+g2g-plugins/src/mpegts.rs:507:9: replace VideoPtsSynth::measure_period with ()
+g2g-plugins/src/mpegts.rs:491:42: replace != with == in VideoPtsSynth::stamp
+g2g-plugins/src/mpegts.rs:507:12: delete ! in VideoPtsSynth::measure_period
+g2g-plugins/src/mpegts.rs:512:46: replace > with == in VideoPtsSynth::measure_period
+g2g-plugins/src/mpegts.rs:512:46: replace > with < in VideoPtsSynth::measure_period
+g2g-plugins/src/mpegts.rs:527:13: delete match arm VideoCodec::H265 in VideoPtsSynth::read_sps
+g2g-plugins/src/mpegts.rs:525:9: replace VideoPtsSynth::read_sps with ()
+g2g-plugins/src/mpegts.rs:561:58: replace && with || in VideoPtsSynth::stamp_by_poc
+g2g-plugins/src/mpegts.rs:561:38: replace != with == in VideoPtsSynth::stamp_by_poc
+g2g-plugins/src/mpegts.rs:561:87: replace == with != in VideoPtsSynth::stamp_by_poc
+g2g-plugins/src/mpegts.rs:554:9: replace VideoPtsSynth::stamp_by_poc with ()
+g2g-plugins/src/mpegts.rs:638:27: replace > with == in ReorderPts::anchor
+g2g-plugins/src/mpegts.rs:573:9: replace VideoPtsSynth::stamp_mpeg2 with ()
+g2g-plugins/src/mpegts.rs:634:9: replace ReorderPts::anchor with ()
+g2g-plugins/src/mpegts.rs:638:27: replace > with < in ReorderPts::anchor
+g2g-plugins/src/mpegts.rs:638:40: replace > with == in ReorderPts::anchor
+g2g-plugins/src/mpegts.rs:659:9: replace ReorderPts::refine_h264_step_from_parity with ()
+g2g-plugins/src/mpegts.rs:638:40: replace > with < in ReorderPts::anchor
+g2g-plugins/src/mpegts.rs:659:39: replace || with && in ReorderPts::refine_h264_step_from_parity
+g2g-plugins/src/mpegts.rs:659:12: delete ! in ReorderPts::refine_h264_step_from_parity
+g2g-plugins/src/mpegts.rs:659:50: replace == with != in ReorderPts::refine_h264_step_from_parity
+g2g-plugins/src/mpegts.rs:659:46: replace % with / in ReorderPts::refine_h264_step_from_parity
+g2g-plugins/src/mpegts.rs:659:46: replace % with + in ReorderPts::refine_h264_step_from_parity
+g2g-plugins/src/mpegts.rs:670:9: replace ReorderPts::synthesize -> Option<u64> with None
+g2g-plugins/src/mpegts.rs:670:9: replace ReorderPts::synthesize -> Option<u64> with Some(0)
+g2g-plugins/src/mpegts.rs:672:28: replace - with + in ReorderPts::synthesize
+g2g-plugins/src/mpegts.rs:670:9: replace ReorderPts::synthesize -> Option<u64> with Some(1)
+g2g-plugins/src/mpegts.rs:672:28: replace - with / in ReorderPts::synthesize
+g2g-plugins/src/mpegts.rs:673:66: replace / with % in ReorderPts::synthesize
+g2g-plugins/src/mpegts.rs:673:66: replace / with * in ReorderPts::synthesize
+g2g-plugins/src/mpegts.rs:674:26: replace >= with < in ReorderPts::synthesize
+g2g-plugins/src/mpegts.rs:684:5: replace poc_step_per_frame -> u64 with 0
+g2g-plugins/src/mpegts.rs:685:9: delete match arm VideoCodec::H265 in poc_step_per_frame
+g2g-plugins/src/mpegts.rs:684:5: replace poc_step_per_frame -> u64 with 1
+g2g-plugins/src/mpegts.rs:694:5: replace snap_to_declared_period -> (u64, u64) with (0, 1)
+g2g-plugins/src/mpegts.rs:694:5: replace snap_to_declared_period -> (u64, u64) with (1, 0)
+g2g-plugins/src/mpegts.rs:694:5: replace snap_to_declared_period -> (u64, u64) with (0, 0)
+g2g-plugins/src/mpegts.rs:694:5: replace snap_to_declared_period -> (u64, u64) with (1, 1)
+g2g-plugins/src/mpegts.rs:697:68: replace / with * in snap_to_declared_period
+g2g-plugins/src/mpegts.rs:709:5: replace frame_period_90khz -> Option<u64> with None
+g2g-plugins/src/mpegts.rs:709:5: replace frame_period_90khz -> Option<u64> with Some(0)
+g2g-plugins/src/mpegts.rs:710:12: replace == with != in frame_period_90khz
+g2g-plugins/src/mpegts.rs:709:5: replace frame_period_90khz -> Option<u64> with Some(1)
+g2g-plugins/src/mpegts.rs:713:40: replace / with % in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:40: replace / with * in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:29: replace + with - in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:22: replace << with >> in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:29: replace + with * in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:35: replace / with * in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:71: replace > with == in frame_period_90khz
+g2g-plugins/src/mpegts.rs:713:71: replace > with < in frame_period_90khz
+g2g-plugins/src/mpegts.rs:809:9: replace TsDemuxer::set_program_number with ()
+g2g-plugins/src/mpegts.rs:817:63: replace == with != in TsDemuxer::active_program
+g2g-plugins/src/mpegts.rs:816:9: replace TsDemuxer::active_program -> Option<&TsProgram> with None
+g2g-plugins/src/mpegts.rs:825:9: replace TsDemuxer::streams -> &[ElementaryStream] with Vec::leak(Vec::new())
+g2g-plugins/src/mpegts.rs:844:33: replace == with != in TsDemuxer::service
+g2g-plugins/src/mpegts.rs:832:9: replace TsDemuxer::programs -> impl Iterator<Item =(u16, &[ElementaryStream])>+'_ with ::std::iter::empty()
+g2g-plugins/src/mpegts.rs:841:9: replace TsDemuxer::service -> Option<&ServiceInfo> with None
+g2g-plugins/src/mpegts.rs:853:9: replace TsDemuxer::services -> impl Iterator<Item =(u16, &ServiceInfo)>+'_ with ::std::iter::empty()
+g2g-plugins/src/mpegts.rs:859:9: replace TsDemuxer::eit_events -> &[EitEvent] with Vec::leak(Vec::new())
+g2g-plugins/src/mpegts.rs:873:9: replace TsDemuxer::eit_generation -> u64 with 1
+g2g-plugins/src/mpegts.rs:873:9: replace TsDemuxer::eit_generation -> u64 with 0
+g2g-plugins/src/mpegts.rs:897:9: replace TsDemuxer::is_klv -> bool with false
+g2g-plugins/src/mpegts.rs:899:29: replace == with != in TsDemuxer::is_klv
+g2g-plugins/src/mpegts.rs:906:9: replace TsDemuxer::is_av1 -> bool with true
+g2g-plugins/src/mpegts.rs:906:9: replace TsDemuxer::is_av1 -> bool with false
+g2g-plugins/src/mpegts.rs:908:29: replace == with != in TsDemuxer::is_av1
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((0, 0, 0))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with None
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((0, 1, 0))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((0, 1, 1))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((0, 0, 1))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((1, 0, 1))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((1, 1, 0))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((1, 0, 0))
+g2g-plugins/src/mpegts.rs:915:9: replace TsDemuxer::subtitling -> Option<(u8, u16, u16)> with Some((1, 1, 1))
+g2g-plugins/src/mpegts.rs:924:9: replace TsDemuxer::teletext -> Option<TeletextService> with None
+g2g-plugins/src/mpegts.rs:917:29: replace == with != in TsDemuxer::subtitling
+g2g-plugins/src/mpegts.rs:932:9: replace TsDemuxer::video_pid -> Option<u16> with None
+g2g-plugins/src/mpegts.rs:932:9: replace TsDemuxer::video_pid -> Option<u16> with Some(0)
+g2g-plugins/src/mpegts.rs:926:29: replace == with != in TsDemuxer::teletext
+g2g-plugins/src/mpegts.rs:932:9: replace TsDemuxer::video_pid -> Option<u16> with Some(1)
+g2g-plugins/src/mpegts.rs:934:37: replace == with != in TsDemuxer::video_pid
+g2g-plugins/src/mpegts.rs:934:57: replace || with && in TsDemuxer::video_pid
+g2g-plugins/src/mpegts.rs:944:22: replace < with == in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:944:9: replace TsDemuxer::push_packet with ()
+g2g-plugins/src/mpegts.rs:944:22: replace < with <= in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:944:48: replace != with == in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:947:34: replace != with == in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:947:27: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:948:51: replace | with & in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:948:45: replace << with >> in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:948:29: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:948:29: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:947:27: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:949:33: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:949:33: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:949:27: replace >> with << in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:950:41: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:950:41: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:951:47: replace != with == in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:951:40: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:951:40: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:48: replace && with || in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:34: replace && with || in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:44: replace > with == in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:44: replace > with < in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:84: replace != with == in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:58: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:953:58: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:959:23: replace == with != in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:956:28: replace && with || in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:959:16: replace & with | in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:959:16: replace & with ^ in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:976:21: replace + with * in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:976:21: replace + with - in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:978:16: replace >= with < in TsDemuxer::push_packet
+g2g-plugins/src/mpegts.rs:1014:26: replace || with && in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:998:77: replace == with != in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1014:63: replace % with / in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1014:63: replace % with + in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1014:58: replace + with - in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1014:37: replace == with != in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1014:58: replace + with * in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1017:40: replace && with || in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1017:20: replace == with != in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1017:43: delete ! in TsDemuxer::check_continuity
+g2g-plugins/src/mpegts.rs:1025:43: replace != with == in TsDemuxer::discard_partial
+g2g-plugins/src/mpegts.rs:1025:9: replace TsDemuxer::discard_partial with ()
+g2g-plugins/src/mpegts.rs:1036:9: replace TsDemuxer::psi_table_of -> Option<PsiTable> with None
+g2g-plugins/src/mpegts.rs:1038:13: delete match arm PID_SDT in TsDemuxer::psi_table_of
+g2g-plugins/src/mpegts.rs:1037:13: delete match arm PID_PAT in TsDemuxer::psi_table_of
+g2g-plugins/src/mpegts.rs:1039:13: delete match arm PID_EIT in TsDemuxer::psi_table_of
+g2g-plugins/src/mpegts.rs:1062:43: replace == with != in TsDemuxer::collect_sections
+g2g-plugins/src/mpegts.rs:1043:41: replace == with != in TsDemuxer::psi_table_of
+g2g-plugins/src/mpegts.rs:1067:45: replace - with + in TsDemuxer::collect_sections
+g2g-plugins/src/mpegts.rs:1067:45: replace - with / in TsDemuxer::collect_sections
+g2g-plugins/src/mpegts.rs:1092:13: delete match arm STREAM_TYPE_H264 in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1093:13: delete match arm STREAM_TYPE_H265 in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1094:13: delete match arm STREAM_TYPE_MPEG1_VIDEO | STREAM_TYPE_MPEG2_VIDEO in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1091:9: replace TsDemuxer::synthesize_video_pts with ()
+g2g-plugins/src/mpegts.rs:1097:73: replace == with != in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1099:42: replace < with == in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1099:42: replace < with > in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1099:21: replace match guard self.video_pts.len() < MAX_VIDEO_PTS_STREAMS with false in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1101:38: replace - with + in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1101:38: replace - with / in TsDemuxer::synthesize_video_pts
+g2g-plugins/src/mpegts.rs:1113:9: replace TsDemuxer::flush with ()
+g2g-plugins/src/mpegts.rs:1121:9: replace TsDemuxer::stream_type_of -> Option<u8> with None
+g2g-plugins/src/mpegts.rs:1121:9: replace TsDemuxer::stream_type_of -> Option<u8> with Some(1)
+g2g-plugins/src/mpegts.rs:1123:29: replace == with != in TsDemuxer::stream_type_of
+g2g-plugins/src/mpegts.rs:1121:9: replace TsDemuxer::stream_type_of -> Option<u8> with Some(0)
+g2g-plugins/src/mpegts.rs:1130:9: replace TsDemuxer::section_body -> Option<&[u8]> with None
+g2g-plugins/src/mpegts.rs:1130:9: replace TsDemuxer::section_body -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1130:26: replace < with > in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1133:44: replace & with | in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1133:68: replace | with & in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1133:62: replace << with >> in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1133:44: replace & with ^ in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1134:23: replace + with - in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1134:23: replace + with * in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1135:35: replace || with && in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1135:31: replace + with - in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1135:27: replace < with > in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1135:44: replace > with == in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1135:31: replace + with * in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1140:29: replace - with + in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1135:44: replace > with >= in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1140:29: replace - with / in TsDemuxer::section_body
+g2g-plugins/src/mpegts.rs:1149:9: replace TsDemuxer::checked_section_body -> Option<&[u8]> with None
+g2g-plugins/src/mpegts.rs:1149:9: replace TsDemuxer::checked_section_body -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1150:46: replace + with * in TsDemuxer::checked_section_body
+g2g-plugins/src/mpegts.rs:1150:46: replace + with - in TsDemuxer::checked_section_body
+g2g-plugins/src/mpegts.rs:1151:28: replace == with != in TsDemuxer::checked_section_body
+g2g-plugins/src/mpegts.rs:1155:12: delete ! in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1158:28: replace != with == in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1155:9: replace TsDemuxer::parse_pat with ()
+g2g-plugins/src/mpegts.rs:1167:21: replace <= with > in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1167:17: replace + with - in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1167:17: replace + with * in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1168:58: replace | with & in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1168:67: replace + with - in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1168:67: replace + with * in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:60: replace | with & in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:54: replace << with >> in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:38: replace & with | in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:38: replace & with ^ in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:33: replace + with - in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:33: replace + with * in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:69: replace + with - in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1171:31: replace != with == in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1169:69: replace + with * in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1178:15: replace += with -= in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1178:15: replace += with *= in TsDemuxer::parse_pat
+g2g-plugins/src/mpegts.rs:1191:12: delete ! in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1194:28: replace != with == in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1191:9: replace TsDemuxer::parse_sdt with ()
+g2g-plugins/src/mpegts.rs:1201:21: replace <= with > in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1201:17: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1201:17: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1202:54: replace | with & in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1202:63: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1202:63: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:67: replace | with & in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:43: replace & with | in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:43: replace & with ^ in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:38: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:38: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:76: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1203:76: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1206:41: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1206:41: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1206:52: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1206:52: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1206:48: replace + with - in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1206:48: replace + with * in TsDemuxer::parse_sdt
+g2g-plugins/src/mpegts.rs:1234:55: replace && with || in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1234:21: replace != with == in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1234:58: delete ! in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1244:23: replace < with > in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1231:9: replace TsDemuxer::parse_eit with ()
+g2g-plugins/src/mpegts.rs:1248:50: replace | with & in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1251:20: replace & with ^ in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1254:38: replace & with | in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1251:27: replace == with != in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1258:34: replace == with != in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1260:34: replace == with != in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1265:12: delete ! in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1271:22: replace <= with > in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1271:17: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1271:17: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1272:52: replace | with & in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1272:46: replace << with >> in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1272:61: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1272:61: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1274:24: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1274:24: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1275:24: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1276:24: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1275:24: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1276:24: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1277:24: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1277:24: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1278:24: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1281:38: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1281:38: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1281:51: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1281:51: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1281:64: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1281:64: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:68: replace | with & in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:44: replace & with | in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:44: replace & with ^ in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:38: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:38: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:77: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1282:77: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1285:41: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1285:41: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1285:54: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1285:54: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1285:49: replace + with - in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1285:49: replace + with * in TsDemuxer::parse_eit
+g2g-plugins/src/mpegts.rs:1313:9: replace TsDemuxer::accept_eit_version -> bool with true
+g2g-plugins/src/mpegts.rs:1313:9: replace TsDemuxer::accept_eit_version -> bool with false
+g2g-plugins/src/mpegts.rs:1317:57: replace && with || in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1317:45: replace == with != in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1317:21: replace == with != in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1317:35: replace && with || in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1326:36: replace >= with < in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1317:69: replace == with != in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1320:23: replace == with != in TsDemuxer::accept_eit_version
+g2g-plugins/src/mpegts.rs:1339:23: replace == with != in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1340:40: replace < with == in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1340:40: replace < with > in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1339:9: replace TsDemuxer::record_eit_event with ()
+g2g-plugins/src/mpegts.rs:1340:40: replace < with <= in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1348:60: replace && with || in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1348:40: replace == with != in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1348:70: replace == with != in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1351:43: replace < with == in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1351:43: replace < with > in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1351:21: replace match guard self.eit_events.len() < MAX_EIT_EVENTS with false in TsDemuxer::record_eit_event
+g2g-plugins/src/mpegts.rs:1358:12: delete ! in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1361:28: replace != with == in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1358:9: replace TsDemuxer::parse_pmt with ()
+g2g-plugins/src/mpegts.rs:1367:23: replace < with > in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1370:47: replace & with | in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1370:47: replace & with ^ in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1372:21: replace <= with > in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1372:17: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1372:17: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:60: replace | with & in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:38: replace & with | in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:54: replace << with >> in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:38: replace & with ^ in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:33: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:33: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:69: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1374:69: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:73: replace | with & in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:49: replace & with | in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:49: replace & with ^ in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:44: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:44: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:82: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1375:82: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1378:42: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1378:42: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1378:53: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1378:53: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1378:49: replace + with * in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1378:49: replace + with - in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1387:35: replace == with != in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1382:62: replace == with != in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1388:17: replace || with && in TsDemuxer::parse_pmt
+g2g-plugins/src/mpegts.rs:1407:71: replace == with != in TsDemuxer::accumulate_pes
+g2g-plugins/src/mpegts.rs:1420:74: replace == with != in TsDemuxer::accumulate_pes
+g2g-plugins/src/mpegts.rs:1405:9: replace TsDemuxer::accumulate_pes with ()
+g2g-plugins/src/mpegts.rs:1424:75: replace > with == in TsDemuxer::accumulate_pes
+g2g-plugins/src/mpegts.rs:1424:75: replace > with < in TsDemuxer::accumulate_pes
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (None, None)
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (None, Some(0))
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (None, Some(1))
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (Some(0), None)
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (Some(1), Some(1))
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (Some(1), Some(0))
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (Some(1), None)
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (Some(0), Some(0))
+g2g-plugins/src/mpegts.rs:1438:9: replace TsDemuxer::extend_pes_timestamps -> (Option<u64>, Option<u64>) with (Some(0), Some(1))
+g2g-plugins/src/mpegts.rs:1441:43: replace == with != in TsDemuxer::extend_pes_timestamps
+g2g-plugins/src/mpegts.rs:1457:9: replace TsDemuxer::finish with ()
+g2g-plugins/src/mpegts.rs:1507:5: replace drain_complete_sections with ()
+g2g-plugins/src/mpegts.rs:1477:8: delete ! in collect_sections
+g2g-plugins/src/mpegts.rs:1492:8: delete ! in collect_sections
+g2g-plugins/src/mpegts.rs:1515:63: replace << with >> in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1508:28: replace == with != in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1515:55: replace & with | in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1515:69: replace | with & in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1515:55: replace & with ^ in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1516:44: replace + with - in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1516:44: replace + with * in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1517:18: replace > with == in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1517:18: replace > with < in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1521:26: replace < with == in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1521:26: replace < with > in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1521:26: replace < with <= in drain_complete_sections
+g2g-plugins/src/mpegts.rs:1547:9: replace TsPacketSplitter::push with ()
+g2g-plugins/src/mpegts.rs:1552:9: replace TsPacketSplitter::finish with ()
+g2g-plugins/src/mpegts.rs:1564:77: replace == with != in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1568:24: replace > with == in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1562:9: replace TsPacketSplitter::split with ()
+g2g-plugins/src/mpegts.rs:1568:24: replace > with < in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1568:24: replace > with >= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1571:19: replace += with -= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1573:35: replace < with > in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1573:35: replace < with <= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1573:35: replace < with == in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1590:44: replace && with || in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1590:35: replace < with == in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1590:35: replace < with > in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1590:35: replace < with <= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1594:19: replace += with -= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1606:13: delete match arm STRIDE_LOCK_PACKETS in probe_stride
+g2g-plugins/src/mpegts.rs:1618:5: replace sniff_packet_stride -> Option<usize> with None
+g2g-plugins/src/mpegts.rs:1619:36: replace == with != in sniff_packet_stride
+g2g-plugins/src/mpegts.rs:1618:5: replace sniff_packet_stride -> Option<usize> with Some(0)
+g2g-plugins/src/mpegts.rs:1618:5: replace sniff_packet_stride -> Option<usize> with Some(1)
+g2g-plugins/src/mpegts.rs:1626:22: replace && with || in sniff_packet_stride
+g2g-plugins/src/mpegts.rs:1626:72: replace == with != in sniff_packet_stride
+g2g-plugins/src/mpegts.rs:1631:5: replace confirmed_syncs -> Option<usize> with None
+g2g-plugins/src/mpegts.rs:1626:17: replace >= with < in sniff_packet_stride
+g2g-plugins/src/mpegts.rs:1633:42: replace * with + in confirmed_syncs
+g2g-plugins/src/mpegts.rs:1631:5: replace confirmed_syncs -> Option<usize> with Some(0)
+g2g-plugins/src/mpegts.rs:1633:42: replace * with / in confirmed_syncs
+g2g-plugins/src/mpegts.rs:1635:43: replace += with -= in confirmed_syncs
+g2g-plugins/src/mpegts.rs:1631:5: replace confirmed_syncs -> Option<usize> with Some(1)
+g2g-plugins/src/mpegts.rs:1635:43: replace += with *= in confirmed_syncs
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, None, Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, Some(0), Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (None, Some(1), Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), None, Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), Some(0), Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(0), Some(1), Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), None, Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), Some(0), Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:5: replace parse_pes_header -> (Option<u64>, Option<u64>, &[u8]) with (Some(1), Some(1), Vec::leak(Vec::new()))
+g2g-plugins/src/mpegts.rs:1650:22: replace < with > in parse_pes_header
+g2g-plugins/src/mpegts.rs:1650:22: replace < with <= in parse_pes_header
+g2g-plugins/src/mpegts.rs:1650:40: replace != with == in parse_pes_header
+g2g-plugins/src/mpegts.rs:1650:84: replace != with == in parse_pes_header
+g2g-plugins/src/mpegts.rs:1650:62: replace != with == in parse_pes_header
+g2g-plugins/src/mpegts.rs:1654:26: replace != with == in parse_pes_header
+g2g-plugins/src/mpegts.rs:1654:19: replace & with | in parse_pes_header
+g2g-plugins/src/mpegts.rs:1657:43: replace & with | in parse_pes_header
+g2g-plugins/src/mpegts.rs:1654:19: replace & with ^ in parse_pes_header
+g2g-plugins/src/mpegts.rs:1657:43: replace & with ^ in parse_pes_header
+g2g-plugins/src/mpegts.rs:1657:37: replace >> with << in parse_pes_header
+g2g-plugins/src/mpegts.rs:1659:22: replace + with - in parse_pes_header
+g2g-plugins/src/mpegts.rs:1659:22: replace + with * in parse_pes_header
+g2g-plugins/src/mpegts.rs:1660:17: replace > with < in parse_pes_header
+g2g-plugins/src/mpegts.rs:1663:44: replace && with || in parse_pes_header
+g2g-plugins/src/mpegts.rs:1663:39: replace != with == in parse_pes_header
+g2g-plugins/src/mpegts.rs:1663:32: replace & with | in parse_pes_header
+g2g-plugins/src/mpegts.rs:1663:32: replace & with ^ in parse_pes_header
+g2g-plugins/src/mpegts.rs:1663:61: replace >= with < in parse_pes_header
+g2g-plugins/src/mpegts.rs:1670:32: replace == with != in parse_pes_header
+g2g-plugins/src/mpegts.rs:1670:40: replace && with || in parse_pes_header
+g2g-plugins/src/mpegts.rs:1670:57: replace >= with < in parse_pes_header
+g2g-plugins/src/mpegts.rs:1679:33: replace - with + in extend_timestamp
+g2g-plugins/src/mpegts.rs:1679:45: replace % with / in extend_timestamp
+g2g-plugins/src/mpegts.rs:1679:33: replace - with / in extend_timestamp
+g2g-plugins/src/mpegts.rs:1679:5: replace extend_timestamp -> u64 with 0
+g2g-plugins/src/mpegts.rs:1679:5: replace extend_timestamp -> u64 with 1
+g2g-plugins/src/mpegts.rs:1688:57: replace <= with > in extend_timestamp
+g2g-plugins/src/mpegts.rs:1694:5: replace decode_timestamp -> u64 with 1
+g2g-plugins/src/mpegts.rs:1694:5: replace decode_timestamp -> u64 with 0
+g2g-plugins/src/mpegts.rs:1697:9: replace | with & in decode_timestamp
+g2g-plugins/src/mpegts.rs:1698:9: replace | with & in decode_timestamp
+g2g-plugins/src/mpegts.rs:1696:9: replace | with & in decode_timestamp
+g2g-plugins/src/mpegts.rs:1695:9: replace | with & in decode_timestamp
+g2g-plugins/src/mpegts.rs:1694:35: replace << with >> in decode_timestamp
+g2g-plugins/src/mpegts.rs:1694:19: replace & with | in decode_timestamp
+g2g-plugins/src/mpegts.rs:1694:19: replace & with ^ in decode_timestamp
+g2g-plugins/src/mpegts.rs:1695:25: replace << with >> in decode_timestamp
+g2g-plugins/src/mpegts.rs:1694:13: replace >> with << in decode_timestamp
+g2g-plugins/src/mpegts.rs:1696:25: replace & with | in decode_timestamp
+g2g-plugins/src/mpegts.rs:1696:41: replace << with >> in decode_timestamp
+g2g-plugins/src/mpegts.rs:1696:25: replace & with ^ in decode_timestamp
+g2g-plugins/src/mpegts.rs:1696:19: replace >> with << in decode_timestamp
+g2g-plugins/src/mpegts.rs:1698:24: replace & with | in decode_timestamp
+g2g-plugins/src/mpegts.rs:1697:25: replace << with >> in decode_timestamp
+g2g-plugins/src/mpegts.rs:1698:18: replace >> with << in decode_timestamp
+g2g-plugins/src/mpegts.rs:1698:24: replace & with ^ in decode_timestamp
+g2g-plugins/src/mpegts.rs:1709:5: replace parse_opus_descriptors -> Option<u8> with None
+g2g-plugins/src/mpegts.rs:1711:22: replace >= with < in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1709:5: replace parse_opus_descriptors -> Option<u8> with Some(1)
+g2g-plugins/src/mpegts.rs:1709:5: replace parse_opus_descriptors -> Option<u8> with Some(0)
+g2g-plugins/src/mpegts.rs:1714:34: replace + with * in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1714:34: replace + with - in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1717:38: replace match guard body.len() >= 4 && &body[..4] == b"Opus" with false in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1719:21: replace match guard body.len() >= 2 && body[0] == 0x80 with false in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1717:68: replace == with != in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1717:49: replace >= with < in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1719:32: replace >= with < in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1719:48: replace == with != in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1721:41: replace == with != in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1725:24: replace + with - in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1725:24: replace + with * in parse_opus_descriptors
+g2g-plugins/src/mpegts.rs:1738:40: replace + with - in has_ac3_descriptor
+g2g-plugins/src/mpegts.rs:1746:24: replace + with - in has_ac3_descriptor
+g2g-plugins/src/mpegts.rs:1746:24: replace + with * in has_ac3_descriptor
+g2g-plugins/src/mpegts.rs:1756:5: replace has_klv_registration -> bool with true
+g2g-plugins/src/mpegts.rs:1756:5: replace has_klv_registration -> bool with false
+g2g-plugins/src/mpegts.rs:1756:22: replace >= with < in has_klv_registration
+g2g-plugins/src/mpegts.rs:1759:40: replace + with - in has_klv_registration
+g2g-plugins/src/mpegts.rs:1759:40: replace + with * in has_klv_registration
+g2g-plugins/src/mpegts.rs:1762:60: replace && with || in has_klv_registration
+g2g-plugins/src/mpegts.rs:1762:41: replace && with || in has_klv_registration
+g2g-plugins/src/mpegts.rs:1762:16: replace == with != in has_klv_registration
+g2g-plugins/src/mpegts.rs:1762:55: replace >= with < in has_klv_registration
+g2g-plugins/src/mpegts.rs:1762:74: replace == with != in has_klv_registration
+g2g-plugins/src/mpegts.rs:1765:24: replace + with - in has_klv_registration
+g2g-plugins/src/mpegts.rs:1779:5: replace has_av1_registration -> bool with false
+g2g-plugins/src/mpegts.rs:1779:5: replace has_av1_registration -> bool with true
+g2g-plugins/src/mpegts.rs:1779:22: replace >= with < in has_av1_registration
+g2g-plugins/src/mpegts.rs:1782:40: replace + with - in has_av1_registration
+g2g-plugins/src/mpegts.rs:1782:40: replace + with * in has_av1_registration
+g2g-plugins/src/mpegts.rs:1786:13: replace && with || in has_av1_registration
+g2g-plugins/src/mpegts.rs:1785:16: replace == with != in has_av1_registration
+g2g-plugins/src/mpegts.rs:1787:17: replace || with && in has_av1_registration
+g2g-plugins/src/mpegts.rs:1791:24: replace + with - in has_av1_registration
+g2g-plugins/src/mpegts.rs:1791:24: replace + with * in has_av1_registration
+g2g-plugins/src/mpegts.rs:1802:5: replace parse_short_event_descriptor -> Option<(String, String)> with None
+g2g-plugins/src/mpegts.rs:1802:5: replace parse_short_event_descriptor -> Option<(String, String)> with Some((String::new(), String::new()))
+g2g-plugins/src/mpegts.rs:1802:5: replace parse_short_event_descriptor -> Option<(String, String)> with Some((String::new(), "xyzzy".into()))
+g2g-plugins/src/mpegts.rs:1802:5: replace parse_short_event_descriptor -> Option<(String, String)> with Some(("xyzzy".into(), String::new()))
+g2g-plugins/src/mpegts.rs:1802:22: replace >= with < in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1802:5: replace parse_short_event_descriptor -> Option<(String, String)> with Some(("xyzzy".into(), "xyzzy".into()))
+g2g-plugins/src/mpegts.rs:1805:34: replace + with - in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1805:34: replace + with * in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1806:16: replace == with != in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1808:38: replace + with - in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1808:38: replace + with * in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1809:40: replace + with - in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1809:40: replace + with * in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1810:35: replace + with - in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1810:35: replace + with * in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1810:60: replace + with - in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1810:60: replace + with * in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1810:49: replace + with - in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1810:49: replace + with * in parse_short_event_descriptor
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with None
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((0, 0, 0))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((0, 0, 1))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((0, 1, 0))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((1, 0, 0))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((1, 0, 1))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((0, 1, 1))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((1, 1, 0))
+g2g-plugins/src/mpegts.rs:1828:5: replace parse_subtitling_descriptor -> Option<(u8, u16, u16)> with Some((1, 1, 1))
+g2g-plugins/src/mpegts.rs:1828:22: replace >= with < in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1831:34: replace + with - in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1831:34: replace + with * in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1832:16: replace == with != in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1839:24: replace + with * in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1839:24: replace + with - in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1832:53: replace >= with < in parse_subtitling_descriptor
+g2g-plugins/src/mpegts.rs:1852:5: replace parse_teletext_descriptor -> Option<TeletextService> with None
+g2g-plugins/src/mpegts.rs:1855:34: replace + with - in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1852:22: replace >= with < in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1855:34: replace + with * in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1856:37: replace || with && in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1856:16: replace == with != in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1862:40: replace & with | in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1874:24: replace + with - in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1874:24: replace + with * in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1862:40: replace & with ^ in parse_teletext_descriptor
+g2g-plugins/src/mpegts.rs:1885:5: replace parse_iso639_language -> Option<[u8; 3]> with None
+g2g-plugins/src/mpegts.rs:1885:5: replace parse_iso639_language -> Option<[u8; 3]> with Some([0; 3])
+g2g-plugins/src/mpegts.rs:1885:5: replace parse_iso639_language -> Option<[u8; 3]> with Some([1; 3])
+g2g-plugins/src/mpegts.rs:1885:22: replace >= with < in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1888:34: replace + with - in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1888:34: replace + with * in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1889:16: replace == with != in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1889:49: replace >= with < in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1895:24: replace + with - in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1895:24: replace + with * in parse_iso639_language
+g2g-plugins/src/mpegts.rs:1906:5: replace parse_service_descriptor -> Option<ServiceInfo> with None
+g2g-plugins/src/mpegts.rs:1906:5: replace parse_service_descriptor -> Option<ServiceInfo> with Some(Default::default())
+g2g-plugins/src/mpegts.rs:1906:22: replace >= with < in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1909:34: replace + with - in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1909:34: replace + with * in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1912:42: replace + with - in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1910:16: replace == with != in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1913:40: replace + with - in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1912:42: replace + with * in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1913:40: replace + with * in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1914:35: replace + with - in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1914:35: replace + with * in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1914:68: replace + with - in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1914:68: replace + with * in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1914:53: replace + with - in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1914:53: replace + with * in parse_service_descriptor
+g2g-plugins/src/mpegts.rs:1937:5: replace dvb_text -> Option<String> with None
+g2g-plugins/src/mpegts.rs:1937:20: replace == with != in dvb_text
+g2g-plugins/src/mpegts.rs:1941:39: replace < with == in dvb_text
+g2g-plugins/src/mpegts.rs:1937:5: replace dvb_text -> Option<String> with Some(String::new())
+g2g-plugins/src/mpegts.rs:1939:45: delete ! in dvb_text
+g2g-plugins/src/mpegts.rs:1937:5: replace dvb_text -> Option<String> with Some("xyzzy".into())
+g2g-plugins/src/mpegts.rs:1947:25: delete ! in dvb_text
+g2g-plugins/src/mpegts.rs:1941:39: replace < with > in dvb_text
+g2g-plugins/src/mpegts.rs:1955:5: replace is_dvb_control -> bool with true
+g2g-plugins/src/mpegts.rs:1956:10: replace < with == in is_dvb_control
+g2g-plugins/src/mpegts.rs:1956:10: replace < with > in is_dvb_control
+g2g-plugins/src/mpegts.rs:1956:10: replace < with <= in is_dvb_control
+g2g-plugins/src/mpegts.rs:1973:5: replace unwrap_metadata_au_cells -> Option<Vec<u8>> with None
+g2g-plugins/src/mpegts.rs:1978:15: replace < with == in unwrap_metadata_au_cells
+g2g-plugins/src/mpegts.rs:1978:15: replace < with > in unwrap_metadata_au_cells
+g2g-plugins/src/mpegts.rs:1978:15: replace < with <= in unwrap_metadata_au_cells
+g2g-plugins/src/mpegts.rs:1980:47: replace | with & in unwrap_metadata_au_cells
+g2g-plugins/src/mpegts.rs:1991:6: delete ! in unwrap_metadata_au_cells
+g2g-plugins/src/mpegts.rs:1985:12: delete ! in unwrap_metadata_au_cells
+g2g-plugins/src/mpegts.rs:2007:19: replace <= with > in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2007:15: replace + with - in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2008:44: replace | with & in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2007:15: replace + with * in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2008:38: replace << with >> in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2008:54: replace + with - in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2008:54: replace + with * in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2009:16: replace & with | in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2009:25: replace != with == in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2009:16: replace & with ^ in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2012:29: replace + with - in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2012:29: replace + with * in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2013:43: replace == with != in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2013:33: replace >> with << in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2013:39: replace & with | in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2013:39: replace & with ^ in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2014:37: replace & with | in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2014:37: replace & with ^ in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2014:41: replace == with != in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2014:31: replace >> with << in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2015:44: replace == with != in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2016:25: replace + with - in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2016:25: replace + with * in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2021:15: replace += with -= in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2021:15: replace += with *= in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2023:18: replace != with == in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2040:26: replace match guard au_size > 0 && end <= buf.len() with true in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2040:38: replace && with || in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2040:26: replace match guard au_size > 0 && end <= buf.len() with false in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2040:34: replace > with < in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2040:34: replace > with == in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2040:45: replace <= with > in opus_ts_packets
+g2g-plugins/src/mpegts.rs:2081:45: replace - with /
+g2g-plugins/src/mpegts.rs:2081:45: replace - with +
+g2g-plugins/src/mpegts.rs:2226:71: replace == with != in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2231:46: replace + with - in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2231:46: replace + with * in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2238:36: replace - with + in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2238:36: replace - with / in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2247:44: replace == with != in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2249:35: replace == with != in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2252:31: replace + with * in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2253:26: replace += with -= in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2257:26: replace += with -= in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2256:31: replace + with * in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2261:17: delete match arm STREAM_TYPE_PRIVATE_PES in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2262:17: delete match arm STREAM_TYPE_METADATA_PES in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2267:33: replace + with - in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2267:33: replace + with * in TsMuxer::with_programs
+g2g-plugins/src/mpegts.rs:2310:9: replace TsMuxer::set_service with ()
+g2g-plugins/src/mpegts.rs:2322:9: replace TsMuxer::set_program_service -> bool with true
+g2g-plugins/src/mpegts.rs:2325:32: replace == with != in TsMuxer::set_program_service
+g2g-plugins/src/mpegts.rs:2322:9: replace TsMuxer::set_program_service -> bool with false
+g2g-plugins/src/mpegts.rs:2351:9: replace TsMuxer::set_stream_language with ()
+g2g-plugins/src/mpegts.rs:2339:9: replace TsMuxer::program_service -> Option<&ServiceInfo> with None
+g2g-plugins/src/mpegts.rs:2352:25: replace || with && in TsMuxer::set_stream_language
+g2g-plugins/src/mpegts.rs:2352:28: delete ! in TsMuxer::set_stream_language
+g2g-plugins/src/mpegts.rs:2352:20: replace != with == in TsMuxer::set_stream_language
+g2g-plugins/src/mpegts.rs:2369:9: replace TsMuxer::set_stream_teletext with ()
+g2g-plugins/src/mpegts.rs:2372:39: replace == with != in TsMuxer::set_stream_teletext
+g2g-plugins/src/mpegts.rs:2384:66: replace & with | in TsMuxer::set_stream_teletext
+g2g-plugins/src/mpegts.rs:2384:66: replace & with ^ in TsMuxer::set_stream_teletext
+g2g-plugins/src/mpegts.rs:2407:9: replace TsMuxer::set_stream_subtitling with ()
+g2g-plugins/src/mpegts.rs:2408:20: replace != with == in TsMuxer::set_stream_subtitling
+g2g-plugins/src/mpegts.rs:2408:28: delete ! in TsMuxer::set_stream_subtitling
+g2g-plugins/src/mpegts.rs:2431:39: replace == with != in TsMuxer::set_stream_subtitling
+g2g-plugins/src/mpegts.rs:2444:9: replace TsMuxer::set_stream_av1 with ()
+g2g-plugins/src/mpegts.rs:2462:26: replace != with == in TsMuxer::set_private_identity
+g2g-plugins/src/mpegts.rs:2473:9: replace TsMuxer::set_table_interval_90khz with ()
+g2g-plugins/src/mpegts.rs:2477:9: replace TsMuxer::set_si_interval_90khz with ()
+g2g-plugins/src/mpegts.rs:2482:9: replace TsMuxer::set_pcr_interval_90khz with ()
+g2g-plugins/src/mpegts.rs:2459:9: replace TsMuxer::set_private_identity with ()
+g2g-plugins/src/mpegts.rs:2486:9: replace TsMuxer::set_bitrate with ()
+g2g-plugins/src/mpegts.rs:2490:9: replace TsMuxer::decoder_delay_90khz -> u64 with 0
+g2g-plugins/src/mpegts.rs:2490:9: replace TsMuxer::decoder_delay_90khz -> u64 with 1
+g2g-plugins/src/mpegts.rs:2498:9: replace TsMuxer::set_transport_stream_id with ()
+g2g-plugins/src/mpegts.rs:2502:9: replace TsMuxer::set_original_network_id with ()
+g2g-plugins/src/mpegts.rs:2506:20: replace > with == in TsMuxer::set_tables_version
+g2g-plugins/src/mpegts.rs:2506:20: replace > with < in TsMuxer::set_tables_version
+g2g-plugins/src/mpegts.rs:2506:9: replace TsMuxer::set_tables_version -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/mpegts.rs:2531:20: replace || with && in TsMuxer::set_pid_bases
+g2g-plugins/src/mpegts.rs:2518:9: replace TsMuxer::set_pid_bases -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/mpegts.rs:2530:53: replace || with && in TsMuxer::set_pid_bases
+g2g-plugins/src/mpegts.rs:2548:9: replace TsMuxer::constant_bitrate -> bool with true
+g2g-plugins/src/mpegts.rs:2548:9: replace TsMuxer::constant_bitrate -> bool with false
+g2g-plugins/src/mpegts.rs:2548:22: replace > with == in TsMuxer::constant_bitrate
+g2g-plugins/src/mpegts.rs:2548:22: replace > with < in TsMuxer::constant_bitrate
+g2g-plugins/src/mpegts.rs:2595:69: replace == with != in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2548:22: replace > with >= in TsMuxer::constant_bitrate
+g2g-plugins/src/mpegts.rs:2596:38: replace && with || in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2596:41: delete ! in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2597:39: replace && with || in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2601:17: replace && with || in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2603:44: replace >= with < in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2604:23: replace || with && in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2618:40: replace + with - in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2618:40: replace + with * in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2624:19: replace < with == in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2624:19: replace < with > in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2637:33: replace - with + in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2635:38: replace && with || in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2637:33: replace - with / in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2637:59: replace - with + in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2637:59: replace - with / in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2641:57: replace - with + in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2641:57: replace - with / in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2644:30: replace - with + in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2644:30: replace - with / in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2645:33: replace + with - in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2651:17: replace += with -= in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2645:33: replace + with * in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2651:17: replace += with *= in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2691:63: replace && with || in TsMuxer::pes_for
+g2g-plugins/src/mpegts.rs:2691:35: replace == with != in TsMuxer::pes_for
+g2g-plugins/src/mpegts.rs:2691:75: replace <= with > in TsMuxer::pes_for
+g2g-plugins/src/mpegts.rs:2714:52: replace + with - in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2714:52: replace + with * in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2715:63: replace / with * in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2715:45: replace * with + in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2715:29: replace * with + in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2715:29: replace * with / in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2720:9: replace TsMuxer::pcr_due -> bool with true
+g2g-plugins/src/mpegts.rs:2720:9: replace TsMuxer::pcr_due -> bool with false
+g2g-plugins/src/mpegts.rs:2725:42: replace >= with < in TsMuxer::pcr_due
+g2g-plugins/src/mpegts.rs:2729:9: replace TsMuxer::pad_until with ()
+g2g-plugins/src/mpegts.rs:2753:9: replace TsMuxer::write_due_pcr_only_packets -> bool with false
+g2g-plugins/src/mpegts.rs:2755:62: replace == with != in TsMuxer::write_due_pcr_only_packets
+g2g-plugins/src/mpegts.rs:2758:16: delete ! in TsMuxer::write_due_pcr_only_packets
+g2g-plugins/src/mpegts.rs:2761:55: replace + with - in TsMuxer::write_due_pcr_only_packets
+g2g-plugins/src/mpegts.rs:2761:55: replace + with * in TsMuxer::write_due_pcr_only_packets
+g2g-plugins/src/mpegts.rs:2770:9: replace TsMuxer::embedded_pcr -> Option<u64> with Some(0)
+g2g-plugins/src/mpegts.rs:2770:9: replace TsMuxer::embedded_pcr -> Option<u64> with Some(1)
+g2g-plugins/src/mpegts.rs:2777:51: replace + with - in TsMuxer::embedded_pcr
+g2g-plugins/src/mpegts.rs:2774:23: delete ! in TsMuxer::embedded_pcr
+g2g-plugins/src/mpegts.rs:2777:51: replace + with * in TsMuxer::embedded_pcr
+g2g-plugins/src/mpegts.rs:2783:9: replace TsMuxer::pcr_only_packet with ()
+g2g-plugins/src/mpegts.rs:2786:66: replace % with / in TsMuxer::pcr_only_packet
+g2g-plugins/src/mpegts.rs:2786:61: replace - with + in TsMuxer::pcr_only_packet
+g2g-plugins/src/mpegts.rs:2786:61: replace - with / in TsMuxer::pcr_only_packet
+g2g-plugins/src/mpegts.rs:2795:21: delete ! in TsMuxer::write_tables_if_due
+g2g-plugins/src/mpegts.rs:2797:19: replace || with && in TsMuxer::write_tables_if_due
+g2g-plugins/src/mpegts.rs:2798:28: replace || with && in TsMuxer::write_tables_if_due
+g2g-plugins/src/mpegts.rs:2814:9: replace TsMuxer::version_byte -> u8 with 0
+g2g-plugins/src/mpegts.rs:2795:9: replace TsMuxer::write_tables_if_due with ()
+g2g-plugins/src/mpegts.rs:2814:35: replace | with & in TsMuxer::version_byte
+g2g-plugins/src/mpegts.rs:2814:9: replace TsMuxer::version_byte -> u8 with 1
+g2g-plugins/src/mpegts.rs:2814:58: replace << with >> in TsMuxer::version_byte
+g2g-plugins/src/mpegts.rs:2826:22: replace | with & in TsMuxer::pat_packet
+g2g-plugins/src/mpegts.rs:2818:9: replace TsMuxer::pat_packet with ()
+g2g-plugins/src/mpegts.rs:2826:47: replace & with | in TsMuxer::pat_packet
+g2g-plugins/src/mpegts.rs:2826:47: replace & with ^ in TsMuxer::pat_packet
+g2g-plugins/src/mpegts.rs:2826:35: replace >> with << in TsMuxer::pat_packet
+g2g-plugins/src/mpegts.rs:2836:9: replace TsMuxer::pmt_packet with ()
+g2g-plugins/src/mpegts.rs:2846:18: replace | with & in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2846:41: replace & with | in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2846:41: replace & with ^ in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2853:59: replace == with != in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2856:22: replace | with & in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2846:29: replace >> with << in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2856:43: replace & with | in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2856:43: replace & with ^ in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2856:31: replace >> with << in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2858:53: replace & with ^ in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2858:53: replace & with | in TsMuxer::pmt_packet
+g2g-plugins/src/mpegts.rs:2898:47: replace + with - in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2870:9: replace TsMuxer::sdt_packet with ()
+g2g-plugins/src/mpegts.rs:2898:47: replace + with * in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2898:30: replace + with - in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2898:30: replace + with * in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2899:30: replace + with - in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2903:43: replace && with || in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2903:36: replace == with != in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2899:30: replace + with * in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2909:47: replace & with | in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2909:47: replace & with ^ in TsMuxer::sdt_body
+g2g-plugins/src/mpegts.rs:2935:5: replace pid_span -> Option<core::ops::RangeInclusive<u16>> with None
+g2g-plugins/src/mpegts.rs:2935:8: delete ! in pid_span
+g2g-plugins/src/mpegts.rs:2950:23: replace == with != in cadence_due
+g2g-plugins/src/mpegts.rs:2947:5: replace cadence_due -> bool with true
+g2g-plugins/src/mpegts.rs:2947:5: replace cadence_due -> bool with false
+g2g-plugins/src/mpegts.rs:2954:38: replace >= with < in cadence_due
+g2g-plugins/src/mpegts.rs:2958:5: replace advance_continuity_counter -> u8 with 0
+g2g-plugins/src/mpegts.rs:2958:24: replace % with / in advance_continuity_counter
+g2g-plugins/src/mpegts.rs:2958:5: replace advance_continuity_counter -> u8 with 1
+g2g-plugins/src/mpegts.rs:2958:24: replace % with + in advance_continuity_counter
+g2g-plugins/src/mpegts.rs:2963:5: replace mux_stream_type_is_video -> bool with false
+g2g-plugins/src/mpegts.rs:2963:5: replace mux_stream_type_is_video -> bool with true
+g2g-plugins/src/mpegts.rs:2977:25: replace + with - in dvb_field
+g2g-plugins/src/mpegts.rs:2977:25: replace + with * in dvb_field
+g2g-plugins/src/mpegts.rs:2978:28: replace <= with > in dvb_field
+g2g-plugins/src/mpegts.rs:2973:5: replace dvb_field -> &[u8] with Vec::leak(Vec::new())
+g2g-plugins/src/mpegts.rs:3015:39: replace != with == in pes_header
+g2g-plugins/src/mpegts.rs:3015:35: replace match guard dts != pts with true in pes_header
+g2g-plugins/src/mpegts.rs:3015:35: replace match guard dts != pts with false in pes_header
+g2g-plugins/src/mpegts.rs:3031:40: replace + with - in pes_header
+g2g-plugins/src/mpegts.rs:3036:25: replace >> with << in pes_header
+g2g-plugins/src/mpegts.rs:3046:5: replace encode_timestamp with ()
+g2g-plugins/src/mpegts.rs:3046:63: replace | with & in encode_timestamp
+g2g-plugins/src/mpegts.rs:3046:28: replace | with & in encode_timestamp
+g2g-plugins/src/mpegts.rs:3046:58: replace << with >> in encode_timestamp
+g2g-plugins/src/mpegts.rs:3046:43: replace & with | in encode_timestamp
+g2g-plugins/src/mpegts.rs:3046:43: replace & with ^ in encode_timestamp
+g2g-plugins/src/mpegts.rs:3046:36: replace >> with << in encode_timestamp
+g2g-plugins/src/mpegts.rs:3047:26: replace & with | in encode_timestamp
+g2g-plugins/src/mpegts.rs:3047:26: replace & with ^ in encode_timestamp
+g2g-plugins/src/mpegts.rs:3047:19: replace >> with << in encode_timestamp
+g2g-plugins/src/mpegts.rs:3048:47: replace | with & in encode_timestamp
+g2g-plugins/src/mpegts.rs:3048:42: replace << with >> in encode_timestamp
+g2g-plugins/src/mpegts.rs:3048:27: replace & with | in encode_timestamp
+g2g-plugins/src/mpegts.rs:3048:27: replace & with ^ in encode_timestamp
+g2g-plugins/src/mpegts.rs:3048:20: replace >> with << in encode_timestamp
+g2g-plugins/src/mpegts.rs:3049:25: replace & with ^ in encode_timestamp
+g2g-plugins/src/mpegts.rs:3049:25: replace & with | in encode_timestamp
+g2g-plugins/src/mpegts.rs:3049:19: replace >> with << in encode_timestamp
+g2g-plugins/src/mpegts.rs:3050:39: replace | with & in encode_timestamp
+g2g-plugins/src/mpegts.rs:3050:34: replace << with >> in encode_timestamp
+g2g-plugins/src/mpegts.rs:3050:19: replace & with | in encode_timestamp
+g2g-plugins/src/mpegts.rs:3050:19: replace & with ^ in encode_timestamp
+g2g-plugins/src/mpegts.rs:3066:9: replace AdaptationField::len -> usize with 0
+g2g-plugins/src/mpegts.rs:3066:9: replace AdaptationField::len -> usize with 1
+g2g-plugins/src/mpegts.rs:3067:53: replace + with - in AdaptationField::len
+g2g-plugins/src/mpegts.rs:3074:9: replace AdaptationField::flags -> u8 with 0
+g2g-plugins/src/mpegts.rs:3074:9: replace AdaptationField::flags -> u8 with 1
+g2g-plugins/src/mpegts.rs:3084:13: replace | with & in AdaptationField::flags
+g2g-plugins/src/mpegts.rs:3103:49: replace | with & in ts_packet
+g2g-plugins/src/mpegts.rs:3103:69: replace & with | in ts_packet
+g2g-plugins/src/mpegts.rs:3103:69: replace & with ^ in ts_packet
+g2g-plugins/src/mpegts.rs:3103:57: replace >> with << in ts_packet
+g2g-plugins/src/mpegts.rs:3106:17: replace % with / in ts_packet
+g2g-plugins/src/mpegts.rs:3106:17: replace % with + in ts_packet
+g2g-plugins/src/mpegts.rs:3107:30: replace && with || in ts_packet
+g2g-plugins/src/mpegts.rs:3107:25: replace == with != in ts_packet
+g2g-plugins/src/mpegts.rs:3107:35: replace == with != in ts_packet
+g2g-plugins/src/mpegts.rs:3108:35: replace | with & in ts_packet
+g2g-plugins/src/mpegts.rs:3117:22: replace | with & in ts_packet
+g2g-plugins/src/mpegts.rs:3112:24: replace == with != in ts_packet
+g2g-plugins/src/mpegts.rs:3118:37: replace - with + in ts_packet
+g2g-plugins/src/mpegts.rs:3118:37: replace - with / in ts_packet
+g2g-plugins/src/mpegts.rs:3118:33: replace - with + in ts_packet
+g2g-plugins/src/mpegts.rs:3118:33: replace - with / in ts_packet
+g2g-plugins/src/mpegts.rs:3120:15: replace == with != in ts_packet
+g2g-plugins/src/mpegts.rs:3124:28: replace + with - in ts_packet
+g2g-plugins/src/mpegts.rs:3136:5: replace write_pcr with ()
+g2g-plugins/src/mpegts.rs:3136:59: replace & with | in write_pcr
+g2g-plugins/src/mpegts.rs:3136:59: replace & with ^ in write_pcr
+g2g-plugins/src/mpegts.rs:3136:27: replace / with % in write_pcr
+g2g-plugins/src/mpegts.rs:3136:27: replace / with * in write_pcr
+g2g-plugins/src/mpegts.rs:3137:32: replace % with / in write_pcr
+g2g-plugins/src/mpegts.rs:3137:32: replace % with + in write_pcr
+g2g-plugins/src/mpegts.rs:3140:20: replace >> with << in write_pcr
+g2g-plugins/src/mpegts.rs:3139:20: replace >> with << in write_pcr
+g2g-plugins/src/mpegts.rs:3143:47: replace | with & in write_pcr
+g2g-plugins/src/mpegts.rs:3141:20: replace >> with << in write_pcr
+g2g-plugins/src/mpegts.rs:3143:40: replace | with & in write_pcr
+g2g-plugins/src/mpegts.rs:3143:34: replace << with >> in write_pcr
+g2g-plugins/src/mpegts.rs:3143:27: replace & with | in write_pcr
+g2g-plugins/src/mpegts.rs:3143:27: replace & with ^ in write_pcr
+g2g-plugins/src/mpegts.rs:3143:60: replace >> with << in write_pcr
+g2g-plugins/src/mpegts.rs:3153:5: replace psi_packet -> u8 with 0
+g2g-plugins/src/mpegts.rs:3153:5: replace psi_packet -> u8 with 1
+g2g-plugins/src/mpegts.rs:3153:37: replace + with - in psi_packet
+g2g-plugins/src/mpegts.rs:3153:37: replace + with * in psi_packet
+g2g-plugins/src/mpegts.rs:3156:23: replace | with & in psi_packet
+g2g-plugins/src/mpegts.rs:3156:54: replace & with | in psi_packet
+g2g-plugins/src/mpegts.rs:3156:54: replace & with ^ in psi_packet
+g2g-plugins/src/mpegts.rs:3156:42: replace >> with << in psi_packet
+g2g-plugins/src/mpegts.rs:3164:39: replace - with + in psi_packet
+g2g-plugins/src/mpegts.rs:3157:34: replace & with | in psi_packet
+g2g-plugins/src/mpegts.rs:3157:34: replace & with ^ in psi_packet
+g2g-plugins/src/mpegts.rs:3170:23: replace & with | in psi_packet
+g2g-plugins/src/mpegts.rs:3170:23: replace & with ^ in psi_packet
+g2g-plugins/src/mpegts.rs:3170:18: replace + with - in psi_packet
+g2g-plugins/src/mpegts.rs:3170:18: replace + with * in psi_packet
+g2g-plugins/src/mpegts.rs:3182:5: replace mpeg_crc32 -> u32 with 0
+g2g-plugins/src/mpegts.rs:3182:5: replace mpeg_crc32 -> u32 with 1

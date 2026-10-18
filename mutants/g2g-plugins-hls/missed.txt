@@ -1,0 +1,7 @@
+g2g-plugins/src/hls.rs:385:29: replace > with >= in parse
+g2g-plugins/src/hls.rs:499:17: replace > with >= in parse_part
+g2g-plugins/src/hls.rs:527:13: delete match arm "VIDEO" in parse_stream_inf
+g2g-plugins/src/hls.rs:551:9: delete match arm "VIDEO" in parse_media
+g2g-plugins/src/hls.rs:553:9: delete match arm "CLOSED-CAPTIONS" in parse_media
+g2g-plugins/src/hls.rs:563:40: replace == with != in parse_media
+g2g-plugins/src/hls.rs:574:9: delete match arm "SAMPLE-AES" in parse_key

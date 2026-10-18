@@ -1,0 +1,57 @@
+g2g-plugins/src/subparse.rs:259:9: replace CueSettings::innermost -> Option<T> with Some(Default::default())
+g2g-plugins/src/subparse.rs:278:9: replace CueSettings::span_font_size_at -> Option<CueFontSize> with Some(Default::default())
+g2g-plugins/src/subparse.rs:284:9: replace CueSettings::shadow_at -> Option<TextShadow> with Some(Default::default())
+g2g-plugins/src/subparse.rs:321:9: replace CueSettings::stroke_at -> Option<TextStroke> with Some(Default::default())
+g2g-plugins/src/subparse.rs:378:9: replace <impl g2g_core::FrameMeta for TextCueMeta>::as_any_mut -> &mut dyn core::any::Any with Box::leak(Box::new(Default::default()))
+g2g-plugins/src/subparse.rs:381:9: replace <impl g2g_core::FrameMeta for TextCueMeta>::clone_box -> Box<dyn g2g_core::FrameMeta> with Box::new(Default::default())
+g2g-plugins/src/subparse.rs:375:9: replace <impl g2g_core::FrameMeta for TextCueMeta>::as_any -> &dyn core::any::Any with Box::leak(Box::new(Default::default()))
+g2g-plugins/src/subparse.rs:391:5: replace parse_srt -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:391:5: replace parse_srt -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:409:5: replace parse_webvtt -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:409:5: replace parse_webvtt -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:560:5: replace tag_classes -> Vec<String> with vec![]
+g2g-plugins/src/subparse.rs:560:5: replace tag_classes -> Vec<String> with vec![String::new()]
+g2g-plugins/src/subparse.rs:560:5: replace tag_classes -> Vec<String> with vec!["xyzzy".into()]
+g2g-plugins/src/subparse.rs:608:5: replace parse_cue_styles -> Vec<CueStyleRule> with vec![]
+g2g-plugins/src/subparse.rs:608:5: replace parse_cue_styles -> Vec<CueStyleRule> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:690:5: replace parse_cue_selector -> Option<CueSelector> with Some(Default::default())
+g2g-plugins/src/subparse.rs:917:5: replace parse_css_font_size -> Option<CueFontSize> with Some(Default::default())
+g2g-plugins/src/subparse.rs:995:5: replace parse_text_shadow -> Option<TextShadow> with Some(Default::default())
+g2g-plugins/src/subparse.rs:1029:5: replace parse_text_stroke -> Option<TextStroke> with Some(Default::default())
+g2g-plugins/src/subparse.rs:1117:5: replace css_components -> Vec<&str> with vec![]
+g2g-plugins/src/subparse.rs:1117:5: replace css_components -> Vec<&str> with vec![""]
+g2g-plugins/src/subparse.rs:1117:5: replace css_components -> Vec<&str> with vec!["xyzzy"]
+g2g-plugins/src/subparse.rs:1179:5: replace parse_auto -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:1211:5: replace parse_ssa -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:1179:5: replace parse_auto -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:1211:5: replace parse_ssa -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:1330:9: replace SsaState::feed_line -> Option<Cue> with Some(Default::default())
+g2g-plugins/src/subparse.rs:1430:9: replace SsaState::parse_dialogue -> Option<Cue> with Some(Default::default())
+g2g-plugins/src/subparse.rs:1770:5: replace parse_ttml -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:1770:5: replace parse_ttml -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:1880:5: replace parse_ttml_regions -> Vec<TtmlRegion> with vec![]
+g2g-plugins/src/subparse.rs:1880:5: replace parse_ttml_regions -> Vec<TtmlRegion> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:2192:5: replace parse_blocks -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:2192:5: replace parse_blocks -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:2199:5: replace parse_blocks_rebased -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:2199:5: replace parse_blocks_rebased -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:2233:5: replace block_to_cue -> Option<(Cue, Vec<CueSpan>)> with Some((Default::default(), vec![]))
+g2g-plugins/src/subparse.rs:2233:5: replace block_to_cue -> Option<(Cue, Vec<CueSpan>)> with Some((Default::default(), vec![Default::default()]))
+g2g-plugins/src/subparse.rs:2282:5: replace strip_cue_text -> (String, Vec<CueSpan>) with (String::new(), vec![])
+g2g-plugins/src/subparse.rs:2282:5: replace strip_cue_text -> (String, Vec<CueSpan>) with ("xyzzy".into(), vec![])
+g2g-plugins/src/subparse.rs:2282:5: replace strip_cue_text -> (String, Vec<CueSpan>) with (String::new(), vec![Default::default()])
+g2g-plugins/src/subparse.rs:2282:5: replace strip_cue_text -> (String, Vec<CueSpan>) with ("xyzzy".into(), vec![Default::default()])
+g2g-plugins/src/subparse.rs:2657:9: replace SubParse::output_caps -> Caps with Default::default()
+g2g-plugins/src/subparse.rs:2640:9: replace SubParse::input_alternatives -> CapsSet with Default::default()
+g2g-plugins/src/subparse.rs:2682:9: replace SubParse::drain_cues -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:2682:9: replace SubParse::drain_cues -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:2756:9: replace <impl AsyncElement for SubParse>::intercept_caps -> Result<Caps, G2gError> with Ok(Default::default())
+g2g-plugins/src/subparse.rs:2703:9: replace SubParse::drain_blocks -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:2703:9: replace SubParse::drain_blocks -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:2769:9: replace <impl AsyncElement for SubParse>::caps_constraint_as_transform -> CapsConstraint<'_> with Default::default()
+g2g-plugins/src/subparse.rs:2723:9: replace SubParse::drain_ssa -> Vec<Cue> with vec![]
+g2g-plugins/src/subparse.rs:2723:9: replace SubParse::drain_ssa -> Vec<Cue> with vec![Default::default()]
+g2g-plugins/src/subparse.rs:2778:9: replace <impl AsyncElement for SubParse>::configure_pipeline -> Result<ConfigureOutcome, G2gError> with Ok(Default::default())
+g2g-plugins/src/subparse.rs:2804:9: replace <impl AsyncElement for SubParse>::process -> Self::ProcessFuture<'a> with Default::default()
+g2g-plugins/src/subparse.rs:2876:9: replace <impl PadTemplates for SubParse>::pad_templates -> Vec<PadTemplate> with vec![]
+g2g-plugins/src/subparse.rs:2876:9: replace <impl PadTemplates for SubParse>::pad_templates -> Vec<PadTemplate> with vec![Default::default()]

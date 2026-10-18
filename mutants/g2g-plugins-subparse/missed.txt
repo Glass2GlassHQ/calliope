@@ -1,0 +1,87 @@
+g2g-plugins/src/subparse.rs:462:60: replace || with && in block_timestamp_offset
+g2g-plugins/src/subparse.rs:538:16: replace match guard run.font_weight.is_none() with true in fold_inline_tag
+g2g-plugins/src/subparse.rs:540:16: replace match guard run.underline.is_none() with true in fold_inline_tag
+g2g-plugins/src/subparse.rs:539:16: replace match guard run.italic.is_none() with true in fold_inline_tag
+g2g-plugins/src/subparse.rs:697:41: replace && with || in parse_cue_selector
+g2g-plugins/src/subparse.rs:891:71: replace * with + in parse_css_color
+g2g-plugins/src/subparse.rs:977:9: delete match arm "ultra-condensed" in parse_css_font_stretch
+g2g-plugins/src/subparse.rs:981:9: delete match arm "normal" in parse_css_font_stretch
+g2g-plugins/src/subparse.rs:978:9: delete match arm "extra-condensed" in parse_css_font_stretch
+g2g-plugins/src/subparse.rs:980:9: delete match arm "semi-condensed" in parse_css_font_stretch
+g2g-plugins/src/subparse.rs:984:9: delete match arm "extra-expanded" in parse_css_font_stretch
+g2g-plugins/src/subparse.rs:1013:24: replace match guard blur < 0.0 with false in parse_text_shadow
+g2g-plugins/src/subparse.rs:1013:29: replace < with == in parse_text_shadow
+g2g-plugins/src/subparse.rs:1013:29: replace < with <= in parse_text_shadow
+g2g-plugins/src/subparse.rs:1080:20: replace && with || in positive_length
+g2g-plugins/src/subparse.rs:1080:25: replace > with >= in positive_length
+g2g-plugins/src/subparse.rs:1092:10: replace < with <= in round_to_i32
+g2g-plugins/src/subparse.rs:1106:13: delete match arm ')' in first_css_value
+g2g-plugins/src/subparse.rs:1123:13: delete match arm ')' in css_components
+g2g-plugins/src/subparse.rs:1151:79: replace + with - in parse_hex_color
+g2g-plugins/src/subparse.rs:1150:9: delete match arm 3 in parse_hex_color
+g2g-plugins/src/subparse.rs:1151:74: replace * with + in parse_hex_color
+g2g-plugins/src/subparse.rs:1151:79: replace + with * in parse_hex_color
+g2g-plugins/src/subparse.rs:1151:74: replace * with / in parse_hex_color
+g2g-plugins/src/subparse.rs:1165:9: delete match arm "green" in named_css_color
+g2g-plugins/src/subparse.rs:1169:9: delete match arm "magenta" | "fuchsia" in named_css_color
+g2g-plugins/src/subparse.rs:1170:9: delete match arm "gray" | "grey" in named_css_color
+g2g-plugins/src/subparse.rs:1415:39: replace == with != in SsaState::feed_style_line
+g2g-plugins/src/subparse.rs:1512:36: replace && with || in ass_apply_margins
+g2g-plugins/src/subparse.rs:1541:32: replace + with * in ass_inline_pos
+g2g-plugins/src/subparse.rs:1574:9: delete match arm 1 in ass_alignment_settings
+g2g-plugins/src/subparse.rs:1572:26: replace - with / in ass_alignment_settings
+g2g-plugins/src/subparse.rs:1591:9: delete match arm 3 in legacy_alignment
+g2g-plugins/src/subparse.rs:1595:13: replace + with - in legacy_alignment
+g2g-plugins/src/subparse.rs:1595:13: replace + with * in legacy_alignment
+g2g-plugins/src/subparse.rs:1610:32: replace + with * in ass_inline_alignment
+g2g-plugins/src/subparse.rs:1666:17: delete match arm Some('h') in strip_ass_markup
+g2g-plugins/src/subparse.rs:1704:22: replace > with < in deframe_subtitle_block
+g2g-plugins/src/subparse.rs:1803:26: replace + with * in split_tag
+g2g-plugins/src/subparse.rs:1886:29: replace + with * in parse_ttml_regions
+g2g-plugins/src/subparse.rs:1886:29: replace + with - in parse_ttml_regions
+g2g-plugins/src/subparse.rs:1899:17: delete match arm Some("center") in parse_ttml_regions
+g2g-plugins/src/subparse.rs:1919:40: replace || with && in ttml_settings
+g2g-plugins/src/subparse.rs:1922:13: delete field align from struct CueSettings expression in ttml_settings
+g2g-plugins/src/subparse.rs:1943:32: replace match guard bottom >= 100 with true in ttml_settings
+g2g-plugins/src/subparse.rs:1939:57: replace / with % in ttml_settings
+g2g-plugins/src/subparse.rs:1939:57: replace / with * in ttml_settings
+g2g-plugins/src/subparse.rs:1959:9: delete match arm "center" in parse_ttml_align
+g2g-plugins/src/subparse.rs:1992:42: replace + with - in find_paragraph_close
+g2g-plugins/src/subparse.rs:1992:42: replace + with * in find_paragraph_close
+g2g-plugins/src/subparse.rs:1992:37: replace + with - in find_paragraph_close
+g2g-plugins/src/subparse.rs:1992:37: replace + with * in find_paragraph_close
+g2g-plugins/src/subparse.rs:2006:28: replace == with != in xml_attr
+g2g-plugins/src/subparse.rs:2017:42: replace == with != in xml_attr
+g2g-plugins/src/subparse.rs:2024:19: replace + with - in xml_attr
+g2g-plugins/src/subparse.rs:2059:55: replace && with || in push_collapsed
+g2g-plugins/src/subparse.rs:2059:32: replace && with || in push_collapsed
+g2g-plugins/src/subparse.rs:2084:21: delete match arm "lt" in decode_entities
+g2g-plugins/src/subparse.rs:2087:21: delete match arm "apos" in decode_entities
+g2g-plugins/src/subparse.rs:2088:26: replace match guard ent.starts_with("#x") || ent.starts_with("#X") with true in decode_entities
+g2g-plugins/src/subparse.rs:2088:26: replace match guard ent.starts_with("#x") || ent.starts_with("#X") with false in decode_entities
+g2g-plugins/src/subparse.rs:2093:26: replace match guard ent.starts_with('#') with true in decode_entities
+g2g-plugins/src/subparse.rs:2093:26: replace match guard ent.starts_with('#') with false in decode_entities
+g2g-plugins/src/subparse.rs:2088:48: replace || with && in decode_entities
+g2g-plugins/src/subparse.rs:2131:9: delete match arm "h" in parse_ttml_time
+g2g-plugins/src/subparse.rs:2132:9: delete match arm "m" in parse_ttml_time
+g2g-plugins/src/subparse.rs:2134:9: delete match arm "ms" in parse_ttml_time
+g2g-plugins/src/subparse.rs:2180:35: replace + with * in last_block_boundary
+g2g-plugins/src/subparse.rs:2182:28: replace + with * in last_block_boundary
+g2g-plugins/src/subparse.rs:2245:13: replace || with && in block_to_cue
+g2g-plugins/src/subparse.rs:2244:13: replace || with && in block_to_cue
+g2g-plugins/src/subparse.rs:2243:13: replace || with && in block_to_cue
+g2g-plugins/src/subparse.rs:2241:13: replace || with && in block_to_cue
+g2g-plugins/src/subparse.rs:2242:13: replace || with && in block_to_cue
+g2g-plugins/src/subparse.rs:2320:68: replace && with || in strip_cue_text
+g2g-plugins/src/subparse.rs:2350:22: delete ! in strip_cue_text
+g2g-plugins/src/subparse.rs:2366:5: replace is_span_tag -> bool with true
+g2g-plugins/src/subparse.rs:2367:22: replace && with || in is_span_tag
+g2g-plugins/src/subparse.rs:2444:9: delete match arm "center" | "middle" in parse_align
+g2g-plugins/src/subparse.rs:2471:28: replace || with && in parse_timestamp
+g2g-plugins/src/subparse.rs:2489:32: replace || with && in frac_millis
+g2g-plugins/src/subparse.rs:2671:34: replace >= with < in SubParse::strip_bom
+g2g-plugins/src/subparse.rs:2665:9: replace SubParse::strip_bom with ()
+g2g-plugins/src/subparse.rs:2693:13: delete match arm Some(TextFormat::WebVtt) in SubParse::drain_cues
+g2g-plugins/src/subparse.rs:2684:20: delete ! in SubParse::drain_cues
+g2g-plugins/src/subparse.rs:2791:9: replace <impl AsyncElement for SubParse>::metadata -> ElementMetadata with Default::default()
+g2g-plugins/src/subparse.rs:2866:31: replace += with *= in <impl AsyncElement for SubParse>::process

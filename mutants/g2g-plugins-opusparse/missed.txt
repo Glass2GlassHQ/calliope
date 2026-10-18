@@ -1,0 +1,12 @@
+g2g-plugins/src/opusparse.rs:65:9: delete match arm 1 | 2 in packet_samples
+g2g-plugins/src/opusparse.rs:67:36: replace & with | in packet_samples
+g2g-plugins/src/opusparse.rs:67:36: replace & with ^ in packet_samples
+g2g-plugins/src/opusparse.rs:257:13: delete match arm Caps::Audio{format:AudioFormat::Opus, ..} in <impl AsyncElement for OpusParse>::intercept_caps
+g2g-plugins/src/opusparse.rs:287:9: replace <impl AsyncElement for OpusParse>::metadata -> ElementMetadata with Default::default()
+g2g-plugins/src/opusparse.rs:424:9: delete match arm 0..= 3 in decode_config
+g2g-plugins/src/opusparse.rs:425:9: delete match arm 4..= 7 in decode_config
+g2g-plugins/src/opusparse.rs:428:9: delete match arm 14..= 15 in decode_config
+g2g-plugins/src/opusparse.rs:430:9: delete match arm 20..= 23 in decode_config
+g2g-plugins/src/opusparse.rs:431:9: delete match arm 24..= 27 in decode_config
+g2g-plugins/src/opusparse.rs:424:53: replace % with / in decode_config
+g2g-plugins/src/opusparse.rs:425:53: replace % with / in decode_config

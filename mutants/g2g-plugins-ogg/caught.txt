@@ -1,0 +1,253 @@
+g2g-plugins/src/ogg.rs:36:42: replace * with +
+g2g-plugins/src/ogg.rs:163:9: replace OggLogicalStream::serial -> u32 with 1
+g2g-plugins/src/ogg.rs:169:9: replace OggLogicalStream::chain -> u32 with 0
+g2g-plugins/src/ogg.rs:169:9: replace OggLogicalStream::chain -> u32 with 1
+g2g-plugins/src/ogg.rs:163:9: replace OggLogicalStream::serial -> u32 with 0
+g2g-plugins/src/ogg.rs:174:9: replace OggLogicalStream::slot -> usize with 0
+g2g-plugins/src/ogg.rs:174:9: replace OggLogicalStream::slot -> usize with 1
+g2g-plugins/src/ogg.rs:179:9: replace OggLogicalStream::info -> Option<OggStreamInfo> with None
+g2g-plugins/src/ogg.rs:36:42: replace * with /
+g2g-plugins/src/ogg.rs:36:35: replace * with /
+g2g-plugins/src/ogg.rs:153:9: replace OggLogicalStream::resume_mid_stream with ()
+g2g-plugins/src/ogg.rs:190:9: replace OggLogicalStream::comment_header -> Option<&[u8]> with None
+g2g-plugins/src/ogg.rs:190:9: replace OggLogicalStream::comment_header -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/ogg.rs:196:9: replace OggLogicalStream::head_header -> Option<&[u8]> with None
+g2g-plugins/src/ogg.rs:196:9: replace OggLogicalStream::head_header -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/ogg.rs:202:9: replace OggLogicalStream::setup_header -> Option<&[u8]> with None
+g2g-plugins/src/ogg.rs:202:9: replace OggLogicalStream::setup_header -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/ogg.rs:209:9: replace OggLogicalStream::end_granule -> Option<u64> with None
+g2g-plugins/src/ogg.rs:209:9: replace OggLogicalStream::end_granule -> Option<u64> with Some(0)
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((0, 0, true))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with None
+g2g-plugins/src/ogg.rs:209:9: replace OggLogicalStream::end_granule -> Option<u64> with Some(1)
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((0, 1, true))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((0, 1, false))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((0, 0, false))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((1, 0, true))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((1, 0, false))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((1, 1, true))
+g2g-plugins/src/ogg.rs:215:9: replace OggLogicalStream::first_data_granule -> Option<(u64, u32, bool)> with Some((1, 1, false))
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with None
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with Some((0, Vec::leak(Vec::new())))
+g2g-plugins/src/ogg.rs:223:9: replace OggLogicalStream::resume_anchor -> Option<(u64, &[u8])> with Some((1, Vec::leak(Vec::new())))
+g2g-plugins/src/ogg.rs:254:9: replace OggDemuxer::streams -> &[OggLogicalStream] with Vec::leak(Vec::new())
+g2g-plugins/src/ogg.rs:259:9: replace OggDemuxer::stream_mut -> Option<&mut OggLogicalStream> with None
+g2g-plugins/src/ogg.rs:271:9: replace OggDemuxer::chain -> u32 with 0
+g2g-plugins/src/ogg.rs:271:9: replace OggDemuxer::chain -> u32 with 1
+g2g-plugins/src/ogg.rs:265:9: replace OggDemuxer::grouping_done -> bool with false
+g2g-plugins/src/ogg.rs:277:9: replace OggDemuxer::stream_of -> Option<usize> with None
+g2g-plugins/src/ogg.rs:277:9: replace OggDemuxer::stream_of -> Option<usize> with Some(0)
+g2g-plugins/src/ogg.rs:282:9: replace OggDemuxer::stream_of_in_chain -> Option<usize> with None
+g2g-plugins/src/ogg.rs:277:9: replace OggDemuxer::stream_of -> Option<usize> with Some(1)
+g2g-plugins/src/ogg.rs:282:9: replace OggDemuxer::stream_of_in_chain -> Option<usize> with Some(0)
+g2g-plugins/src/ogg.rs:282:9: replace OggDemuxer::stream_of_in_chain -> Option<usize> with Some(1)
+g2g-plugins/src/ogg.rs:284:44: replace && with || in OggDemuxer::stream_of_in_chain
+g2g-plugins/src/ogg.rs:284:35: replace == with != in OggDemuxer::stream_of_in_chain
+g2g-plugins/src/ogg.rs:290:9: replace OggDemuxer::info -> Option<OggStreamInfo> with None
+g2g-plugins/src/ogg.rs:284:71: replace == with != in OggDemuxer::stream_of_in_chain
+g2g-plugins/src/ogg.rs:304:9: replace OggDemuxer::comment_header -> Option<&[u8]> with None
+g2g-plugins/src/ogg.rs:304:9: replace OggDemuxer::comment_header -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/ogg.rs:310:9: replace OggDemuxer::head_header -> Option<&[u8]> with None
+g2g-plugins/src/ogg.rs:310:9: replace OggDemuxer::head_header -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/ogg.rs:323:9: replace OggDemuxer::end_granule -> Option<u64> with None
+g2g-plugins/src/ogg.rs:323:9: replace OggDemuxer::end_granule -> Option<u64> with Some(0)
+g2g-plugins/src/ogg.rs:323:9: replace OggDemuxer::end_granule -> Option<u64> with Some(1)
+g2g-plugins/src/ogg.rs:347:41: replace == with != in OggDemuxer::resume_mid_stream
+g2g-plugins/src/ogg.rs:345:9: replace OggDemuxer::resume_mid_stream with ()
+g2g-plugins/src/ogg.rs:360:9: replace OggDemuxer::foreign_page -> bool with true
+g2g-plugins/src/ogg.rs:360:9: replace OggDemuxer::foreign_page -> bool with false
+g2g-plugins/src/ogg.rs:366:9: replace OggDemuxer::push_data with ()
+g2g-plugins/src/ogg.rs:372:9: replace OggDemuxer::drain_pages with ()
+g2g-plugins/src/ogg.rs:381:9: replace OggDemuxer::parse_pages -> usize with 0
+g2g-plugins/src/ogg.rs:385:65: replace == with != in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:381:9: replace OggDemuxer::parse_pages -> usize with 1
+g2g-plugins/src/ogg.rs:388:16: replace += with -= in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:390:27: replace < with == in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:394:40: replace + with * in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:390:27: replace < with > in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:394:40: replace + with - in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:395:27: replace < with == in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:395:27: replace < with > in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:402:35: replace + with - in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:402:35: replace + with * in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:403:27: replace < with == in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:403:27: replace < with > in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:403:27: replace < with <= in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:407:16: replace += with -= in OggDemuxer::parse_pages
+g2g-plugins/src/ogg.rs:416:38: replace != with == in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:416:31: replace & with | in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:417:12: delete ! in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:416:31: replace & with ^ in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:428:44: replace && with || in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:414:9: replace OggDemuxer::parse_page with ()
+g2g-plugins/src/ogg.rs:428:35: replace == with != in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:428:56: replace == with != in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:438:42: delete ! in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:440:62: replace || with && in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:440:20: delete ! in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:440:34: replace || with && in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:440:70: replace >= with < in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:439:67: replace == with != in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:446:36: replace - with + in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:446:36: replace - with / in OggDemuxer::parse_page
+g2g-plugins/src/ogg.rs:461:49: replace || with && in OggDemuxer::start_chain
+g2g-plugins/src/ogg.rs:461:25: delete ! in OggDemuxer::start_chain
+g2g-plugins/src/ogg.rs:461:52: delete ! in OggDemuxer::start_chain
+g2g-plugins/src/ogg.rs:457:9: replace OggDemuxer::start_chain with ()
+g2g-plugins/src/ogg.rs:462:34: replace > with < in OggDemuxer::start_chain
+g2g-plugins/src/ogg.rs:477:36: replace && with || in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:477:24: replace & with | in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:474:9: replace OggLogicalStream::parse_page with ()
+g2g-plugins/src/ogg.rs:477:24: replace & with ^ in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:477:31: replace != with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:477:42: replace != with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:482:45: replace != with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:482:38: replace & with ^ in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:494:50: replace + with - in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:494:50: replace + with * in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:495:17: replace += with -= in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:495:17: replace += with *= in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:496:20: replace < with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:496:20: replace < with > in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:496:20: replace < with <= in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:509:22: replace > with < in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:509:22: replace > with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:515:26: replace && with || in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:515:32: replace != with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:520:66: replace && with || in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:520:38: replace && with || in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:520:62: replace > with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:520:62: replace > with >= in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:520:62: replace > with < in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:520:72: replace != with == in OggLogicalStream::parse_page
+g2g-plugins/src/ogg.rs:536:39: replace == with != in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:537:34: replace == with != in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:526:9: replace OggLogicalStream::finalize with ()
+g2g-plugins/src/ogg.rs:539:33: replace != with == in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:540:37: replace == with != in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:540:30: replace & with | in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:544:35: replace += with -= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:545:38: replace += with -= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:540:30: replace & with ^ in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:549:31: replace += with *= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:549:31: replace += with -= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:553:13: delete match arm Some(OggCodec::Opus) in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:557:30: replace < with > in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:557:30: replace < with == in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:554:13: delete match arm Some(OggCodec::Vorbis) in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:557:30: replace < with <= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:561:34: replace == with != in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:563:41: replace == with != in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:568:31: replace += with -= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:565:41: replace == with != in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:571:27: replace += with -= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:568:31: replace += with *= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:572:30: replace += with *= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:572:30: replace += with -= in OggLogicalStream::finalize
+g2g-plugins/src/ogg.rs:594:12: delete ! in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:594:61: replace < with == in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:594:9: replace VorbisTiming::parse -> Option<Self> with None
+g2g-plugins/src/ogg.rs:594:61: replace < with <= in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:598:56: replace & with | in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:598:56: replace & with ^ in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:600:12: delete ! in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:599:56: replace >> with << in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:600:43: delete ! in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:600:78: replace > with < in VorbisTiming::parse
+g2g-plugins/src/ogg.rs:618:19: replace != with == in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:617:9: replace VorbisTiming::packet_blocksize -> Option<u32> with None
+g2g-plugins/src/ogg.rs:618:15: replace & with | in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:617:9: replace VorbisTiming::packet_blocksize -> Option<u32> with Some(0)
+g2g-plugins/src/ogg.rs:617:9: replace VorbisTiming::packet_blocksize -> Option<u32> with Some(1)
+g2g-plugins/src/ogg.rs:618:15: replace & with ^ in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:623:23: replace - with + in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:623:59: replace - with + in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:624:35: replace >> with << in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:623:59: replace - with / in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:624:41: replace & with | in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:624:41: replace & with ^ in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:624:59: replace - with + in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:624:59: replace - with / in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:624:50: replace << with >> in VorbisTiming::packet_blocksize
+g2g-plugins/src/ogg.rs:643:8: delete ! in mode_blockflags
+g2g-plugins/src/ogg.rs:643:5: replace mode_blockflags -> Option<Vec<bool>> with None
+g2g-plugins/src/ogg.rs:646:46: replace != with == in mode_blockflags
+g2g-plugins/src/ogg.rs:647:35: replace + with - in mode_blockflags
+g2g-plugins/src/ogg.rs:647:35: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:647:31: replace * with + in mode_blockflags
+g2g-plugins/src/ogg.rs:647:49: replace - with + in mode_blockflags
+g2g-plugins/src/ogg.rs:647:49: replace - with / in mode_blockflags
+g2g-plugins/src/ogg.rs:648:61: replace & with | in mode_blockflags
+g2g-plugins/src/ogg.rs:648:61: replace & with ^ in mode_blockflags
+g2g-plugins/src/ogg.rs:648:49: replace >> with << in mode_blockflags
+g2g-plugins/src/ogg.rs:647:31: replace * with / in mode_blockflags
+g2g-plugins/src/ogg.rs:648:34: replace / with % in mode_blockflags
+g2g-plugins/src/ogg.rs:648:34: replace / with * in mode_blockflags
+g2g-plugins/src/ogg.rs:648:55: replace % with / in mode_blockflags
+g2g-plugins/src/ogg.rs:648:55: replace % with + in mode_blockflags
+g2g-plugins/src/ogg.rs:651:65: replace + with - in mode_blockflags
+g2g-plugins/src/ogg.rs:651:65: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:651:61: replace + with - in mode_blockflags
+g2g-plugins/src/ogg.rs:651:61: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:651:57: replace - with + in mode_blockflags
+g2g-plugins/src/ogg.rs:651:57: replace - with / in mode_blockflags
+g2g-plugins/src/ogg.rs:656:20: replace < with > in mode_blockflags
+g2g-plugins/src/ogg.rs:656:33: replace + with - in mode_blockflags
+g2g-plugins/src/ogg.rs:659:25: replace - with + in mode_blockflags
+g2g-plugins/src/ogg.rs:659:25: replace - with / in mode_blockflags
+g2g-plugins/src/ogg.rs:659:29: replace * with + in mode_blockflags
+g2g-plugins/src/ogg.rs:659:29: replace * with / in mode_blockflags
+g2g-plugins/src/ogg.rs:660:29: replace > with < in mode_blockflags
+g2g-plugins/src/ogg.rs:660:20: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:660:55: replace != with == in mode_blockflags
+g2g-plugins/src/ogg.rs:660:45: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:660:81: replace != with == in mode_blockflags
+g2g-plugins/src/ogg.rs:660:71: replace + with - in mode_blockflags
+g2g-plugins/src/ogg.rs:660:71: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:663:28: replace == with != in mode_blockflags
+g2g-plugins/src/ogg.rs:663:20: replace - with + in mode_blockflags
+g2g-plugins/src/ogg.rs:663:20: replace - with / in mode_blockflags
+g2g-plugins/src/ogg.rs:663:33: replace - with + in mode_blockflags
+g2g-plugins/src/ogg.rs:667:25: replace - with / in mode_blockflags
+g2g-plugins/src/ogg.rs:663:33: replace - with / in mode_blockflags
+g2g-plugins/src/ogg.rs:667:25: replace - with + in mode_blockflags
+g2g-plugins/src/ogg.rs:667:33: replace * with + in mode_blockflags
+g2g-plugins/src/ogg.rs:667:33: replace * with / in mode_blockflags
+g2g-plugins/src/ogg.rs:668:49: replace == with != in mode_blockflags
+g2g-plugins/src/ogg.rs:668:39: replace + with - in mode_blockflags
+g2g-plugins/src/ogg.rs:668:39: replace + with * in mode_blockflags
+g2g-plugins/src/ogg.rs:668:43: replace * with + in mode_blockflags
+g2g-plugins/src/ogg.rs:668:43: replace * with / in mode_blockflags
+g2g-plugins/src/ogg.rs:681:63: replace >= with < in detect
+g2g-plugins/src/ogg.rs:681:87: replace == with != in detect
+g2g-plugins/src/ogg.rs:699:49: replace && with || in detect
+g2g-plugins/src/ogg.rs:699:65: replace >= with < in detect
+g2g-plugins/src/ogg.rs:720:5: replace page_crc -> u32 with 0
+g2g-plugins/src/ogg.rs:720:5: replace page_crc -> u32 with 1
+g2g-plugins/src/ogg.rs:764:9: replace OggPageWriter::serial -> u32 with 0
+g2g-plugins/src/ogg.rs:764:9: replace OggPageWriter::serial -> u32 with 1
+g2g-plugins/src/ogg.rs:774:50: replace || with && in OggPageWriter::push_packet
+g2g-plugins/src/ogg.rs:774:31: replace < with == in OggPageWriter::push_packet
+g2g-plugins/src/ogg.rs:774:31: replace < with > in OggPageWriter::push_packet
+g2g-plugins/src/ogg.rs:774:72: replace < with <= in OggPageWriter::push_packet
+g2g-plugins/src/ogg.rs:774:72: replace < with > in OggPageWriter::push_packet
+g2g-plugins/src/ogg.rs:799:24: replace >= with < in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:801:22: replace -= with /= in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:824:21: replace < with == in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:824:21: replace < with > in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:825:31: replace + with - in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:835:32: replace == with != in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:839:30: replace + with - in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:839:30: replace + with * in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:842:21: replace && with || in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:844:16: replace += with -= in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:844:16: replace += with *= in OggPageWriter::emit
+g2g-plugins/src/ogg.rs:864:25: replace |= with &= in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:866:12: delete ! in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:861:9: replace OggPageWriter::write_page with ()
+g2g-plugins/src/ogg.rs:867:25: replace |= with &= in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:871:25: replace |= with &= in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:885:19: replace + with - in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:885:19: replace + with * in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:885:31: replace + with - in OggPageWriter::write_page
+g2g-plugins/src/ogg.rs:885:31: replace + with * in OggPageWriter::write_page

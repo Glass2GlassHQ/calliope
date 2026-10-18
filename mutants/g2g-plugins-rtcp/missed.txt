@@ -1,0 +1,20 @@
+g2g-plugins/src/rtcp.rs:129:19: replace | with ^ in header
+g2g-plugins/src/rtcp.rs:23:38: replace << with >>
+g2g-plugins/src/rtcp.rs:138:29: replace - with + in patch_length
+g2g-plugins/src/rtcp.rs:146:40: replace | with ^ in write_report_block
+g2g-plugins/src/rtcp.rs:194:5: replace ntp_now -> u64 with 1
+g2g-plugins/src/rtcp.rs:194:5: replace ntp_now -> u64 with 0
+g2g-plugins/src/rtcp.rs:253:17: replace < with > in build_nack
+g2g-plugins/src/rtcp.rs:255:22: replace == with != in build_nack
+g2g-plugins/src/rtcp.rs:255:36: replace > with >= in build_nack
+g2g-plugins/src/rtcp.rs:261:47: replace | with ^ in build_nack
+g2g-plugins/src/rtcp.rs:339:9: delete match arm PT_APP in parse_packet
+g2g-plugins/src/rtcp.rs:310:21: replace match guard count as u8 == FMT_GENERIC_NACK with true in parse_packet
+g2g-plugins/src/rtcp.rs:416:9: replace ReceptionStats::source_ssrc -> u32 with 0
+g2g-plugins/src/rtcp.rs:416:9: replace ReceptionStats::source_ssrc -> u32 with 1
+g2g-plugins/src/rtcp.rs:452:33: replace >> with << in ReceptionStats::on_sender_report
+g2g-plugins/src/rtcp.rs:452:9: replace ReceptionStats::on_sender_report with ()
+g2g-plugins/src/rtcp.rs:485:55: replace || with && in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:473:9: replace ReceptionStats::cumulative_lost -> u32 with 1
+g2g-plugins/src/rtcp.rs:492:47: replace == with != in ReceptionStats::report_block
+g2g-plugins/src/rtcp.rs:504:37: replace >> with << in ReceptionStats::report_block

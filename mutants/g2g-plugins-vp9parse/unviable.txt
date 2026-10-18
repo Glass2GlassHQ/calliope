@@ -1,0 +1,7 @@
+g2g-plugins/src/vp9parse.rs:76:9: replace <impl AsyncElement for Vp9Parse>::intercept_caps -> Result<Caps, G2gError> with Ok(Default::default())
+g2g-plugins/src/vp9parse.rs:116:9: replace <impl AsyncElement for Vp9Parse>::process -> Self::ProcessFuture<'a> with Default::default()
+g2g-plugins/src/vp9parse.rs:89:9: replace <impl AsyncElement for Vp9Parse>::caps_constraint_as_transform -> CapsConstraint<'_> with Default::default()
+g2g-plugins/src/vp9parse.rs:99:9: replace <impl AsyncElement for Vp9Parse>::configure_pipeline -> Result<ConfigureOutcome, G2gError> with Ok(Default::default())
+g2g-plugins/src/vp9parse.rs:164:9: replace <impl PadTemplates for Vp9Parse>::pad_templates -> Vec<PadTemplate> with vec![]
+g2g-plugins/src/vp9parse.rs:164:9: replace <impl PadTemplates for Vp9Parse>::pad_templates -> Vec<PadTemplate> with vec![Default::default()]
+g2g-plugins/src/vp9parse.rs:198:5: replace parse_keyframe -> Option<Vp9KeyFrame> with Some(Default::default())

@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/mp4demuxn.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=m1046_chapters --cargo-arg=--test=m1206_ogg_mp4_demux_latency --cargo-arg=--test=m475_demuxn_select --cargo-arg=--test=m791_mp4_opus_preskip --cargo-arg=--test=m767_mp4_opus_demux --cargo-arg=--test=m793_progressive_mp4 --cargo-arg=--test=m824_mp4_faststart --cargo-arg=--test=m838_mp4_tags --cargo-arg=--test=m859_cmaf_chunks --cargo-arg=--test=m883_mp4_closed_caption --cargo-arg=--test=m896_hlssink --cargo-arg=--test=m832_cmaf --cargo-arg=--test=m898_subtitle_mux --cargo-arg=--test=mp4_unsupported_video_codec --cargo-arg=--test=m972_progressive_bframes -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 8m
+exit: 3
+114 mutants tested in 8m: 24 missed, 57 caught, 27 unviable, 6 timeouts

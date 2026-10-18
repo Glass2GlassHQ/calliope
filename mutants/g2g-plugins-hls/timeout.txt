@@ -1,0 +1,1 @@
+g2g-plugins/src/hls.rs:614:11: replace += with *= in attr_pairs

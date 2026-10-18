@@ -1,0 +1,6 @@
+g2g-plugins/src/mp4demuxn.rs:603:25: replace += with *= in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:624:25: replace += with *= in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:842:5: replace next_box -> Option<([u8; 4], usize)> with Some(([0; 4], 1))
+g2g-plugins/src/mp4demuxn.rs:842:5: replace next_box -> Option<([u8; 4], usize)> with Some(([0; 4], 0))
+g2g-plugins/src/mp4demuxn.rs:842:5: replace next_box -> Option<([u8; 4], usize)> with Some(([1; 4], 0))
+g2g-plugins/src/mp4demuxn.rs:842:5: replace next_box -> Option<([u8; 4], usize)> with Some(([1; 4], 1))

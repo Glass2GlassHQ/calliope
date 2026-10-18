@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/matroska.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=m194_container_demux --cargo-arg=--test=m1046_chapters --cargo-arg=--test=m294_matroskamux_av --cargo-arg=--test=m770_mkv_seekhead --cargo-arg=--test=m773_av1_mux --cargo-arg=--test=m828_mkv_streamable_clusters --cargo-arg=--test=m898_subtitle_mux --cargo-arg=--test=m927_subpicture_mux --cargo-arg=--test=m928_mkvmux_subtitles -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 30m
+exit: 3
+804 mutants tested in 31m: 85 missed, 574 caught, 139 unviable, 6 timeouts

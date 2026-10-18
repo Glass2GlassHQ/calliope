@@ -1,0 +1,27 @@
+g2g-plugins/src/mp4demuxn.rs:155:5: replace forwardable_streams -> Vec<Mp4StreamInfo> with vec![]
+g2g-plugins/src/mp4demuxn.rs:155:5: replace forwardable_streams -> Vec<Mp4StreamInfo> with vec![Default::default()]
+g2g-plugins/src/mp4demuxn.rs:86:5: replace nego_caps -> (Caps, bool) with (Default::default(), true)
+g2g-plugins/src/mp4demuxn.rs:127:5: replace real_caps -> Caps with Default::default()
+g2g-plugins/src/mp4demuxn.rs:86:5: replace nego_caps -> (Caps, bool) with (Default::default(), false)
+g2g-plugins/src/mp4demuxn.rs:191:5: replace subtitle_streams -> Vec<Mp4StreamInfo> with vec![]
+g2g-plugins/src/mp4demuxn.rs:217:5: replace caption_streams -> Vec<Mp4StreamInfo> with vec![]
+g2g-plugins/src/mp4demuxn.rs:191:5: replace subtitle_streams -> Vec<Mp4StreamInfo> with vec![Default::default()]
+g2g-plugins/src/mp4demuxn.rs:217:5: replace caption_streams -> Vec<Mp4StreamInfo> with vec![Default::default()]
+g2g-plugins/src/mp4demuxn.rs:340:9: replace Mp4DemuxN::with_stream_select -> Self with Default::default()
+g2g-plugins/src/mp4demuxn.rs:394:9: replace Mp4DemuxN::with_cenc_key -> Self with Default::default()
+g2g-plugins/src/mp4demuxn.rs:408:9: replace Mp4DemuxN::with_cenc_keys -> Self with Default::default()
+g2g-plugins/src/mp4demuxn.rs:426:9: replace Mp4DemuxN::with_cenc_key_handle -> Self with Default::default()
+g2g-plugins/src/mp4demuxn.rs:433:9: replace Mp4DemuxN::with_bus -> Self with Default::default()
+g2g-plugins/src/mp4demuxn.rs:455:9: replace Mp4DemuxN::input_caps -> CapsSet with Default::default()
+g2g-plugins/src/mp4demuxn.rs:546:9: replace Mp4DemuxN::parse_fragments_in -> Result<Vec<(u32, Sample)>, G2gError> with Ok(vec![])
+g2g-plugins/src/mp4demuxn.rs:546:9: replace Mp4DemuxN::parse_fragments_in -> Result<Vec<(u32, Sample)>, G2gError> with Ok(vec![(0, Default::default())])
+g2g-plugins/src/mp4demuxn.rs:546:9: replace Mp4DemuxN::parse_fragments_in -> Result<Vec<(u32, Sample)>, G2gError> with Ok(vec![(1, Default::default())])
+g2g-plugins/src/mp4demuxn.rs:694:9: replace Mp4DemuxN::forwarded_tracks -> Vec<TrackHeader> with vec![]
+g2g-plugins/src/mp4demuxn.rs:694:9: replace Mp4DemuxN::forwarded_tracks -> Vec<TrackHeader> with vec![Default::default()]
+g2g-plugins/src/mp4demuxn.rs:826:9: replace Mp4DemuxN::next_frame -> Frame with Default::default()
+g2g-plugins/src/mp4demuxn.rs:860:9: replace <impl MultiOutputElement for Mp4DemuxN>::input_domains -> g2g_core::memory::DomainSet with Default::default()
+g2g-plugins/src/mp4demuxn.rs:864:9: replace <impl MultiOutputElement for Mp4DemuxN>::intercept_caps -> Result<Caps, G2gError> with Ok(Default::default())
+g2g-plugins/src/mp4demuxn.rs:872:9: replace <impl MultiOutputElement for Mp4DemuxN>::caps_constraint_as_input -> CapsConstraint<'_> with Default::default()
+g2g-plugins/src/mp4demuxn.rs:882:9: replace <impl MultiOutputElement for Mp4DemuxN>::configure_pipeline -> Result<ConfigureOutcome, G2gError> with Ok(Default::default())
+g2g-plugins/src/mp4demuxn.rs:878:9: replace <impl MultiOutputElement for Mp4DemuxN>::port_output_caps -> Option<Caps> with Some(Default::default())
+g2g-plugins/src/mp4demuxn.rs:894:9: replace <impl MultiOutputElement for Mp4DemuxN>::process -> Self::ProcessFuture<'a> with Default::default()

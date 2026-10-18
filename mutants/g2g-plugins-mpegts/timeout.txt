@@ -1,0 +1,16 @@
+g2g-plugins/src/mpegts.rs:1571:19: replace += with *= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1586:27: replace += with -= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1586:27: replace += with *= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1594:19: replace += with *= in TsPacketSplitter::split
+g2g-plugins/src/mpegts.rs:1765:24: replace + with * in has_klv_registration
+g2g-plugins/src/mpegts.rs:2624:19: replace < with <= in TsMuxer::push_au_on
+g2g-plugins/src/mpegts.rs:2710:9: replace TsMuxer::byte_clock_27mhz -> u64 with 0
+g2g-plugins/src/mpegts.rs:2710:9: replace TsMuxer::byte_clock_27mhz -> u64 with 1
+g2g-plugins/src/mpegts.rs:2711:12: delete ! in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2715:63: replace / with % in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2715:45: replace * with / in TsMuxer::byte_clock_27mhz
+g2g-plugins/src/mpegts.rs:2731:49: replace >= with < in TsMuxer::pad_until
+g2g-plugins/src/mpegts.rs:2734:16: delete ! in TsMuxer::pad_until
+g2g-plugins/src/mpegts.rs:2753:9: replace TsMuxer::write_due_pcr_only_packets -> bool with true
+g2g-plugins/src/mpegts.rs:3101:5: replace ts_packet with ()
+g2g-plugins/src/mpegts.rs:3124:28: replace + with * in ts_packet

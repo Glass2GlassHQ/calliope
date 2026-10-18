@@ -1,0 +1,24 @@
+g2g-plugins/src/mp4demuxn.rs:369:65: replace == with != in Mp4DemuxN::apply_stream_selection
+g2g-plugins/src/mp4demuxn.rs:439:9: replace Mp4DemuxN::port_count -> usize with 0
+g2g-plugins/src/mp4demuxn.rs:439:9: replace Mp4DemuxN::port_count -> usize with 1
+g2g-plugins/src/mp4demuxn.rs:98:32: replace << with >> in nego_caps
+g2g-plugins/src/mp4demuxn.rs:451:9: replace Mp4DemuxN::accepts -> bool with true
+g2g-plugins/src/mp4demuxn.rs:630:21: replace > with >= in Mp4DemuxN::advance
+g2g-plugins/src/mp4demuxn.rs:656:48: replace && with || in Mp4DemuxN::learn_held_fragment
+g2g-plugins/src/mp4demuxn.rs:656:44: replace > with >= in Mp4DemuxN::learn_held_fragment
+g2g-plugins/src/mp4demuxn.rs:663:9: replace Mp4DemuxN::port_segment -> Segment with Default::default()
+g2g-plugins/src/mp4demuxn.rs:737:63: replace == with != in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:744:55: replace && with || in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:744:34: replace != with == in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:744:26: replace match guard *format != AudioFormat::Opus && t.media_start > 0 with false in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:744:72: replace > with == in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:744:72: replace > with >= in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:745:69: replace / with % in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:745:69: replace / with * in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:749:29: replace != with == in Mp4DemuxN::emit_samples
+g2g-plugins/src/mp4demuxn.rs:844:13: replace < with == in next_box
+g2g-plugins/src/mp4demuxn.rs:844:13: replace < with <= in next_box
+g2g-plugins/src/mp4demuxn.rs:878:9: replace <impl MultiOutputElement for Mp4DemuxN>::port_output_caps -> Option<Caps> with None
+g2g-plugins/src/mp4demuxn.rs:933:17: delete match arm PipelinePacket::Segment(seg) in <impl MultiOutputElement for Mp4DemuxN>::process
+g2g-plugins/src/mp4demuxn.rs:919:17: delete match arm PipelinePacket::Flush in <impl MultiOutputElement for Mp4DemuxN>::process
+g2g-plugins/src/mp4demuxn.rs:942:17: delete match arm PipelinePacket::CapsChanged(_) in <impl MultiOutputElement for Mp4DemuxN>::process

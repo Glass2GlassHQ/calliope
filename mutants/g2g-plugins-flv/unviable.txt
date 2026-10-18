@@ -1,0 +1,37 @@
+g2g-plugins/src/flv.rs:68:9: replace FlvCodec::track -> FlvTrack with Default::default()
+g2g-plugins/src/flv.rs:94:9: replace FlvCodec::from_video_id -> Option<Self> with Some(Default::default())
+g2g-plugins/src/flv.rs:106:9: replace FlvCodec::from_sound_format -> Option<Self> with Some(Default::default())
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::new()))
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::from_iter([0])))
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::from(0)))
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::new(0)))
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::from_iter([1])))
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::new(1)))
+g2g-plugins/src/flv.rs:216:5: replace tag_at -> Option<(FlvTagHeader, core::ops::Range<usize>)> with Some((Default::default(), Range::from(1)))
+g2g-plugins/src/flv.rs:266:9: replace FlvUnit::track -> FlvTrack with Default::default()
+g2g-plugins/src/flv.rs:303:9: replace FlvDemuxer::take_units -> Vec<FlvUnit> with vec![]
+g2g-plugins/src/flv.rs:303:9: replace FlvDemuxer::take_units -> Vec<FlvUnit> with vec![Default::default()]
+g2g-plugins/src/flv.rs:308:9: replace FlvDemuxer::metadata -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/flv.rs:308:9: replace FlvDemuxer::metadata -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/flv.rs:314:9: replace FlvDemuxer::video_config -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/flv.rs:314:9: replace FlvDemuxer::video_config -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/flv.rs:320:9: replace FlvDemuxer::audio_config -> Option<&[u8]> with Some(Vec::leak(vec![0]))
+g2g-plugins/src/flv.rs:320:9: replace FlvDemuxer::audio_config -> Option<&[u8]> with Some(Vec::leak(vec![1]))
+g2g-plugins/src/flv.rs:473:9: replace FlvMuxer::new_av -> Self with Default::default()
+g2g-plugins/src/flv.rs:497:9: replace FlvMuxer::with_tags -> Self with Default::default()
+g2g-plugins/src/flv.rs:517:9: replace FlvMuxer::push_au -> Vec<u8> with vec![]
+g2g-plugins/src/flv.rs:517:9: replace FlvMuxer::push_au -> Vec<u8> with vec![0]
+g2g-plugins/src/flv.rs:517:9: replace FlvMuxer::push_au -> Vec<u8> with vec![1]
+g2g-plugins/src/flv.rs:547:9: replace FlvMuxer::push_video -> Vec<u8> with vec![1]
+g2g-plugins/src/flv.rs:547:9: replace FlvMuxer::push_video -> Vec<u8> with vec![]
+g2g-plugins/src/flv.rs:547:9: replace FlvMuxer::push_video -> Vec<u8> with vec![0]
+g2g-plugins/src/flv.rs:576:9: replace FlvMuxer::push_audio -> Vec<u8> with vec![]
+g2g-plugins/src/flv.rs:576:9: replace FlvMuxer::push_audio -> Vec<u8> with vec![0]
+g2g-plugins/src/flv.rs:576:9: replace FlvMuxer::push_audio -> Vec<u8> with vec![1]
+g2g-plugins/src/flv.rs:658:5: replace on_metadata_body -> Vec<u8> with vec![]
+g2g-plugins/src/flv.rs:685:5: replace sequence_header -> Option<(FlvTrack, &[u8])> with Some((Default::default(), Vec::leak(Vec::new())))
+g2g-plugins/src/flv.rs:658:5: replace on_metadata_body -> Vec<u8> with vec![0]
+g2g-plugins/src/flv.rs:658:5: replace on_metadata_body -> Vec<u8> with vec![1]
+g2g-plugins/src/flv.rs:685:5: replace sequence_header -> Option<(FlvTrack, &[u8])> with Some((Default::default(), Vec::leak(vec![0])))
+g2g-plugins/src/flv.rs:685:5: replace sequence_header -> Option<(FlvTrack, &[u8])> with Some((Default::default(), Vec::leak(vec![1])))
+g2g-plugins/src/flv.rs:699:5: replace parse_tag -> Option<FlvUnit> with Some(Default::default())

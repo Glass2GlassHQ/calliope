@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/h265parse.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=m454_element_properties --cargo-arg=--test=m663_h265parse_real_stream --cargo-arg=--test=m425_h265_opus -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 7m
+exit: 2
+206 mutants tested in 8m: 147 missed, 51 caught, 8 unviable

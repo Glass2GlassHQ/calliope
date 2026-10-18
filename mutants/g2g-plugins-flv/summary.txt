@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/flv.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=m119_flv --cargo-arg=--test=m120_flvmux --cargo-arg=--test=m365_flvdemux_seek --cargo-arg=--test=m296_flvmux_av --cargo-arg=--test=m662_flv_config_interop --cargo-arg=--test=m831_flv_codecs -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 8m
+exit: 2
+217 mutants tested in 9m: 21 missed, 159 caught, 37 unviable

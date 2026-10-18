@@ -1,0 +1,3 @@
+g2g-plugins/src/rtcp.rs:251:23: replace + with * in build_nack
+g2g-plugins/src/rtcp.rs:259:15: replace += with -= in build_nack
+g2g-plugins/src/rtcp.rs:259:15: replace += with *= in build_nack

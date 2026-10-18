@@ -1,0 +1,574 @@
+g2g-plugins/src/matroska.rs:114:5: replace is_level1_element -> bool with true
+g2g-plugins/src/matroska.rs:179:15: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:183:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:185:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:187:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:191:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:181:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:195:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:197:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:178:33: replace - with + in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:114:5: replace is_level1_element -> bool with false
+g2g-plugins/src/matroska.rs:177:64: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:178:33: replace - with / in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:199:39: replace || with && in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:199:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:199:45: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:201:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:205:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:203:22: replace == with != in MkvCodec::from_codec_id
+g2g-plugins/src/matroska.rs:217:9: replace MkvCodec::codec_id -> Option<&'static[u8]> with None
+g2g-plugins/src/matroska.rs:217:9: replace MkvCodec::codec_id -> Option<&'static[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/matroska.rs:242:9: replace MkvCodec::is_webm -> bool with true
+g2g-plugins/src/matroska.rs:242:9: replace MkvCodec::is_webm -> bool with false
+g2g-plugins/src/matroska.rs:250:9: replace MkvCodec::track_type -> u8 with 0
+g2g-plugins/src/matroska.rs:251:13: delete match arm MkvCodec::Aac | MkvCodec::Opus | MkvCodec::Ac3 | MkvCodec::Flac in MkvCodec::track_type
+g2g-plugins/src/matroska.rs:250:9: replace MkvCodec::track_type -> u8 with 1
+g2g-plugins/src/matroska.rs:261:49: replace * with +
+g2g-plugins/src/matroska.rs:252:13: delete match arm MkvCodec::Subtitle(_) | MkvCodec::VobSub | MkvCodec::DvbSub | MkvCodec::Pgs in MkvCodec::track_type
+g2g-plugins/src/matroska.rs:261:49: replace * with /
+g2g-plugins/src/matroska.rs:261:42: replace * with /
+g2g-plugins/src/matroska.rs:287:9: replace MkvCompression::decode -> bool with true
+g2g-plugins/src/matroska.rs:299:26: replace > with < in MkvCompression::decode
+g2g-plugins/src/matroska.rs:287:9: replace MkvCompression::decode -> bool with false
+g2g-plugins/src/matroska.rs:325:5: replace parse_content_encodings -> Option<MkvCompression> with None
+g2g-plugins/src/matroska.rs:341:13: delete match arm ID_CONTENT_COMPRESSION in parse_content_encodings
+g2g-plugins/src/matroska.rs:339:13: delete match arm ID_CONTENT_ENCODING_SCOPE in parse_content_encodings
+g2g-plugins/src/matroska.rs:317:5: replace inflate_block -> Option<Vec<u8>> with None
+g2g-plugins/src/matroska.rs:325:61: replace == with != in parse_content_encodings
+g2g-plugins/src/matroska.rs:346:19: replace || with && in parse_content_encodings
+g2g-plugins/src/matroska.rs:346:31: replace != with == in parse_content_encodings
+g2g-plugins/src/matroska.rs:355:13: delete match arm ID_CONTENT_COMP_ALGO in parse_content_encodings
+g2g-plugins/src/matroska.rs:361:9: delete match arm 0 in parse_content_encodings
+g2g-plugins/src/matroska.rs:356:13: delete match arm ID_CONTENT_COMP_SETTINGS in parse_content_encodings
+g2g-plugins/src/matroska.rs:362:14: replace match guard settings.len() <= MAX_HEADER_STRIP_LEN with false in parse_content_encodings
+g2g-plugins/src/matroska.rs:346:14: replace != with == in parse_content_encodings
+g2g-plugins/src/matroska.rs:362:29: replace <= with > in parse_content_encodings
+g2g-plugins/src/matroska.rs:375:63: replace == with != in decode_encodings
+g2g-plugins/src/matroska.rs:518:9: replace MatroskaDemuxer::cue_index_offset -> Option<u64> with None
+g2g-plugins/src/matroska.rs:518:9: replace MatroskaDemuxer::cue_index_offset -> Option<u64> with Some(0)
+g2g-plugins/src/matroska.rs:518:9: replace MatroskaDemuxer::cue_index_offset -> Option<u64> with Some(1)
+g2g-plugins/src/matroska.rs:372:5: replace decode_encodings with ()
+g2g-plugins/src/matroska.rs:523:9: replace MatroskaDemuxer::cues -> &[CuePoint] with Vec::leak(Vec::new())
+g2g-plugins/src/matroska.rs:540:35: replace <= with > in MatroskaDemuxer::cue_seek_offset
+g2g-plugins/src/matroska.rs:533:9: replace MatroskaDemuxer::cue_seek_offset -> Option<u64> with None
+g2g-plugins/src/matroska.rs:565:9: replace MatroskaDemuxer::tracks -> &[MkvTrack] with Vec::leak(Vec::new())
+g2g-plugins/src/matroska.rs:533:9: replace MatroskaDemuxer::cue_seek_offset -> Option<u64> with Some(1)
+g2g-plugins/src/matroska.rs:533:9: replace MatroskaDemuxer::cue_seek_offset -> Option<u64> with Some(0)
+g2g-plugins/src/matroska.rs:579:31: replace == with != in MatroskaDemuxer::codec_private
+g2g-plugins/src/matroska.rs:577:9: replace MatroskaDemuxer::codec_private -> Option<&[u8]> with None
+g2g-plugins/src/matroska.rs:577:9: replace MatroskaDemuxer::codec_private -> Option<&[u8]> with Some(Vec::leak(Vec::new()))
+g2g-plugins/src/matroska.rs:594:9: replace MatroskaDemuxer::track_tags -> &[(u64, TagList)] with Vec::leak(Vec::new())
+g2g-plugins/src/matroska.rs:604:9: replace MatroskaDemuxer::track_entry_tags -> &[(u64, TagList)] with Vec::leak(Vec::new())
+g2g-plugins/src/matroska.rs:611:9: replace MatroskaDemuxer::chapters -> &[Chapter] with Vec::leak(Vec::new())
+g2g-plugins/src/matroska.rs:638:33: replace + with * in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:622:9: replace MatroskaDemuxer::push_data with ()
+g2g-plugins/src/matroska.rs:631:9: replace MatroskaDemuxer::drain_elements with ()
+g2g-plugins/src/matroska.rs:640:19: replace == with != in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:656:19: replace == with != in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:695:27: replace match guard is_level1_element(id) with false in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:673:43: replace < with == in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:673:43: replace < with > in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:666:21: delete match arm ID_TIMESTAMP | ID_SIMPLE_BLOCK | ID_BLOCK_GROUP in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:673:43: replace < with <= in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:695:27: replace match guard is_level1_element(id) with true in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:676:31: replace == with != in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:706:43: replace < with > in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:723:31: replace < with == in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:723:31: replace < with > in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:723:31: replace < with <= in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:770:21: delete match arm ID_CLUSTER in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:729:21: delete match arm ID_INFO in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:761:21: delete match arm ID_TAGS in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:785:21: delete match arm ID_CUES in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:745:21: delete match arm ID_TRACKS in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:779:21: delete match arm ID_CHAPTERS in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:752:32: delete ! in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:791:21: delete match arm ID_SEEK_HEAD in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:748:32: delete ! in MatroskaDemuxer::drain_elements
+g2g-plugins/src/matroska.rs:811:5: replace parse_seekhead_cues -> Option<u64> with Some(0)
+g2g-plugins/src/matroska.rs:811:5: replace parse_seekhead_cues -> Option<u64> with None
+g2g-plugins/src/matroska.rs:812:15: replace != with == in parse_seekhead_cues
+g2g-plugins/src/matroska.rs:819:17: delete match arm ID_SEEK_ID in parse_seekhead_cues
+g2g-plugins/src/matroska.rs:820:17: delete match arm ID_SEEK_POSITION in parse_seekhead_cues
+g2g-plugins/src/matroska.rs:811:5: replace parse_seekhead_cues -> Option<u64> with Some(1)
+g2g-plugins/src/matroska.rs:849:32: replace == with != in parse_cues
+g2g-plugins/src/matroska.rs:824:20: replace == with != in parse_seekhead_cues
+g2g-plugins/src/matroska.rs:839:15: replace != with == in parse_cues
+g2g-plugins/src/matroska.rs:847:17: delete match arm ID_CUE_TRACK_POSITIONS in parse_cues
+g2g-plugins/src/matroska.rs:879:72: replace + with - in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:879:72: replace + with * in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:880:39: replace + with - in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:880:39: replace + with * in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:878:9: replace <impl Iterator for EbmlChildren<'a>>::next -> Option<Self::Item> with None
+g2g-plugins/src/matroska.rs:880:30: replace + with - in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:880:30: replace + with * in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:882:16: replace > with == in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:882:16: replace > with < in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:882:16: replace > with >= in <impl Iterator for EbmlChildren<'a>>::next
+g2g-plugins/src/matroska.rs:896:29: replace == with != in parse_timestamp_scale
+g2g-plugins/src/matroska.rs:895:5: replace parse_timestamp_scale -> Option<u64> with Some(1)
+g2g-plugins/src/matroska.rs:895:5: replace parse_timestamp_scale -> Option<u64> with Some(0)
+g2g-plugins/src/matroska.rs:918:5: replace parse_info_title -> Option<String> with None
+g2g-plugins/src/matroska.rs:918:5: replace parse_info_title -> Option<String> with Some(String::new())
+g2g-plugins/src/matroska.rs:948:19: replace != with == in parse_tags
+g2g-plugins/src/matroska.rs:946:5: replace parse_tags -> MkvTagScopes with Default::default()
+g2g-plugins/src/matroska.rs:918:5: replace parse_info_title -> Option<String> with Some("xyzzy".into())
+g2g-plugins/src/matroska.rs:953:20: replace == with != in parse_tags
+g2g-plugins/src/matroska.rs:918:55: replace == with != in parse_info_title
+g2g-plugins/src/matroska.rs:988:29: replace && with || in target_track_uids
+g2g-plugins/src/matroska.rs:986:20: replace == with != in target_track_uids
+g2g-plugins/src/matroska.rs:982:15: replace != with == in target_track_uids
+g2g-plugins/src/matroska.rs:988:32: delete ! in target_track_uids
+g2g-plugins/src/matroska.rs:988:24: replace != with == in target_track_uids
+g2g-plugins/src/matroska.rs:990:35: replace == with != in target_track_uids
+g2g-plugins/src/matroska.rs:1011:13: delete match arm ID_TAG_STRING in collect_simple_tag
+g2g-plugins/src/matroska.rs:1006:5: replace collect_simple_tag with ()
+g2g-plugins/src/matroska.rs:1030:15: replace == with != in collect_simple_tag
+g2g-plugins/src/matroska.rs:1026:14: replace >= with < in collect_simple_tag
+g2g-plugins/src/matroska.rs:1031:52: replace + with - in collect_simple_tag
+g2g-plugins/src/matroska.rs:1010:13: delete match arm ID_TAG_NAME in collect_simple_tag
+g2g-plugins/src/matroska.rs:1031:52: replace + with * in collect_simple_tag
+g2g-plugins/src/matroska.rs:1058:15: replace != with == in parse_chapters
+g2g-plugins/src/matroska.rs:1068:5: replace flag_is_set -> bool with true
+g2g-plugins/src/matroska.rs:1068:48: replace && with || in flag_is_set
+g2g-plugins/src/matroska.rs:1068:40: replace == with != in flag_is_set
+g2g-plugins/src/matroska.rs:1068:67: replace != with == in flag_is_set
+g2g-plugins/src/matroska.rs:1074:5: replace collect_chapter_atoms with ()
+g2g-plugins/src/matroska.rs:1068:5: replace flag_is_set -> bool with false
+g2g-plugins/src/matroska.rs:1075:15: replace != with == in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1078:20: replace == with != in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1075:34: replace || with && in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1087:17: delete match arm ID_CHAPTER_TIME_END in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1086:17: delete match arm ID_CHAPTER_TIME_START in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1088:39: replace match guard !display_seen with false in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1088:39: delete ! in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1092:29: delete match arm ID_CHAP_STRING in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1105:18: replace < with == in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1095:29: delete match arm ID_CHAP_LANGUAGE in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1105:18: replace < with > in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1106:47: replace + with - in collect_chapter_atoms
+g2g-plugins/src/matroska.rs:1128:15: replace == with != in parse_tracks
+g2g-plugins/src/matroska.rs:1144:5: replace bounded_string -> Option<&str> with None
+g2g-plugins/src/matroska.rs:1144:5: replace bounded_string -> Option<&str> with Some("")
+g2g-plugins/src/matroska.rs:1144:5: replace bounded_string -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/matroska.rs:1144:19: replace > with == in bounded_string
+g2g-plugins/src/matroska.rs:1144:19: replace > with < in bounded_string
+g2g-plugins/src/matroska.rs:1166:13: delete match arm ID_TRACK_NUMBER in parse_track_entry
+g2g-plugins/src/matroska.rs:1168:13: delete match arm ID_TRACK_UID in parse_track_entry
+g2g-plugins/src/matroska.rs:1171:13: delete match arm ID_TRACK_NAME in parse_track_entry
+g2g-plugins/src/matroska.rs:1172:13: delete match arm ID_LANGUAGE in parse_track_entry
+g2g-plugins/src/matroska.rs:1151:5: replace parse_track_entry -> Option<ParsedTrack> with None
+g2g-plugins/src/matroska.rs:1173:13: delete match arm ID_LANGUAGE_BCP47 in parse_track_entry
+g2g-plugins/src/matroska.rs:1174:13: delete match arm ID_CODEC_ID in parse_track_entry
+g2g-plugins/src/matroska.rs:1176:13: delete match arm ID_CODEC_PRIVATE in parse_track_entry
+g2g-plugins/src/matroska.rs:1177:13: delete match arm ID_DEFAULT_DURATION in parse_track_entry
+g2g-plugins/src/matroska.rs:1178:13: delete match arm ID_VIDEO in parse_track_entry
+g2g-plugins/src/matroska.rs:1181:25: delete match arm ID_PIXEL_WIDTH in parse_track_entry
+g2g-plugins/src/matroska.rs:1182:25: delete match arm ID_PIXEL_HEIGHT in parse_track_entry
+g2g-plugins/src/matroska.rs:1190:25: delete match arm ID_CHANNELS in parse_track_entry
+g2g-plugins/src/matroska.rs:1191:25: delete match arm ID_SAMPLING_FREQ in parse_track_entry
+g2g-plugins/src/matroska.rs:1187:13: delete match arm ID_AUDIO in parse_track_entry
+g2g-plugins/src/matroska.rs:1196:13: delete match arm ID_CONTENT_ENCODINGS in parse_track_entry
+g2g-plugins/src/matroska.rs:1222:47: replace == with != in parse_track_entry
+g2g-plugins/src/matroska.rs:1200:15: replace == with != in parse_track_entry
+g2g-plugins/src/matroska.rs:1237:13: delete match arm ID_TIMESTAMP in parse_cluster
+g2g-plugins/src/matroska.rs:1239:13: delete match arm ID_BLOCK_GROUP in parse_cluster
+g2g-plugins/src/matroska.rs:1238:13: delete match arm ID_SIMPLE_BLOCK in parse_cluster
+g2g-plugins/src/matroska.rs:1263:13: delete match arm ID_BLOCK in parse_block_group
+g2g-plugins/src/matroska.rs:1264:13: delete match arm ID_BLOCK_DURATION in parse_block_group
+g2g-plugins/src/matroska.rs:1258:5: replace parse_block_group with ()
+g2g-plugins/src/matroska.rs:1265:13: delete match arm ID_DISCARD_PADDING in parse_block_group
+g2g-plugins/src/matroska.rs:1293:19: replace <= with > in apply_discard_padding
+g2g-plugins/src/matroska.rs:1299:20: replace != with == in apply_discard_padding
+g2g-plugins/src/matroska.rs:1303:45: replace / with % in apply_discard_padding
+g2g-plugins/src/matroska.rs:1303:29: replace * with + in apply_discard_padding
+g2g-plugins/src/matroska.rs:1293:5: replace apply_discard_padding with ()
+g2g-plugins/src/matroska.rs:1304:23: replace || with && in apply_discard_padding
+g2g-plugins/src/matroska.rs:1303:29: replace * with / in apply_discard_padding
+g2g-plugins/src/matroska.rs:1304:18: replace == with != in apply_discard_padding
+g2g-plugins/src/matroska.rs:1304:36: replace <= with > in apply_discard_padding
+g2g-plugins/src/matroska.rs:1303:45: replace / with * in apply_discard_padding
+g2g-plugins/src/matroska.rs:1307:35: replace - with / in apply_discard_padding
+g2g-plugins/src/matroska.rs:1322:9: delete match arm ID_SIMPLE_BLOCK in parse_block_element
+g2g-plugins/src/matroska.rs:1323:9: delete match arm ID_BLOCK_GROUP in parse_block_element
+g2g-plugins/src/matroska.rs:1307:35: replace - with + in apply_discard_padding
+g2g-plugins/src/matroska.rs:1346:16: replace > with < in parse_block
+g2g-plugins/src/matroska.rs:1346:12: replace + with - in parse_block
+g2g-plugins/src/matroska.rs:1342:5: replace parse_block with ()
+g2g-plugins/src/matroska.rs:1349:57: replace + with - in parse_block
+g2g-plugins/src/matroska.rs:1349:57: replace + with * in parse_block
+g2g-plugins/src/matroska.rs:1350:9: replace += with -= in parse_block
+g2g-plugins/src/matroska.rs:1352:9: replace += with -= in parse_block
+g2g-plugins/src/matroska.rs:1352:9: replace += with *= in parse_block
+g2g-plugins/src/matroska.rs:1353:51: replace == with != in parse_block
+g2g-plugins/src/matroska.rs:1361:25: replace < with == in parse_block
+g2g-plugins/src/matroska.rs:1361:25: replace < with > in parse_block
+g2g-plugins/src/matroska.rs:1350:9: replace += with *= in parse_block
+g2g-plugins/src/matroska.rs:1366:33: replace != with == in parse_block
+g2g-plugins/src/matroska.rs:1366:26: replace & with | in parse_block
+g2g-plugins/src/matroska.rs:1366:26: replace & with ^ in parse_block
+g2g-plugins/src/matroska.rs:1369:31: replace & with | in parse_block
+g2g-plugins/src/matroska.rs:1369:31: replace & with ^ in parse_block
+g2g-plugins/src/matroska.rs:1369:25: replace >> with << in parse_block
+g2g-plugins/src/matroska.rs:1370:28: replace == with != in parse_block
+g2g-plugins/src/matroska.rs:1398:5: replace split_laced -> Option<Vec<&[u8]>> with None
+g2g-plugins/src/matroska.rs:1399:40: replace + with - in split_laced
+g2g-plugins/src/matroska.rs:1399:40: replace + with * in split_laced
+g2g-plugins/src/matroska.rs:1401:9: delete match arm 1 in split_laced
+g2g-plugins/src/matroska.rs:1402:9: delete match arm 2 in split_laced
+g2g-plugins/src/matroska.rs:1410:5: replace split_fixed -> Option<Vec<&[u8]>> with None
+g2g-plugins/src/matroska.rs:1403:9: delete match arm 3 in split_laced
+g2g-plugins/src/matroska.rs:1410:38: replace || with && in split_fixed
+g2g-plugins/src/matroska.rs:1410:14: replace == with != in split_fixed
+g2g-plugins/src/matroska.rs:1410:41: delete ! in split_fixed
+g2g-plugins/src/matroska.rs:1413:33: replace / with % in split_fixed
+g2g-plugins/src/matroska.rs:1413:33: replace / with * in split_fixed
+g2g-plugins/src/matroska.rs:1419:5: replace split_xiph -> Option<Vec<&[u8]>> with None
+g2g-plugins/src/matroska.rs:1421:23: replace - with + in split_xiph
+g2g-plugins/src/matroska.rs:1421:23: replace - with / in split_xiph
+g2g-plugins/src/matroska.rs:1425:17: replace += with -= in split_xiph
+g2g-plugins/src/matroska.rs:1426:18: replace += with *= in split_xiph
+g2g-plugins/src/matroska.rs:1426:18: replace += with -= in split_xiph
+g2g-plugins/src/matroska.rs:1427:18: replace != with == in split_xiph
+g2g-plugins/src/matroska.rs:1440:5: replace split_ebml -> Option<Vec<&[u8]>> with None
+g2g-plugins/src/matroska.rs:1446:13: replace += with -= in split_ebml
+g2g-plugins/src/matroska.rs:1446:13: replace += with *= in split_ebml
+g2g-plugins/src/matroska.rs:1447:14: replace == with != in split_ebml
+g2g-plugins/src/matroska.rs:1450:48: replace - with + in split_ebml
+g2g-plugins/src/matroska.rs:1450:48: replace - with / in split_ebml
+g2g-plugins/src/matroska.rs:1450:30: replace << with >> in split_ebml
+g2g-plugins/src/matroska.rs:1450:42: replace - with / in split_ebml
+g2g-plugins/src/matroska.rs:1450:42: replace - with + in split_ebml
+g2g-plugins/src/matroska.rs:1450:36: replace * with + in split_ebml
+g2g-plugins/src/matroska.rs:1453:46: replace - with + in split_ebml
+g2g-plugins/src/matroska.rs:1453:46: replace - with / in split_ebml
+g2g-plugins/src/matroska.rs:1455:16: replace < with > in split_ebml
+g2g-plugins/src/matroska.rs:1466:5: replace slice_frames -> Option<Vec<&'a[u8]>> with None
+g2g-plugins/src/matroska.rs:1479:5: replace read_id -> Option<(u32, usize)> with None
+g2g-plugins/src/matroska.rs:1479:5: replace read_id -> Option<(u32, usize)> with Some((0, 0))
+g2g-plugins/src/matroska.rs:1479:5: replace read_id -> Option<(u32, usize)> with Some((0, 1))
+g2g-plugins/src/matroska.rs:1479:5: replace read_id -> Option<(u32, usize)> with Some((1, 0))
+g2g-plugins/src/matroska.rs:1481:9: delete match arm 0x80..= 0xFF in read_id
+g2g-plugins/src/matroska.rs:1479:5: replace read_id -> Option<(u32, usize)> with Some((1, 1))
+g2g-plugins/src/matroska.rs:1483:9: delete match arm 0x20..= 0x3F in read_id
+g2g-plugins/src/matroska.rs:1482:9: delete match arm 0x40..= 0x7F in read_id
+g2g-plugins/src/matroska.rs:1484:9: delete match arm 0x10..= 0x1F in read_id
+g2g-plugins/src/matroska.rs:1487:18: replace > with == in read_id
+g2g-plugins/src/matroska.rs:1487:18: replace > with < in read_id
+g2g-plugins/src/matroska.rs:1487:18: replace > with >= in read_id
+g2g-plugins/src/matroska.rs:1487:12: replace + with - in read_id
+g2g-plugins/src/matroska.rs:1487:12: replace + with * in read_id
+g2g-plugins/src/matroska.rs:1491:30: replace + with - in read_id
+g2g-plugins/src/matroska.rs:1491:30: replace + with * in read_id
+g2g-plugins/src/matroska.rs:1492:24: replace | with & in read_id
+g2g-plugins/src/matroska.rs:1492:18: replace << with >> in read_id
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((0, 0, false))
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((0, 0, true))
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with None
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((0, 1, true))
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((0, 1, false))
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((1, 1, true))
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((1, 0, true))
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((1, 0, false))
+g2g-plugins/src/matroska.rs:1501:14: replace == with != in read_size
+g2g-plugins/src/matroska.rs:1500:5: replace read_size -> Option<(u64, usize, bool)> with Some((1, 1, false))
+g2g-plugins/src/matroska.rs:1504:46: replace + with - in read_size
+g2g-plugins/src/matroska.rs:1504:46: replace + with * in read_size
+g2g-plugins/src/matroska.rs:1505:12: replace > with == in read_size
+g2g-plugins/src/matroska.rs:1505:12: replace > with < in read_size
+g2g-plugins/src/matroska.rs:1505:29: replace > with < in read_size
+g2g-plugins/src/matroska.rs:1505:29: replace > with == in read_size
+g2g-plugins/src/matroska.rs:1505:12: replace > with >= in read_size
+g2g-plugins/src/matroska.rs:1505:29: replace > with >= in read_size
+g2g-plugins/src/matroska.rs:1505:23: replace + with - in read_size
+g2g-plugins/src/matroska.rs:1508:42: replace - with / in read_size
+g2g-plugins/src/matroska.rs:1508:42: replace - with + in read_size
+g2g-plugins/src/matroska.rs:1505:23: replace + with * in read_size
+g2g-plugins/src/matroska.rs:1508:28: replace << with >> in read_size
+g2g-plugins/src/matroska.rs:1508:34: replace - with + in read_size
+g2g-plugins/src/matroska.rs:1508:34: replace - with / in read_size
+g2g-plugins/src/matroska.rs:1509:36: replace & with | in read_size
+g2g-plugins/src/matroska.rs:1509:36: replace & with ^ in read_size
+g2g-plugins/src/matroska.rs:1510:25: replace + with - in read_size
+g2g-plugins/src/matroska.rs:1510:25: replace + with * in read_size
+g2g-plugins/src/matroska.rs:1510:34: replace + with - in read_size
+g2g-plugins/src/matroska.rs:1510:34: replace + with * in read_size
+g2g-plugins/src/matroska.rs:1511:30: replace | with & in read_size
+g2g-plugins/src/matroska.rs:1511:24: replace << with >> in read_size
+g2g-plugins/src/matroska.rs:1513:25: replace == with != in read_size
+g2g-plugins/src/matroska.rs:1513:48: replace - with / in read_size
+g2g-plugins/src/matroska.rs:1513:48: replace - with + in read_size
+g2g-plugins/src/matroska.rs:1513:34: replace << with >> in read_size
+g2g-plugins/src/matroska.rs:1513:40: replace * with + in read_size
+g2g-plugins/src/matroska.rs:1519:5: replace read_uint -> u64 with 1
+g2g-plugins/src/matroska.rs:1519:5: replace read_uint -> u64 with 0
+g2g-plugins/src/matroska.rs:1521:22: replace | with & in read_uint
+g2g-plugins/src/matroska.rs:1521:16: replace << with >> in read_uint
+g2g-plugins/src/matroska.rs:1530:5: replace read_int -> i64 with 0
+g2g-plugins/src/matroska.rs:1530:5: replace read_int -> i64 with 1
+g2g-plugins/src/matroska.rs:1530:24: replace || with && in read_int
+g2g-plugins/src/matroska.rs:1530:5: replace read_int -> i64 with -1
+g2g-plugins/src/matroska.rs:1530:38: replace > with == in read_int
+g2g-plugins/src/matroska.rs:1530:38: replace > with < in read_int
+g2g-plugins/src/matroska.rs:1530:38: replace > with >= in read_int
+g2g-plugins/src/matroska.rs:1533:35: replace != with == in read_int
+g2g-plugins/src/matroska.rs:1533:28: replace & with | in read_int
+g2g-plugins/src/matroska.rs:1533:28: replace & with ^ in read_int
+g2g-plugins/src/matroska.rs:1533:42: delete - in read_int
+g2g-plugins/src/matroska.rs:1535:22: replace | with & in read_int
+g2g-plugins/src/matroska.rs:1535:16: replace << with >> in read_int
+g2g-plugins/src/matroska.rs:1542:5: replace read_float -> f64 with 0.0
+g2g-plugins/src/matroska.rs:1542:5: replace read_float -> f64 with 1.0
+g2g-plugins/src/matroska.rs:1542:5: replace read_float -> f64 with -1.0
+g2g-plugins/src/matroska.rs:1543:9: delete match arm 4 in read_float
+g2g-plugins/src/matroska.rs:1544:9: delete match arm 8 in read_float
+g2g-plugins/src/matroska.rs:1603:9: delete match arm SubPictureFormat::DvbSub in subpicture_mkv_codec
+g2g-plugins/src/matroska.rs:1602:9: delete match arm SubPictureFormat::VobSub in subpicture_mkv_codec
+g2g-plugins/src/matroska.rs:1601:5: replace subpicture_mkv_codec -> Option<MkvCodec> with None
+g2g-plugins/src/matroska.rs:1614:5: replace subpicture_config -> Option<Vec<u8>> with None
+g2g-plugins/src/matroska.rs:1615:9: delete match arm SubPictureFormat::VobSub in subpicture_config
+g2g-plugins/src/matroska.rs:1616:9: delete match arm SubPictureFormat::DvbSub in subpicture_config
+g2g-plugins/src/matroska.rs:1631:9: delete match arm SubPictureFormat::DvbSub in subpicture_block
+g2g-plugins/src/matroska.rs:1652:9: delete match arm TextFormat::Ssa in text_codec_private
+g2g-plugins/src/matroska.rs:1660:5: replace subtitle_format_str -> Option<&'static str> with None
+g2g-plugins/src/matroska.rs:1660:5: replace subtitle_format_str -> Option<&'static str> with Some("")
+g2g-plugins/src/matroska.rs:1660:5: replace subtitle_format_str -> Option<&'static str> with Some("xyzzy")
+g2g-plugins/src/matroska.rs:1662:9: delete match arm TextFormat::Ssa in subtitle_format_str
+g2g-plugins/src/matroska.rs:1670:5: replace subtitle_format_from_str -> Option<TextFormat> with None
+g2g-plugins/src/matroska.rs:1672:9: delete match arm "ass" | "ssa" in subtitle_format_from_str
+g2g-plugins/src/matroska.rs:1866:18: replace < with == in MatroskaMuxer::with_track_tags
+g2g-plugins/src/matroska.rs:1866:18: replace < with > in MatroskaMuxer::with_track_tags
+g2g-plugins/src/matroska.rs:1914:12: delete ! in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1937:69: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1937:69: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1937:33: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1937:33: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1937:47: delete ! in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1938:33: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1937:83: delete ! in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1938:33: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1938:43: replace * with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1938:43: replace * with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1940:31: replace | with & in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1940:42: replace * with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1940:42: replace * with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1943:21: replace += with *= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1943:21: replace += with -= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1945:21: replace += with -= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1946:20: delete ! in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1945:21: replace += with *= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1948:25: replace += with -= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1948:25: replace += with *= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1955:57: replace - with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1950:20: delete ! in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1955:57: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1957:74: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1957:74: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1962:43: replace - with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1962:43: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1965:25: replace / with % in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1965:25: replace / with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1969:37: replace || with && in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1969:30: replace < with > in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1969:50: replace > with == in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1969:50: replace > with < in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1969:43: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1983:54: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1983:54: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1986:38: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1986:38: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1986:51: replace - with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1986:51: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1991:38: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1991:38: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1997:30: replace += with -= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1997:30: replace += with *= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2001:30: replace - with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1997:44: replace - with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:1997:44: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2002:35: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2001:30: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2002:35: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2021:32: replace > with == in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2019:21: replace match guard self.is_subtitle_track(track) with true in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2021:32: replace > with >= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2023:69: replace / with % in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2021:32: replace > with < in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2019:21: replace match guard self.is_subtitle_track(track) with false in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2023:69: replace / with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2023:38: replace + with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2023:64: replace / with % in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2030:26: replace += with -= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2030:26: replace += with *= in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2023:64: replace / with * in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2023:38: replace + with - in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2030:40: replace - with + in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2030:40: replace - with / in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2036:13: replace && with || in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2034:13: replace && with || in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2035:13: replace && with || in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2035:22: replace == with != in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2036:43: replace != with == in MatroskaMuxer::push_frame_on
+g2g-plugins/src/matroska.rs:2055:36: replace > with < in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2055:36: replace > with == in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2055:36: replace > with >= in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2056:57: replace / with % in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2051:9: replace MatroskaMuxer::record_track_end with ()
+g2g-plugins/src/matroska.rs:2056:57: replace / with * in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2056:26: replace + with - in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2056:26: replace + with * in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2056:52: replace / with % in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2056:52: replace / with * in MatroskaMuxer::record_track_end
+g2g-plugins/src/matroska.rs:2069:9: replace MatroskaMuxer::duration_patch -> Option<(usize, [u8; 8])> with Some((0, [0; 8]))
+g2g-plugins/src/matroska.rs:2069:9: replace MatroskaMuxer::duration_patch -> Option<(usize, [u8; 8])> with Some((0, [1; 8]))
+g2g-plugins/src/matroska.rs:2069:9: replace MatroskaMuxer::duration_patch -> Option<(usize, [u8; 8])> with Some((1, [1; 8]))
+g2g-plugins/src/matroska.rs:2069:9: replace MatroskaMuxer::duration_patch -> Option<(usize, [u8; 8])> with Some((1, [0; 8]))
+g2g-plugins/src/matroska.rs:2069:9: replace MatroskaMuxer::duration_patch -> Option<(usize, [u8; 8])> with None
+g2g-plugins/src/matroska.rs:2076:9: replace MatroskaMuxer::is_subtitle_track -> bool with true
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with Some((0, 0))
+g2g-plugins/src/matroska.rs:2078:56: replace == with != in MatroskaMuxer::is_subtitle_track
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with None
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with Some((0, 1))
+g2g-plugins/src/matroska.rs:2076:9: replace MatroskaMuxer::is_subtitle_track -> bool with false
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with Some((1, 0))
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with Some((1, -1))
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with Some((1, 1))
+g2g-plugins/src/matroska.rs:2090:9: replace MatroskaMuxer::trimmed_block -> Option<(u64, i64)> with Some((0, -1))
+g2g-plugins/src/matroska.rs:2094:49: replace / with % in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2090:67: replace != with == in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2090:24: replace == with != in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2094:49: replace / with * in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2094:33: replace * with + in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2094:33: replace * with / in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2096:23: replace < with == in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2096:23: replace < with > in MatroskaMuxer::trimmed_block
+g2g-plugins/src/matroska.rs:2114:44: replace + with - in MatroskaMuxer::finish
+g2g-plugins/src/matroska.rs:2134:9: replace MatroskaMuxer::seek_head_patch -> Option<(usize, u64)> with None
+g2g-plugins/src/matroska.rs:2134:9: replace MatroskaMuxer::seek_head_patch -> Option<(usize, u64)> with Some((0, 1))
+g2g-plugins/src/matroska.rs:2134:9: replace MatroskaMuxer::seek_head_patch -> Option<(usize, u64)> with Some((0, 0))
+g2g-plugins/src/matroska.rs:2134:9: replace MatroskaMuxer::seek_head_patch -> Option<(usize, u64)> with Some((1, 0))
+g2g-plugins/src/matroska.rs:2141:9: replace MatroskaMuxer::cluster_size_patches -> &[SizePatch] with Vec::leak(Vec::new())
+g2g-plugins/src/matroska.rs:2134:9: replace MatroskaMuxer::seek_head_patch -> Option<(usize, u64)> with Some((1, 1))
+g2g-plugins/src/matroska.rs:2148:9: replace MatroskaMuxer::segment_size_patch -> Option<SizePatch> with None
+g2g-plugins/src/matroska.rs:2149:46: replace - with / in MatroskaMuxer::segment_size_patch
+g2g-plugins/src/matroska.rs:2149:46: replace - with + in MatroskaMuxer::segment_size_patch
+g2g-plugins/src/matroska.rs:2158:5: replace write_size_patch with ()
+g2g-plugins/src/matroska.rs:2161:39: replace + with - in write_size_patch
+g2g-plugins/src/matroska.rs:2158:20: replace - with + in write_size_patch
+g2g-plugins/src/matroska.rs:2161:39: replace + with * in write_size_patch
+g2g-plugins/src/matroska.rs:2158:20: replace - with / in write_size_patch
+g2g-plugins/src/matroska.rs:2173:23: replace + with - in finalize_seekable
+g2g-plugins/src/matroska.rs:2173:23: replace + with * in finalize_seekable
+g2g-plugins/src/matroska.rs:2181:20: replace + with - in finalize_seekable
+g2g-plugins/src/matroska.rs:2181:20: replace + with * in finalize_seekable
+g2g-plugins/src/matroska.rs:2172:5: replace finalize_seekable with ()
+g2g-plugins/src/matroska.rs:2182:53: replace - with + in finalize_seekable
+g2g-plugins/src/matroska.rs:2186:8: delete ! in finalize_seekable
+g2g-plugins/src/matroska.rs:2188:27: replace + with - in finalize_seekable
+g2g-plugins/src/matroska.rs:2182:53: replace - with / in finalize_seekable
+g2g-plugins/src/matroska.rs:2188:27: replace + with * in finalize_seekable
+g2g-plugins/src/matroska.rs:2206:19: replace | with & in seek_entry
+g2g-plugins/src/matroska.rs:2208:19: replace | with & in seek_entry
+g2g-plugins/src/matroska.rs:2205:5: replace seek_entry with ()
+g2g-plugins/src/matroska.rs:2211:19: replace | with & in seek_entry
+g2g-plugins/src/matroska.rs:2237:38: replace - with + in info_element
+g2g-plugins/src/matroska.rs:2237:38: replace - with / in info_element
+g2g-plugins/src/matroska.rs:2241:29: replace - with + in info_element
+g2g-plugins/src/matroska.rs:2241:29: replace - with / in info_element
+g2g-plugins/src/matroska.rs:2242:35: replace + with - in info_element
+g2g-plugins/src/matroska.rs:2242:35: replace + with * in info_element
+g2g-plugins/src/matroska.rs:2257:72: replace + with - in tracks_element
+g2g-plugins/src/matroska.rs:2257:72: replace + with * in tracks_element
+g2g-plugins/src/matroska.rs:2278:12: delete ! in tracks_element
+g2g-plugins/src/matroska.rs:2281:23: replace == with != in tracks_element
+g2g-plugins/src/matroska.rs:2298:13: delete match arm 1 in tracks_element
+g2g-plugins/src/matroska.rs:2264:13: delete match arm Tag::Title(v) in tracks_element
+g2g-plugins/src/matroska.rs:2272:13: delete match arm Tag::Language(v) in tracks_element
+g2g-plugins/src/matroska.rs:2303:13: delete match arm 2 in tracks_element
+g2g-plugins/src/matroska.rs:2327:5: replace opus_codec_delay_ns -> u64 with 0
+g2g-plugins/src/matroska.rs:2327:5: replace opus_codec_delay_ns -> u64 with 1
+g2g-plugins/src/matroska.rs:2330:41: replace / with % in opus_codec_delay_ns
+g2g-plugins/src/matroska.rs:2330:25: replace * with / in opus_codec_delay_ns
+g2g-plugins/src/matroska.rs:2330:41: replace / with * in opus_codec_delay_ns
+g2g-plugins/src/matroska.rs:2336:5: replace track_uid -> u64 with 0
+g2g-plugins/src/matroska.rs:2336:5: replace track_uid -> u64 with 1
+g2g-plugins/src/matroska.rs:2336:18: replace + with - in track_uid
+g2g-plugins/src/matroska.rs:2330:25: replace * with + in opus_codec_delay_ns
+g2g-plugins/src/matroska.rs:2336:18: replace + with * in track_uid
+g2g-plugins/src/matroska.rs:2348:29: replace == with != in track_entry_string
+g2g-plugins/src/matroska.rs:2357:5: replace is_track_entry_tag -> bool with true
+g2g-plugins/src/matroska.rs:2357:5: replace is_track_entry_tag -> bool with false
+g2g-plugins/src/matroska.rs:2346:5: replace track_entry_string -> Option<&str> with None
+g2g-plugins/src/matroska.rs:2346:5: replace track_entry_string -> Option<&str> with Some("")
+g2g-plugins/src/matroska.rs:2346:5: replace track_entry_string -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/matroska.rs:2367:8: delete ! in tags_element
+g2g-plugins/src/matroska.rs:2378:25: delete ! in tags_element
+g2g-plugins/src/matroska.rs:2429:8: delete ! in chapter_atom
+g2g-plugins/src/matroska.rs:2436:14: replace < with == in chapter_atom
+g2g-plugins/src/matroska.rs:2420:15: replace += with -= in chapter_atom
+g2g-plugins/src/matroska.rs:2420:15: replace += with *= in chapter_atom
+g2g-plugins/src/matroska.rs:2436:14: replace < with > in chapter_atom
+g2g-plugins/src/matroska.rs:2438:61: replace + with - in chapter_atom
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed(""), Cow::Borrowed(""))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed(""), Cow::Borrowed("xyzzy"))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed("xyzzy"), Cow::Borrowed(""))
+g2g-plugins/src/matroska.rs:2458:5: replace tag_name_value -> (Cow<'_, str>, Cow<'_, str>) with (Cow::Borrowed("xyzzy"), Cow::Borrowed("xyzzy"))
+g2g-plugins/src/matroska.rs:2460:9: delete match arm Tag::Artist(_) in tag_name_value
+g2g-plugins/src/matroska.rs:2473:5: replace put_block with ()
+g2g-plugins/src/matroska.rs:2476:33: replace + with - in put_block
+g2g-plugins/src/matroska.rs:2476:33: replace + with * in put_block
+g2g-plugins/src/matroska.rs:2486:5: replace put_block_group with ()
+g2g-plugins/src/matroska.rs:2486:83: replace + with - in put_block_group
+g2g-plugins/src/matroska.rs:2486:83: replace + with * in put_block_group
+g2g-plugins/src/matroska.rs:2486:51: replace + with * in put_block_group
+g2g-plugins/src/matroska.rs:2486:51: replace + with - in put_block_group
+g2g-plugins/src/matroska.rs:2490:44: replace + with - in put_block_group
+g2g-plugins/src/matroska.rs:2490:44: replace + with * in put_block_group
+g2g-plugins/src/matroska.rs:2509:5: replace put_elem_header with ()
+g2g-plugins/src/matroska.rs:2515:5: replace elem_len -> usize with 0
+g2g-plugins/src/matroska.rs:2515:5: replace elem_len -> usize with 1
+g2g-plugins/src/matroska.rs:2517:18: replace + with - in elem_len
+g2g-plugins/src/matroska.rs:2517:18: replace + with * in elem_len
+g2g-plugins/src/matroska.rs:2523:21: replace > with == in id_bytes
+g2g-plugins/src/matroska.rs:2523:21: replace > with < in id_bytes
+g2g-plugins/src/matroska.rs:2523:5: replace id_bytes with ()
+g2g-plugins/src/matroska.rs:2525:18: replace > with < in id_bytes
+g2g-plugins/src/matroska.rs:2525:18: replace > with == in id_bytes
+g2g-plugins/src/matroska.rs:2527:18: replace > with == in id_bytes
+g2g-plugins/src/matroska.rs:2533:22: replace >> with << in id_bytes
+g2g-plugins/src/matroska.rs:2527:18: replace > with < in id_bytes
+g2g-plugins/src/matroska.rs:2533:28: replace * with / in id_bytes
+g2g-plugins/src/matroska.rs:2533:28: replace * with + in id_bytes
+g2g-plugins/src/matroska.rs:2541:19: replace && with || in encode_vint
+g2g-plugins/src/matroska.rs:2541:15: replace < with == in encode_vint
+g2g-plugins/src/matroska.rs:2541:15: replace < with > in encode_vint
+g2g-plugins/src/matroska.rs:2541:28: replace >= with < in encode_vint
+g2g-plugins/src/matroska.rs:2541:37: replace << with >> in encode_vint
+g2g-plugins/src/matroska.rs:2541:51: replace - with + in encode_vint
+g2g-plugins/src/matroska.rs:2541:43: replace * with + in encode_vint
+g2g-plugins/src/matroska.rs:2542:13: replace += with -= in encode_vint
+g2g-plugins/src/matroska.rs:2547:21: replace & with ^ in encode_vint
+g2g-plugins/src/matroska.rs:2547:21: replace & with | in encode_vint
+g2g-plugins/src/matroska.rs:2548:11: replace >>= with <<= in encode_vint
+g2g-plugins/src/matroska.rs:2550:12: replace |= with &= in encode_vint
+g2g-plugins/src/matroska.rs:2550:17: replace << with >> in encode_vint
+g2g-plugins/src/matroska.rs:2550:23: replace - with + in encode_vint
+g2g-plugins/src/matroska.rs:2550:23: replace - with / in encode_vint
+g2g-plugins/src/matroska.rs:2559:20: replace < with > in int_bytes
+g2g-plugins/src/matroska.rs:2561:44: replace && with || in int_bytes
+g2g-plugins/src/matroska.rs:2561:17: replace < with == in int_bytes
+g2g-plugins/src/matroska.rs:2561:21: replace && with || in int_bytes
+g2g-plugins/src/matroska.rs:2561:17: replace < with > in int_bytes
+g2g-plugins/src/matroska.rs:2561:17: replace < with <= in int_bytes
+g2g-plugins/src/matroska.rs:2561:37: replace == with != in int_bytes
+g2g-plugins/src/matroska.rs:2561:65: replace & with | in int_bytes
+g2g-plugins/src/matroska.rs:2561:72: replace == with != in int_bytes
+g2g-plugins/src/matroska.rs:2561:65: replace & with ^ in int_bytes
+g2g-plugins/src/matroska.rs:2561:60: replace + with - in int_bytes
+g2g-plugins/src/matroska.rs:2561:60: replace + with * in int_bytes
+g2g-plugins/src/matroska.rs:2561:79: replace & with | in int_bytes
+g2g-plugins/src/matroska.rs:2561:79: replace & with ^ in int_bytes
+g2g-plugins/src/matroska.rs:2562:15: replace += with -= in int_bytes
+g2g-plugins/src/matroska.rs:2569:10: replace == with != in uint_bytes
+g2g-plugins/src/matroska.rs:2573:46: replace != with == in uint_bytes

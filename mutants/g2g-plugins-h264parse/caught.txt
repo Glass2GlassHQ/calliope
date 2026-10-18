@@ -1,0 +1,33 @@
+g2g-plugins/src/h264parse.rs:53:9: replace <impl NalCodec for H264Codec>::nal_type -> Option<u8> with None
+g2g-plugins/src/h264parse.rs:65:55: replace & with | in <impl NalCodec for H264Codec>::unit_role
+g2g-plugins/src/h264parse.rs:80:9: replace <impl NalCodec for H264Codec>::sps_info -> Option<SpsGeometry> with None
+g2g-plugins/src/h264parse.rs:87:5: replace sps_info -> Option<SpsGeometry> with None
+g2g-plugins/src/h264parse.rs:65:55: replace & with ^ in <impl NalCodec for H264Codec>::unit_role
+g2g-plugins/src/h264parse.rs:91:36: replace & with ^ in sps_info
+g2g-plugins/src/h264parse.rs:63:9: replace <impl NalCodec for H264Codec>::unit_role -> Option<StartCodeRole> with None
+g2g-plugins/src/h264parse.rs:92:26: replace != with == in sps_info
+g2g-plugins/src/h264parse.rs:91:36: replace & with | in sps_info
+g2g-plugins/src/h264parse.rs:65:62: replace != with == in <impl NalCodec for H264Codec>::unit_role
+g2g-plugins/src/h264parse.rs:53:9: replace <impl NalCodec for H264Codec>::nal_type -> Option<u8> with Some(1)
+g2g-plugins/src/h264parse.rs:53:9: replace <impl NalCodec for H264Codec>::nal_type -> Option<u8> with Some(0)
+g2g-plugins/src/h264parse.rs:157:30: replace == with != in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:105:5: replace is_high_profile -> bool with false
+g2g-plugins/src/h264parse.rs:105:5: replace is_high_profile -> bool with true
+g2g-plugins/src/h264parse.rs:163:53: replace == with != in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:143:5: replace parse_h264_sps_head -> Option<(H264SpsHead, BitReader<'_>)> with None
+g2g-plugins/src/h264parse.rs:176:34: replace > with < in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:186:46: replace == with != in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:187:65: replace && with || in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:187:40: delete ! in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:179:56: replace + with - in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:190:46: replace == with != in parse_h264_sps_head
+g2g-plugins/src/h264parse.rs:255:21: replace - with + in parse_sps
+g2g-plugins/src/h264parse.rs:255:21: replace - with / in parse_sps
+g2g-plugins/src/h264parse.rs:223:5: replace parse_sps -> Option<SpsGeometry> with None
+g2g-plugins/src/h264parse.rs:263:9: delete match arm Some(1) in parse_sps
+g2g-plugins/src/h264parse.rs:288:5: replace parse_vui -> (Colorimetry, H264VuiTail) with (Default::default(), Default::default())
+g2g-plugins/src/h264parse.rs:332:5: replace parse_sps_reorder -> Option<u8> with None
+g2g-plugins/src/h264parse.rs:314:34: replace & with ^ in sps_reorder_frames
+g2g-plugins/src/h264parse.rs:344:55: replace / with % in parse_sps_reorder
+g2g-plugins/src/h264parse.rs:360:9: delete match arm 40 | 41 in max_dpb_mbs
+g2g-plugins/src/h264parse.rs:357:9: delete match arm 22 | 30 in max_dpb_mbs

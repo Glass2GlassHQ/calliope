@@ -1,0 +1,25 @@
+g2g-plugins/src/typefind.rs:80:32: replace * with +
+g2g-plugins/src/typefind.rs:235:23: replace == with != in sniff_still_image
+g2g-plugins/src/typefind.rs:262:16: replace << with >>
+g2g-plugins/src/typefind.rs:354:21: replace < with <= in looks_like_iso_bmff
+g2g-plugins/src/typefind.rs:379:9: replace || with && in sniff_text
+g2g-plugins/src/typefind.rs:384:62: replace && with || in sniff_text
+g2g-plugins/src/typefind.rs:426:19: replace + with * in sniff_annexb_video
+g2g-plugins/src/typefind.rs:426:19: replace + with - in sniff_annexb_video
+g2g-plugins/src/typefind.rs:446:45: replace & with | in sniff_annexb_video
+g2g-plugins/src/typefind.rs:446:45: replace & with ^ in sniff_annexb_video
+g2g-plugins/src/typefind.rs:458:35: replace + with * in find_start_code
+g2g-plugins/src/typefind.rs:517:9: replace TypeFind::sniffed_caps -> Option<&Caps> with None
+g2g-plugins/src/typefind.rs:533:44: replace || with && in TypeFind::out_of_budget
+g2g-plugins/src/typefind.rs:533:9: replace TypeFind::out_of_budget -> bool with false
+g2g-plugins/src/typefind.rs:539:9: replace <impl AsyncElement for TypeFind>::metadata -> ElementMetadata with Default::default()
+g2g-plugins/src/typefind.rs:639:9: replace <impl AsyncElement for TypeFind>::set_instance_name with ()
+g2g-plugins/src/typefind.rs:643:9: replace <impl AsyncElement for TypeFind>::set_log_category with ()
+g2g-plugins/src/typefind.rs:649:9: replace <impl LogSource for TypeFind>::log_category -> &'static str with ""
+g2g-plugins/src/typefind.rs:652:9: replace <impl LogSource for TypeFind>::log_instance -> Option<&str> with None
+g2g-plugins/src/typefind.rs:649:9: replace <impl LogSource for TypeFind>::log_category -> &'static str with "xyzzy"
+g2g-plugins/src/typefind.rs:652:9: replace <impl LogSource for TypeFind>::log_instance -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/typefind.rs:655:9: replace <impl LogSource for TypeFind>::log_category_override -> Option<&str> with None
+g2g-plugins/src/typefind.rs:652:9: replace <impl LogSource for TypeFind>::log_instance -> Option<&str> with Some("")
+g2g-plugins/src/typefind.rs:655:9: replace <impl LogSource for TypeFind>::log_category_override -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/typefind.rs:655:9: replace <impl LogSource for TypeFind>::log_category_override -> Option<&str> with Some("")

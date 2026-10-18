@@ -1,0 +1,17 @@
+g2g-plugins/src/hls.rs:42:9: replace Variant::codec_list -> Vec<&str> with vec![]
+g2g-plugins/src/hls.rs:192:9: replace MasterPlaylist::renditions_in -> Vec<&Rendition> with vec![]
+g2g-plugins/src/hls.rs:192:9: replace MasterPlaylist::renditions_in -> Vec<&Rendition> with vec![Box::leak(Box::new(Default::default()))]
+g2g-plugins/src/hls.rs:42:9: replace Variant::codec_list -> Vec<&str> with vec![""]
+g2g-plugins/src/hls.rs:42:9: replace Variant::codec_list -> Vec<&str> with vec!["xyzzy"]
+g2g-plugins/src/hls.rs:269:9: replace MasterPlaylist::select -> Option<&Variant> with Some(Box::leak(Box::new(Default::default())))
+g2g-plugins/src/hls.rs:290:9: replace MasterPlaylist::pick_rendition -> Option<&Rendition> with Some(Box::leak(Box::new(Default::default())))
+g2g-plugins/src/hls.rs:325:5: replace parse -> Result<Playlist, HlsError> with Ok(Default::default())
+g2g-plugins/src/hls.rs:485:5: replace parse_part -> Option<Part> with Some(Default::default())
+g2g-plugins/src/hls.rs:513:5: replace parse_stream_inf -> Variant with Default::default()
+g2g-plugins/src/hls.rs:546:5: replace parse_media -> Option<Rendition> with Some(Default::default())
+g2g-plugins/src/hls.rs:570:5: replace parse_key -> Option<SegmentKey> with Some(Default::default())
+g2g-plugins/src/hls.rs:599:5: replace attr_pairs -> Vec<(&str, &str)> with vec![]
+g2g-plugins/src/hls.rs:599:5: replace attr_pairs -> Vec<(&str, &str)> with vec![("", "")]
+g2g-plugins/src/hls.rs:599:5: replace attr_pairs -> Vec<(&str, &str)> with vec![("", "xyzzy")]
+g2g-plugins/src/hls.rs:599:5: replace attr_pairs -> Vec<(&str, &str)> with vec![("xyzzy", "")]
+g2g-plugins/src/hls.rs:599:5: replace attr_pairs -> Vec<(&str, &str)> with vec![("xyzzy", "xyzzy")]

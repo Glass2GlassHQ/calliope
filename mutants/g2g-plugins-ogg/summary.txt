@@ -1,0 +1,6 @@
+command: cargo mutants --jobs 6 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-plugins -f g2g-plugins/src/ogg.rs --features std,metadata,mp4-cenc --iterate --cargo-arg=--lib --cargo-arg=--test=m116_ogg --cargo-arg=--test=m1206_ogg_mp4_demux_latency --cargo-arg=--test=m137_tags --cargo-arg=--test=m366_oggdemux_seek --cargo-arg=--test=m793_progressive_mp4 --cargo-arg=--test=m791_mp4_opus_preskip --cargo-arg=--test=m792_mkv_opus_codecdelay --cargo-arg=--test=m789_oggmux --cargo-arg=--test=m790_ogg_multistream --cargo-arg=--test=m827_ogg_chained --cargo-arg=--test=m858_ogg_chained_mux -E fuzz_parse|vp[89]parse\.rs.*is_keyframe
+g2g: 439f4e3
+cargo-mutants: cargo-mutants 27.1.0
+wall: 0h 16m
+exit: 3
+361 mutants tested in 17m: 61 missed, 253 caught, 42 unviable, 5 timeouts

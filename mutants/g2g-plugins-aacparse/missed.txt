@@ -1,0 +1,60 @@
+g2g-plugins/src/aacparse.rs:78:17: replace < with <= in asc_from_adts
+g2g-plugins/src/aacparse.rs:78:35: replace || with && in asc_from_adts
+g2g-plugins/src/aacparse.rs:78:17: replace < with == in asc_from_adts
+g2g-plugins/src/aacparse.rs:78:52: replace || with && in asc_from_adts
+g2g-plugins/src/aacparse.rs:83:42: replace << with >> in asc_from_adts
+g2g-plugins/src/aacparse.rs:83:48: replace | with ^ in asc_from_adts
+g2g-plugins/src/aacparse.rs:85:28: replace | with ^ in asc_from_adts
+g2g-plugins/src/aacparse.rs:86:31: replace | with ^ in asc_from_adts
+g2g-plugins/src/aacparse.rs:86:20: replace & with | in asc_from_adts
+g2g-plugins/src/aacparse.rs:92:53: replace && with || in strip_adts
+g2g-plugins/src/aacparse.rs:92:36: replace && with || in strip_adts
+g2g-plugins/src/aacparse.rs:112:43: replace | with ^ in adts_from_asc
+g2g-plugins/src/aacparse.rs:114:22: replace || with && in adts_from_asc
+g2g-plugins/src/aacparse.rs:114:17: replace > with == in adts_from_asc
+g2g-plugins/src/aacparse.rs:114:17: replace > with >= in adts_from_asc
+g2g-plugins/src/aacparse.rs:131:18: replace > with == in adts_frame
+g2g-plugins/src/aacparse.rs:131:18: replace > with >= in adts_frame
+g2g-plugins/src/aacparse.rs:138:42: replace | with ^ in adts_frame
+g2g-plugins/src/aacparse.rs:138:24: replace | with ^ in adts_frame
+g2g-plugins/src/aacparse.rs:138:61: replace >> with << in adts_frame
+g2g-plugins/src/aacparse.rs:139:37: replace | with ^ in adts_frame
+g2g-plugins/src/aacparse.rs:139:51: replace >> with << in adts_frame
+g2g-plugins/src/aacparse.rs:141:40: replace | with ^ in adts_frame
+g2g-plugins/src/aacparse.rs:220:22: replace > with >= in AacParse::drain
+g2g-plugins/src/aacparse.rs:228:29: replace += with *= in AacParse::drain
+g2g-plugins/src/aacparse.rs:223:33: replace += with *= in AacParse::drain
+g2g-plugins/src/aacparse.rs:259:17: delete field dts_ns from struct FrameTiming expression in AacParse::emit
+g2g-plugins/src/aacparse.rs:262:17: delete field keyframe from struct FrameTiming expression in AacParse::emit
+g2g-plugins/src/aacparse.rs:281:13: delete match arm Caps::Audio{format:AudioFormat::Aac, ..} in <impl AsyncElement for AacParse>::intercept_caps
+g2g-plugins/src/aacparse.rs:311:9: replace <impl AsyncElement for AacParse>::metadata -> ElementMetadata with Default::default()
+g2g-plugins/src/aacparse.rs:343:55: replace + with - in <impl AsyncElement for AacParse>::process
+g2g-plugins/src/aacparse.rs:343:55: replace + with * in <impl AsyncElement for AacParse>::process
+g2g-plugins/src/aacparse.rs:398:9: replace <impl LogSource for AacParse>::log_category -> &'static str with ""
+g2g-plugins/src/aacparse.rs:388:9: replace <impl AsyncElement for AacParse>::set_instance_name with ()
+g2g-plugins/src/aacparse.rs:392:9: replace <impl AsyncElement for AacParse>::set_log_category with ()
+g2g-plugins/src/aacparse.rs:398:9: replace <impl LogSource for AacParse>::log_category -> &'static str with "xyzzy"
+g2g-plugins/src/aacparse.rs:401:9: replace <impl LogSource for AacParse>::log_instance -> Option<&str> with None
+g2g-plugins/src/aacparse.rs:401:9: replace <impl LogSource for AacParse>::log_instance -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/aacparse.rs:404:9: replace <impl LogSource for AacParse>::log_category_override -> Option<&str> with None
+g2g-plugins/src/aacparse.rs:401:9: replace <impl LogSource for AacParse>::log_instance -> Option<&str> with Some("")
+g2g-plugins/src/aacparse.rs:404:9: replace <impl LogSource for AacParse>::log_category_override -> Option<&str> with Some("")
+g2g-plugins/src/aacparse.rs:404:9: replace <impl LogSource for AacParse>::log_category_override -> Option<&str> with Some("xyzzy")
+g2g-plugins/src/aacparse.rs:471:13: replace && with || in AdtsHeader::same_configuration
+g2g-plugins/src/aacparse.rs:470:13: replace && with || in AdtsHeader::same_configuration
+g2g-plugins/src/aacparse.rs:469:9: replace AdtsHeader::same_configuration -> bool with true
+g2g-plugins/src/aacparse.rs:499:14: replace & with | in adts_header_len
+g2g-plugins/src/aacparse.rs:499:14: replace & with ^ in adts_header_len
+g2g-plugins/src/aacparse.rs:517:34: replace & with | in adts_header
+g2g-plugins/src/aacparse.rs:517:34: replace & with ^ in adts_header
+g2g-plugins/src/aacparse.rs:517:28: replace >> with << in adts_header
+g2g-plugins/src/aacparse.rs:519:50: replace | with ^ in adts_header
+g2g-plugins/src/aacparse.rs:527:73: replace | with ^ in adts_header
+g2g-plugins/src/aacparse.rs:527:45: replace | with ^ in adts_header
+g2g-plugins/src/aacparse.rs:527:38: replace << with >> in adts_header
+g2g-plugins/src/aacparse.rs:560:26: replace || with && in parse_loas
+g2g-plugins/src/aacparse.rs:564:54: replace << with >> in parse_loas
+g2g-plugins/src/aacparse.rs:564:60: replace | with ^ in parse_loas
+g2g-plugins/src/aacparse.rs:602:18: replace + with - in parse_audio_specific_config
+g2g-plugins/src/aacparse.rs:602:18: replace + with * in parse_audio_specific_config
+g2g-plugins/src/aacparse.rs:614:9: delete match arm 7 in parse_audio_specific_config
