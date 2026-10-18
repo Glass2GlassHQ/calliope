@@ -287,6 +287,25 @@ gstreamer's `deinterlace method=yadif fields=top mode=interlaced` emitted 52
 frames for these 50 and diverged from frame 0, so it stays out of the scenario
 (the 3-engine run named it the outlier, conclusively).
 
+### 18. Mutation testing (cargo-mutants)
+The other techniques look for bugs in g2g. This one checks the g2g test suite
+instead. cargo-mutants injects one bug at a time into g2g's source (a function
+body replaced by a default value, an operator swapped, a match arm or a `!`
+deleted), rebuilds, and runs the tests. A mutant the tests fail on is caught. A
+mutant they pass is missed: no test pins down that behavior. g2g-core runs
+against its in-crate suite with every feature that compiles code in (a mutant
+in cfg'd-out code would count as missed). The g2g-plugins parsers the fuzz
+targets cover run one file at a time against the module's unit tests plus the
+integration tests that use the module directly.
+```
+tools/mutants-g2g.sh g2g-core -p g2g-core \
+    --features std,multi-thread,runtime,metadata,dyn-slot,tracing -- --lib --tests
+tools/mutants-g2g.sh g2g-plugins-mpegts -p g2g-plugins -f g2g-plugins/src/mpegts.rs \
+    --features std,metadata,mp4-cenc -E fuzz_parse -- --lib --test m108_mpegts ...
+```
+Per-scope lists, commands and wall times are in `mutants/README.md`.
+Result: pending.
+
 ## Bugs found
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
