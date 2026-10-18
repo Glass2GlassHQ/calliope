@@ -22,6 +22,11 @@ id = "baseline-srt"
 tier = "self-hosted"
 launch = "srtsrc address=127.0.0.1 port=18890 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
 
+[[pipeline]]
+id = "baseline-webrtc"
+tier = "self-hosted"
+launch = "whepsrc location=http://127.0.0.1:18889/baseline/whep ! h264parse ! avdec_h264 ! fakesink"
+
 # public: third-party test streams with no uptime promise
 
 [[pipeline]]

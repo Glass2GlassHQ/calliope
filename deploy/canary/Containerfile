@@ -9,7 +9,7 @@ RUN dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-rel
 FROM base AS build
 RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
     && dnf clean all
-ARG G2G_FEATURES=std,multi-thread,rtsp,srt,http-src,hls,ffmpeg,observe
+ARG G2G_FEATURES=std,multi-thread,rtsp,srt,webrtc,http-src,hls,ffmpeg,observe
 ARG CARGO_BUILD_JOBS=4
 ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 COPY --from=g2g . /src/glass2glass

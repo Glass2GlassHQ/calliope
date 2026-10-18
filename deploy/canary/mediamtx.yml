@@ -10,7 +10,12 @@ hlsVariant: mpegts
 # keep the playlist ready, a restarted pipeline would otherwise wait for a fresh muxer
 hlsAlwaysRemux: true
 rtmp: false
-webrtc: false
+webrtc: true
+webrtcAddress: 127.0.0.1:18889
+webrtcLocalUDPAddress: 127.0.0.1:18189
+# offer only the loopback candidate, the udp socket is not bound on the other interfaces
+webrtcIPsFromInterfaces: false
+webrtcAdditionalHosts: [127.0.0.1]
 srt: false
 moq: false
 api: false
