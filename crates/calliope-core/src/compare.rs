@@ -240,6 +240,8 @@ mod tests {
             determinism_matched: None,
             psnr: None,
             decoded,
+            validations: Vec::new(),
+            output: None,
         }
     }
 

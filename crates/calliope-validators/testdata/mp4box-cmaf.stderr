@@ -1,0 +1,28 @@
+# Movie Info - 1 track - TimeScale 1000
+Duration 00:00:00.000
+Fragmented: yes - duration 00:00:00.000
+5 fragments - 0 SegmentIndexes
+Progressive (moov before mdat)
+Major Brand cmfc - version 0 - compatible brands: cmfc iso6 isom mp41
+Created: UNKNOWN DATE
+
+# Track 1 Info - ID 1 - TimeScale 90000
+Media Duration 00:00:00.000 
+Track flags: Enabled In Movie
+Media Samples: 0
+Fragmented track: 300 samples - Media Duration 00:00:11.993 - First TFDT 0
+Fragment sample defaults: duration 0 size 0 stsd 1 sync 1 padding 0 degradation_priority 0
+Visual Track layout: x=0 y=0 width=320 height=240
+Media Type: vide:avc1
+	Visual Sample Entry Info: width=320 height=240 (depth=24 bits)
+	AVC/H264 Video - Visual Size 320 x 240
+	AVC Info: 1 SPS - 1 PPS - Profile High @ Level 3
+	NAL Unit length bits: 32
+	Chroma format YUV 4:2:0 - Luma bit depth 8 - chroma bit depth 8
+	SPS#1 hash: 535727579DB6FC3B76FFCA1FFF300F4D46A9B985
+	PPS#1 hash: 1CEE69405C51938108FF94F80D5E07137455F343
+	RFC6381 Codec Parameters: avc1.64001E
+
+	All samples are sync
+	Max sample duration: 0 / 90000
+

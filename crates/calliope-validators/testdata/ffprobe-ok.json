@@ -1,0 +1,20 @@
+{
+    "programs": [
+
+    ],
+    "stream_groups": [
+
+    ],
+    "streams": [
+        {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "nb_read_frames": "300"
+        },
+        {
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "nb_read_frames": "563"
+        }
+    ]
+}

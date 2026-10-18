@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 
 use crate::fault::Fault;
+use crate::produce::Produce;
 use crate::{Error, Result};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -89,6 +90,8 @@ pub struct Scenario {
     /// engines: only valid on a [determinism] scenario.
     #[serde(default)]
     pub overlay: bool,
+    // each engine encodes and muxes the input, external validators judge the output
+    pub produce: Option<Produce>,
 }
 
 /// Encode-differential config: ffmpeg encodes a lavfi source into an elementary
@@ -209,6 +212,10 @@ impl Scenario {
         self.resolution_change
     }
 
+    pub fn is_produce(&self) -> bool {
+        self.produce.is_some()
+    }
+
     /// A plain differential scenario hashes and compares decoded frames per-frame
     /// against a reference engine. An encode scenario is also differential: it
     /// just generates its input with ffmpeg first, so it judges frames too.
@@ -219,6 +226,7 @@ impl Scenario {
             && self.determinism.is_none()
             && self.roundtrip.is_none()
             && !self.resolution_change
+            && self.produce.is_none()
     }
 }
 
@@ -507,10 +515,11 @@ impl Scenario {
             + self.determinism.is_some() as u8
             + self.roundtrip.is_some() as u8
             + self.encode.is_some() as u8
-            + self.resolution_change as u8;
+            + self.resolution_change as u8
+            + self.produce.is_some() as u8;
         if modes > 1 {
             return Err(Error::Parse(format!(
-                "{}: fault / soak / golden / determinism / roundtrip / encode / resolution-change are separate modes, use one",
+                "{}: fault / soak / golden / determinism / roundtrip / encode / resolution-change / produce are separate modes, use one",
                 at()
             )));
         }
@@ -533,6 +542,10 @@ impl Scenario {
                     at()
                 )));
             }
+        }
+        if let Some(produce) = &self.produce {
+            self.validate_produce(produce)
+                .map_err(|e| Error::Parse(format!("{}: {e}", at())))?;
         }
         // golden reads the expected hash from the corpus vector, so it needs one
         if self.golden && self.input.corpus.is_none() {
@@ -625,6 +638,30 @@ impl Scenario {
                 "{}: determinism runs must be >= 2",
                 at()
             )));
+        }
+        Ok(())
+    }
+
+    fn validate_produce(&self, produce: &Produce) -> std::result::Result<(), String> {
+        if self.video.is_some() || self.audio.is_some() || self.deinterlace || self.overlay {
+            return Err("a produce scenario takes no [video] / [audio] / filter, the validators judge the output".into());
+        }
+        if produce.validators.is_empty() {
+            return Err("a produce scenario needs at least one validator".into());
+        }
+        if let Some(validator) = produce
+            .validators
+            .iter()
+            .find(|v| !v.accepts(produce.container))
+        {
+            return Err(format!(
+                "validator {} does not check {:?} output",
+                validator.name(),
+                produce.container
+            ));
+        }
+        if produce.container.is_live() && produce.audio.is_some() {
+            return Err("a whip publish is video only".into());
         }
         Ok(())
     }
@@ -1129,5 +1166,33 @@ mod tests {
         // valid at load; geometry comes from ffprobe when the run resolves it
         s.validate(Path::new("test.toml")).unwrap();
         assert!(s.judges_frames() && s.video.is_none());
+    }
+
+    #[test]
+    fn produce_scenario_parses_and_rejects_a_validator_for_another_container() {
+        let ok = r#"
+            id = "mkv"
+            engines = ["g2g", "ffmpeg"]
+            reference = "ffmpeg"
+            [input]
+            path = "src.mp4"
+            [produce]
+            container = "mkv"
+            video = "h264"
+            audio = "opus"
+            validators = ["ffprobe", "mkvalidator"]
+        "#;
+        let s: Scenario = toml::from_str(ok).unwrap();
+        s.validate(Path::new("t.toml")).unwrap();
+        assert!(s.is_produce() && !s.judges_frames());
+        assert!(s.produce.unwrap().encode_video);
+
+        let wrong_validator = ok.replace("mkvalidator", "tsduck");
+        let s: Scenario = toml::from_str(&wrong_validator).unwrap();
+        assert!(s.validate(Path::new("t.toml")).is_err());
+
+        let with_video = format!("{ok}\n[video]\nwidth = 16\nheight = 16\nformat = \"i420\"\n");
+        let s: Scenario = toml::from_str(&with_video).unwrap();
+        assert!(s.validate(Path::new("t.toml")).is_err());
     }
 }

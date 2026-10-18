@@ -15,6 +15,7 @@ calliope-core.workspace = true
 calliope-adapter-ffmpeg.workspace = true
 calliope-adapter-gst.workspace = true
 calliope-adapter-g2g.workspace = true
+calliope-validators.workspace = true
 anyhow.workspace = true
 clap.workspace = true
 serde_json.workspace = true

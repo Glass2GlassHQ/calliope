@@ -10,10 +10,16 @@ use futures::stream::{FuturesUnordered, StreamExt};
 
 use calliope_core::compare::{DecodeOutcome, OutcomeVerdict, compare, outcome_verdict};
 use calliope_core::corpus::{self, Manifest};
-use calliope_core::engine::Engine;
+use calliope_core::engine::{Engine, OutputSpec};
+use calliope_core::produce::{Expectation, Finding, Validator, finding, whep_endpoint};
 use calliope_core::report::{EngineReport, Report, ScenarioReport};
-use calliope_core::runner::{RunStatus, run_determinism, run_one, run_soak};
+use calliope_core::runner::{RunResult, RunStatus, run_determinism, run_one, run_soak};
 use calliope_core::scenario::{Input, Scenario, Video};
+
+// the produce pipelines decode h264 from the input mp4 before they re-encode
+const PRODUCE_ENCODE_INPUT_CODEC: &str = "h264";
+// validator messages printed per verdict line, the json report keeps them all
+const MESSAGES_SHOWN: usize = 3;
 
 #[derive(Parser)]
 #[command(name = "calliope", about = "differential media QA harness", version)]
@@ -155,6 +161,7 @@ fn engine_crashes(
         deinterlace: false,
         overlay: false,
         outcome_diff: false,
+        produce: None,
     };
     let Ok(inv) = engine.plan(&scenario, input, workdir) else {
         return false;
@@ -217,6 +224,7 @@ fn golden_scenarios(
             deinterlace: false,
             overlay: false,
             outcome_diff: false,
+            produce: None,
         })
         .collect()
 }
@@ -459,7 +467,8 @@ async fn run_matrix(
     // geometry when a differential scenario omits [video]); the resolved
     // scenario is shared across its engines and drives the report.
     let mut resolved: Vec<(Arc<Scenario>, Option<String>, Option<u64>)> = Vec::new();
-    let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf)> = Vec::new();
+    let mut prepared: Vec<(Arc<Scenario>, Arc<dyn Engine>, PathBuf, Option<Expectation>)> =
+        Vec::new();
     // vectors whose input could not be fetched (dead URL, missing archive
     // member); skipped so one bad download does not abort the whole matrix
     let mut skipped: Vec<(String, String)> = Vec::new();
@@ -564,6 +573,13 @@ async fn run_matrix(
                     .with_context(|| format!("{}: auto-probing geometry", scenario.id))?,
             );
         }
+        let expectation = match &scenario.produce {
+            Some(produce) => Some(
+                produce_expectation(produce, &input)
+                    .with_context(|| format!("{}: probing the produce input", scenario.id))?,
+            ),
+            None => None,
+        };
         let scenario = Arc::new(scenario);
         let engine_ids: Vec<&String> = scenario
             .engines
@@ -578,7 +594,12 @@ async fn run_matrix(
             );
         }
         for id in engine_ids {
-            prepared.push((Arc::clone(&scenario), engine_by_id(id)?, input.clone()));
+            prepared.push((
+                Arc::clone(&scenario),
+                engine_by_id(id)?,
+                input.clone(),
+                expectation,
+            ));
         }
         resolved.push((scenario, golden_expected, reschange_expected));
     }
@@ -592,11 +613,13 @@ async fn run_matrix(
     let mut results: Vec<(String, calliope_core::runner::RunResult)> = Vec::new();
     loop {
         while pending.len() < jobs {
-            let Some((scenario, engine, input)) = prepared.next() else {
+            let Some((scenario, engine, input, expectation)) = prepared.next() else {
                 break;
             };
             pending.push(async move {
-                let result = if scenario.is_soak() {
+                let result = if let Some(expected) = expectation {
+                    run_produce(engine, &scenario, expected, &input, workdir).await
+                } else if scenario.is_soak() {
                     run_soak(engine.as_ref(), &scenario, &input, workdir).await
                 } else if scenario.is_determinism() {
                     run_determinism(engine.as_ref(), &scenario, &input, workdir).await
@@ -682,10 +705,105 @@ async fn run_matrix(
             majority,
             roundtrip_psnr_min: scenario.roundtrip.as_ref().map(|rt| rt.psnr_min),
             resolution_change_expected_bytes: *reschange_expected,
+            produce: scenario.is_produce(),
             runs,
         });
     }
     Ok(report)
+}
+
+// what every producer must emit, from the input it re-encodes or remuxes
+fn produce_expectation(
+    produce: &calliope_core::produce::Produce,
+    input: &Path,
+) -> Result<Expectation> {
+    let stream = calliope_core::probe::probe_video_stream(input)?;
+    let wanted = if produce.encode_video {
+        PRODUCE_ENCODE_INPUT_CODEC
+    } else {
+        produce.video.ffprobe_name()
+    };
+    if stream.codec != wanted {
+        bail!(
+            "the input's video is {}, this scenario needs {wanted}",
+            stream.codec
+        );
+    }
+    Ok(Expectation {
+        video: produce.video,
+        audio: produce.audio,
+        video_frames: stream.frames,
+        frame_rate: stream.frame_rate,
+    })
+}
+
+async fn validate_output(
+    validator: Validator,
+    scenario: &Scenario,
+    output: OutputSpec,
+    expected: Expectation,
+) -> calliope_core::produce::Validation {
+    let produce = scenario.produce.clone().expect("a produce scenario");
+    tokio::task::spawn_blocking(move || {
+        calliope_validators::validate(validator, &produce, &output, &expected)
+    })
+    .await
+    .expect("validator thread")
+}
+
+// the engine produces, then each validator judges what it wrote; a live publish
+// is played while it runs
+async fn run_produce(
+    engine: Arc<dyn Engine>,
+    scenario: &Scenario,
+    expected: Expectation,
+    input: &Path,
+    workdir: &Path,
+) -> RunResult {
+    let produce = scenario.produce.as_ref().expect("a produce scenario");
+    if produce.container.is_live() {
+        let published = OutputSpec::Published {
+            whep: whep_endpoint(engine.id()),
+        };
+        let (mut result, playback) = tokio::join!(
+            run_one(engine.as_ref(), scenario, input, workdir),
+            validate_output(Validator::Player, scenario, published, expected)
+        );
+        result.validations = vec![playback];
+        return result;
+    }
+    let mut result = run_one(engine.as_ref(), scenario, input, workdir).await;
+    let Some(output) = result
+        .output
+        .clone()
+        .filter(|_| matches!(result.status, RunStatus::Ok))
+    else {
+        return result;
+    };
+    for validator in &produce.validators {
+        let validation = validate_output(*validator, scenario, output.clone(), expected).await;
+        result.validations.push(validation);
+    }
+    result
+}
+
+fn print_validations(scenario: &ScenarioReport, run: &RunResult) {
+    for validation in &run.validations {
+        let label = match finding(validation, scenario.control_validation(validation)) {
+            Finding::Pass => "pass",
+            Finding::Fail => "FAIL",
+            Finding::Advisory => "advisory (the control fails it too)",
+            Finding::Skipped => "skipped",
+        };
+        println!("      {:<22} {label}", validation.validator.name());
+        for message in validation.messages.iter().take(MESSAGES_SHOWN) {
+            println!("        {message}");
+        }
+        let hidden = validation.messages.len().saturating_sub(MESSAGES_SHOWN);
+        if hidden > 0 {
+            println!("        (+{hidden} more in the report)");
+        }
+    }
 }
 
 /// one-word label for the reference engine's own decode outcome
@@ -718,7 +836,14 @@ fn print_summary(report: &Report) {
                 .run
                 .peak_rss_kb
                 .map_or("-".into(), |kb| format!("{} MB", kb / 1024));
-            let verdict = if let Some(min) = scenario.roundtrip_psnr_min {
+            let verdict = if scenario.produce {
+                match &r.run.status {
+                    RunStatus::Ok => "produced".to_string(),
+                    RunStatus::Signaled { signal } => format!("CRASHED (signal {signal})"),
+                    RunStatus::Timeout => "HUNG".to_string(),
+                    _ => "PRODUCE FAILED".to_string(),
+                }
+            } else if let Some(min) = scenario.roundtrip_psnr_min {
                 match (&r.run.status, r.run.psnr) {
                     (RunStatus::Ok, Some(p)) if p >= min => format!("roundtrip ok ({p:.1} dB)"),
                     (RunStatus::Ok, Some(p)) => format!("PSNR {p:.1} dB < {min}"),
@@ -838,6 +963,12 @@ fn print_summary(report: &Report) {
                 r.run.duration_ms as f64 / 1000.0,
                 rss,
             );
+            if scenario.produce {
+                if !matches!(r.run.status, RunStatus::Ok) {
+                    println!("        logs: {}", r.run.log_dir.display());
+                }
+                print_validations(scenario, &r.run);
+            }
         }
     }
 }

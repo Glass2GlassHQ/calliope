@@ -11,9 +11,9 @@ pub mod dot;
 
 use std::path::Path;
 
-use calliope_core::Result;
 use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, probe_first_line};
 use calliope_core::scenario::Scenario;
+use calliope_core::{Error, Result};
 
 #[derive(Debug, Default)]
 pub struct GStreamer;
@@ -32,6 +32,11 @@ impl Engine for GStreamer {
     }
 
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
+        if scenario.is_produce() {
+            return Err(Error::Parse(
+                "the gstreamer adapter has no produce pipelines".into(),
+            ));
+        }
         // audio: decode to normalized interleaved PCM. audioresample normalizes
         // the rate (identity when it already matches); the whole stream is hashed.
         // dithering=none: audioconvert dithers a bit-depth reduction by default

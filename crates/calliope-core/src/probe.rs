@@ -76,6 +76,63 @@ pub fn probe_frame_geometry(input: &Path) -> Result<Vec<Video>> {
     Ok(frames)
 }
 
+// the input's first video stream as a producer sees it
+#[derive(Debug, Clone, PartialEq)]
+pub struct VideoStream {
+    pub codec: String,
+    pub frames: u64,
+    pub frame_rate: f64,
+}
+
+pub fn probe_video_stream(input: &Path) -> Result<VideoStream> {
+    let program = binary("CALLIOPE_FFPROBE", "ffprobe");
+    let out = std::process::Command::new(&program)
+        .args([
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-count_packets",
+            "-show_entries",
+            "stream=codec_name,r_frame_rate,nb_read_packets",
+            "-of",
+            "default=noprint_wrappers=1",
+        ])
+        .arg(input)
+        .output()
+        .map_err(|e| Error::Parse(format!("ffprobe ({program}): {e}")))?;
+    if !out.status.success() {
+        return Err(Error::Parse(format!(
+            "ffprobe failed on {}: {}",
+            input.display(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        )));
+    }
+    parse_video_stream(&String::from_utf8_lossy(&out.stdout))
+}
+
+// ffprobe `key=value` lines for codec_name, r_frame_rate (a ratio) and nb_read_packets
+fn parse_video_stream(text: &str) -> Result<VideoStream> {
+    let field = |key: &str| {
+        text.lines()
+            .find_map(|l| l.trim().strip_prefix(key)?.strip_prefix('='))
+            .ok_or_else(|| Error::Parse(format!("ffprobe output missing {key}: {text:?}")))
+    };
+    let bad = |key: &str| Error::Parse(format!("ffprobe {key} not a number: {text:?}"));
+    let (numerator, denominator) = field("r_frame_rate")?
+        .split_once('/')
+        .ok_or_else(|| bad("r_frame_rate"))?;
+    let numerator: f64 = numerator.parse().map_err(|_| bad("r_frame_rate"))?;
+    let denominator: f64 = denominator.parse().map_err(|_| bad("r_frame_rate"))?;
+    Ok(VideoStream {
+        codec: field("codec_name")?.to_string(),
+        frames: field("nb_read_packets")?
+            .parse()
+            .map_err(|_| bad("nb_read_packets"))?,
+        frame_rate: numerator / denominator,
+    })
+}
+
 /// parse ffprobe `-of csv=p=0` output for `width,height,pix_fmt` (a single
 /// stream or frame line; any trailing fields, e.g. per-frame side data, ignored)
 fn parse_ffprobe_csv(text: &str) -> Result<Video> {
@@ -146,5 +203,16 @@ mod tests {
         assert!(parse_ffprobe_csv("").is_err());
         assert!(parse_ffprobe_csv("176,,yuv420p").is_err());
         assert!(parse_ffprobe_csv("wide,144,yuv420p").is_err());
+    }
+
+    #[test]
+    fn parses_video_stream_counts() {
+        let v =
+            parse_video_stream("codec_name=h264\nr_frame_rate=30000/1001\nnb_read_packets=300\n")
+                .unwrap();
+        assert_eq!(v.codec, "h264");
+        assert_eq!(v.frames, 300);
+        assert!((v.frame_rate - 29.97).abs() < 0.01);
+        assert!(parse_video_stream("codec_name=h264\nr_frame_rate=25/1\n").is_err());
     }
 }

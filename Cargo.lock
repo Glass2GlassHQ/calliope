@@ -143,6 +143,7 @@ dependencies = [
  "calliope-adapter-g2g",
  "calliope-adapter-gst",
  "calliope-core",
+ "calliope-validators",
  "clap",
  "futures",
  "serde_json",
@@ -165,6 +166,15 @@ dependencies = [
  "tokio",
  "toml",
  "zip",
+]
+
+[[package]]
+name = "calliope-validators"
+version = "0.1.0"
+dependencies = [
+ "calliope-core",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

@@ -163,5 +163,18 @@ ffmpeg -nostdin -hide_banner -loglevel error -y \
     -f lavfi -i "aevalsrc=exprs='0.4*sin(440*2*PI*t)|0.4*sin(660*2*PI*t)':s=48000:d=2" \
     -c:a mp2 -f mpegts local-corpus/tone-stereo-48k-mp2.ts
 
+# Produce-mode source: h264 + aac in mp4, 12 s so x264's default 250 frame
+# keyframe interval cuts hls into more than one segment and a live publish
+# outlasts webrtc setup. The h265 copy feeds the remux scenario (g2g has no
+# h265 encoder).
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -f lavfi -i "testsrc2=duration=12:size=320x240:rate=25" \
+    -f lavfi -i "sine=frequency=440:duration=12:sample_rate=48000" \
+    -c:v libx264 -pix_fmt yuv420p -c:a aac -ac 2 local-corpus/produce-src.mp4
+
+ffmpeg -nostdin -hide_banner -loglevel error -y \
+    -i local-corpus/produce-src.mp4 -c:v libx265 -pix_fmt yuv420p -c:a copy \
+    local-corpus/produce-src-h265.mp4
+
 echo "local-corpus ready:"
 ls -l local-corpus

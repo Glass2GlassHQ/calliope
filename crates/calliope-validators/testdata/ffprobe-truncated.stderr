@@ -1,0 +1,2 @@
+[h264 @ 0x55f76d093880] Invalid NAL unit size (2869 > 1614).
+[h264 @ 0x55f76d093880] Error splitting the input into NAL units.

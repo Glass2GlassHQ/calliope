@@ -1,0 +1,44 @@
+[iso file] Incomplete box mdat - start 196685 size 6185
+[iso file] Incomplete file while reading for dump - aborting parsing
+# Movie Info - 2 tracks - TimeScale 1000
+Duration 00:00:00.000
+Fragmented: yes - duration 00:00:00.000
+63 fragments - 0 SegmentIndexes
+Progressive (moov before mdat)
+Major Brand iso5 - version 512 - compatible brands: iso5 isom
+Created: UNKNOWN DATE
+
+# Track 1 Info - ID 1 - TimeScale 90000
+Media Duration 00:00:00.000 
+Track flags: Enabled In Movie
+Media Samples: 0
+Fragmented track: 21 samples - Media Duration 00:00:00.833 - First TFDT 0
+Fragment sample defaults: duration 0 size 0 stsd 1 sync 1 padding 0 degradation_priority 0
+Visual Track layout: x=0 y=0 width=320 height=240
+Media Type: vide:avc1
+	Visual Sample Entry Info: width=320 height=240 (depth=24 bits)
+	AVC/H264 Video - Visual Size 320 x 240
+	AVC Info: 1 SPS - 1 PPS - Profile High @ Level 3
+	NAL Unit length bits: 32
+	Chroma format YUV 4:2:0 - Luma bit depth 8 - chroma bit depth 8
+	SPS#1 hash: 535727579DB6FC3B76FFCA1FFF300F4D46A9B985
+	PPS#1 hash: 1CEE69405C51938108FF94F80D5E07137455F343
+	RFC6381 Codec Parameters: avc1.64001E
+
+	All samples are sync
+	Max sample duration: 0 / 90000
+
+# Track 2 Info - ID 2 - TimeScale 48000
+Media Duration 00:00:00.000 
+Track has 1 edits: track duration is 00:00:00.000
+Track flags: Enabled In Movie
+Media Samples: 0
+Fragmented track: 42 samples - Media Duration 00:00:00.896 - First TFDT 0
+Fragment sample defaults: duration 0 size 0 stsd 1 sync 1 padding 0 degradation_priority 0
+Media Type: soun:mp4a
+	MPEG-4 Audio AAC LC (AOT=2 implicit) - 2 Channel(s) - SampleRate 48000
+	RFC6381 Codec Parameters: mp4a.40.2
+
+	All samples are sync
+	Max sample duration: 0 / 48000
+

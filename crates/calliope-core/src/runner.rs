@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 
 use crate::engine::{Engine, OutputSpec};
+use crate::produce::Validation;
 use crate::scenario::Scenario;
 use crate::{Error, Result, framehash};
 
@@ -68,6 +69,12 @@ pub struct RunResult {
     /// exit is carried by `status`, not here.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub decoded: Option<bool>,
+    // produce only: each validator's verdict on this engine's output
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub validations: Vec<Validation>,
+    // produce only: what the engine wrote or published, for the validators
+    #[serde(skip)]
+    pub output: Option<OutputSpec>,
 }
 
 /// run one engine on one scenario; never panics on engine failure, every
@@ -99,6 +106,8 @@ fn fail_result(engine: &str, log_dir: PathBuf, message: String) -> RunResult {
         determinism_matched: None,
         psnr: None,
         decoded: None,
+        validations: Vec::new(),
+        output: None,
     }
 }
 
@@ -198,7 +207,9 @@ async fn exec(
                 ),
                 // a roundtrip's encoded stream is validated by ffmpeg (PSNR), not
                 // hashed here
-                OutputSpec::EncodedFile(_) => (None, None),
+                OutputSpec::EncodedFile(_)
+                | OutputSpec::Produced(_)
+                | OutputSpec::Published { .. } => (None, None),
             }
         } else {
             (None, None)
@@ -226,6 +237,8 @@ async fn exec(
         determinism_matched: None,
         psnr: None,
         decoded,
+        validations: Vec::new(),
+        output: Some(invocation.output),
     }
 }
 
@@ -240,7 +253,9 @@ fn produced_output(output: &OutputSpec) -> bool {
         OutputSpec::RawVideoFile(path) | OutputSpec::RawAudioFile(path) => std::fs::metadata(path)
             .map(|m| m.len() > 0)
             .unwrap_or(false),
-        OutputSpec::EncodedFile(_) => false,
+        OutputSpec::EncodedFile(_) | OutputSpec::Produced(_) | OutputSpec::Published { .. } => {
+            false
+        }
     }
 }
 
@@ -397,7 +412,9 @@ fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String
             vec![whole_file_md5(path)?]
         }
         // a roundtrip encoded stream is never frame-hashed (only golden/diff are)
-        OutputSpec::EncodedFile(_) => Vec::new(),
+        OutputSpec::EncodedFile(_) | OutputSpec::Produced(_) | OutputSpec::Published { .. } => {
+            Vec::new()
+        }
     };
     if hashes.is_empty() {
         return Err(Error::Parse("engine produced no frames".into()));
@@ -513,6 +530,7 @@ mod tests {
             deinterlace: false,
             outcome_diff: false,
             overlay: false,
+            produce: None,
         }
     }
 

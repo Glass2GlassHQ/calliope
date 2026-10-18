@@ -1,0 +1,7 @@
+ERR200: Missing element 'MuxingApp' in Info at 52
+ERR200: Missing element 'WritingApp' in Info at 52
+WRN801: The segment has no SeekHead section
+WRN0C0: First Block for video track #1 in Cluster at 448246 is not a keyframe
+WRN0C0: First Block for video track #1 in Cluster at 951600 is not a keyframe
+WRN0C0: First Block for video track #1 in Cluster at 1656397 is not a keyframe
+WRN0C0: First Block for video track #1 in Cluster at 2143538 is not a keyframe

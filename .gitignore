@@ -3,3 +3,4 @@
 /local-corpus
 /fuzz-out
 smoke-report.json
+/tools/playback/node_modules

@@ -12,6 +12,7 @@ pub mod framehash;
 pub mod minimize;
 pub mod pipeline_diff;
 pub mod probe;
+pub mod produce;
 pub mod report;
 pub mod runner;
 pub mod scenario;

@@ -5,8 +5,131 @@ use std::path::Path;
 use std::process::Command;
 
 use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, probe_first_line};
+use calliope_core::produce::{
+    Container, FRAGMENT_DURATION, Produce, ProducedAudio, VideoCodec, whep_endpoint, whip_endpoint,
+};
 use calliope_core::scenario::{Scenario, Video};
 use calliope_core::{Error, Result};
+
+const FRAGMENTED_MP4_FLAGS: &str = "+frag_keyframe+empty_moov+default_base_moof";
+const CMAF_MP4_FLAGS: &str = "+cmaf+frag_keyframe+empty_moov+default_base_moof";
+const HLS_INIT_SEGMENT: &str = "init.mp4";
+// a WHEP reader joins mid-stream and waits for a keyframe, so force one every second
+const LIVE_KEYFRAME_EXPRESSION: &str = "expr:gte(t,n_forced)";
+// the WHIP muxer refuses B-frames, baseline has none
+const LIVE_H264_PROFILE: &str = "baseline";
+
+fn video_encoder(codec: VideoCodec) -> &'static str {
+    match codec {
+        VideoCodec::H264 => "libx264",
+        VideoCodec::H265 => "libx265",
+        VideoCodec::Av1 => "libsvtav1",
+    }
+}
+
+fn container_args(container: Container, workdir: &Path) -> Vec<String> {
+    let fragment = FRAGMENT_DURATION.as_micros().to_string();
+    let segment = |ext: &str| workdir.join(format!("seg%05d.{ext}")).display().to_string();
+    match container {
+        Container::Mp4 => vec!["-f".into(), "mp4".into()],
+        Container::Fmp4 => vec![
+            "-movflags".into(),
+            FRAGMENTED_MP4_FLAGS.into(),
+            "-frag_duration".into(),
+            fragment,
+            "-f".into(),
+            "mp4".into(),
+        ],
+        Container::Cmaf => vec![
+            "-movflags".into(),
+            CMAF_MP4_FLAGS.into(),
+            "-frag_duration".into(),
+            fragment,
+            "-f".into(),
+            "mp4".into(),
+        ],
+        Container::Mkv => vec!["-f".into(), "matroska".into()],
+        Container::Ts => vec!["-f".into(), "mpegts".into()],
+        Container::HlsTs => vec![
+            "-f".into(),
+            "hls".into(),
+            "-hls_playlist_type".into(),
+            "vod".into(),
+            "-hls_segment_type".into(),
+            "mpegts".into(),
+            "-hls_segment_filename".into(),
+            segment("ts"),
+        ],
+        Container::HlsFmp4 => vec![
+            "-f".into(),
+            "hls".into(),
+            "-hls_playlist_type".into(),
+            "vod".into(),
+            "-hls_segment_type".into(),
+            "fmp4".into(),
+            "-hls_fmp4_init_filename".into(),
+            HLS_INIT_SEGMENT.into(),
+            "-hls_segment_filename".into(),
+            segment("m4s"),
+        ],
+        Container::Dash => vec!["-f".into(), "dash".into()],
+        Container::Whip => vec!["-f".into(), "whip".into()],
+    }
+}
+
+// ffmpeg as the control producer: encode the input with ffmpeg's own encoders and muxers
+fn produce_invocation(produce: &Produce, input: &Path, workdir: &Path, engine: &str) -> Invocation {
+    let live = produce.container.is_live();
+    let mut args: Vec<String> = vec![
+        "-nostdin".into(),
+        "-hide_banner".into(),
+        "-loglevel".into(),
+        "error".into(),
+        "-y".into(),
+    ];
+    if live {
+        args.push("-re".into());
+    }
+    args.extend(["-i".into(), input.display().to_string()]);
+    let encoder = if produce.encode_video {
+        video_encoder(produce.video)
+    } else {
+        "copy"
+    };
+    args.extend(["-c:v".into(), encoder.into()]);
+    if live && produce.encode_video {
+        args.extend([
+            "-profile:v".into(),
+            LIVE_H264_PROFILE.into(),
+            "-force_key_frames".into(),
+            LIVE_KEYFRAME_EXPRESSION.into(),
+        ]);
+    }
+    match produce.audio {
+        None => args.push("-an".into()),
+        Some(ProducedAudio::Aac) => args.extend(["-c:a".into(), "copy".into()]),
+        Some(ProducedAudio::Opus) => args.extend(["-c:a".into(), "libopus".into()]),
+    }
+    args.extend(container_args(produce.container, workdir));
+    let output = match produce.container.artifact_name() {
+        Some(name) => {
+            let path = workdir.join(name);
+            args.push(path.display().to_string());
+            OutputSpec::Produced(path)
+        }
+        None => {
+            args.push(whip_endpoint(engine));
+            OutputSpec::Published {
+                whep: whep_endpoint(engine),
+            }
+        }
+    };
+    Invocation {
+        program: binary("CALLIOPE_FFMPEG", "ffmpeg"),
+        args,
+        output,
+    }
+}
 
 /// Validate an encode round-trip with ffmpeg: decode the original and the
 /// engine's re-encoded elementary stream, then return the PSNR (dB) between them.
@@ -105,6 +228,9 @@ impl Engine for Ffmpeg {
     }
 
     fn plan(&self, scenario: &Scenario, input: &Path, workdir: &Path) -> Result<Invocation> {
+        if let Some(produce) = &scenario.produce {
+            return Ok(produce_invocation(produce, input, workdir, self.id()));
+        }
         let program = binary("CALLIOPE_FFMPEG", "ffmpeg");
         // audio: decode to normalized interleaved PCM. The decoder is forced to
         // the codec's reference library (`-c:a libopus` for opus) so ffmpeg

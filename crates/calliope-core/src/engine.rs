@@ -57,6 +57,12 @@ pub enum OutputSpec {
     /// engine wrote an encoded elementary stream (a roundtrip transcode); the
     /// runner leaves it for ffmpeg to decode + PSNR, not hashed here
     EncodedFile(PathBuf),
+    // produce mode: the muxed file, playlist or manifest the validators open
+    Produced(PathBuf),
+    // produce mode, live: the WHEP url a player reads the engine's publish from
+    Published {
+        whep: String,
+    },
 }
 
 /// binary override hook: `env_var` (e.g. CALLIOPE_FFMPEG) wins over `default`

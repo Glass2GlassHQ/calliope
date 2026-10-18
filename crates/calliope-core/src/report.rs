@@ -5,6 +5,7 @@ use serde::Serialize;
 
 use crate::compare::{Comparison, MajorityVote};
 use crate::pipeline_diff::{PipelineDiff, PipelineGraph, Verdict};
+use crate::produce::{Finding, Validation, finding};
 use crate::runner::{RunResult, RunStatus};
 
 #[derive(Debug, Serialize)]
@@ -44,6 +45,8 @@ pub struct ScenarioReport {
     /// the per-frame packed sizes from ffprobe) every engine's output must match.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolution_change_expected_bytes: Option<u64>,
+    // produce scenario: validators judge each engine's output, the reference is the control
+    pub produce: bool,
     pub runs: Vec<EngineReport>,
 }
 
@@ -102,7 +105,29 @@ pub struct EngineReport {
 }
 
 impl ScenarioReport {
+    // the control producer's verdict from the same validator
+    pub fn control_validation(&self, of: &Validation) -> Option<&Validation> {
+        self.runs
+            .iter()
+            .find(|r| r.run.engine == self.reference)?
+            .run
+            .validations
+            .iter()
+            .find(|v| v.validator == of.validator)
+    }
+
     pub fn passed(&self) -> bool {
+        // produce: every engine produced output and no validator failed it
+        // unless the control's output failed that validator too
+        if self.produce {
+            return self.runs.iter().all(|r| {
+                matches!(r.run.status, RunStatus::Ok)
+                    && r.run
+                        .validations
+                        .iter()
+                        .all(|v| finding(v, self.control_validation(v)) != Finding::Fail)
+            });
+        }
         // golden: every engine's whole-output MD5 must equal the conformance hash.
         if let Some(expected) = &self.golden_expected {
             // gstreamer's avdec emits an alignment-cropped geometry on cropped
@@ -193,6 +218,8 @@ mod tests {
                 determinism_matched: None,
                 psnr: None,
                 decoded: None,
+                validations: Vec::new(),
+                output: None,
             },
             comparison: None,
         }
@@ -211,6 +238,7 @@ mod tests {
             majority: None,
             roundtrip_psnr_min: None,
             resolution_change_expected_bytes: None,
+            produce: false,
             runs,
         }
     }
@@ -343,5 +371,43 @@ mod tests {
             .passed(),
             "a crash / hang fails regardless of PSNR"
         );
+    }
+
+    fn produce_run(engine: &str, verdict: crate::produce::Verdict) -> EngineReport {
+        let mut r = golden_run(engine, None);
+        r.run.validations = vec![Validation {
+            validator: crate::produce::Validator::Mkvalidator,
+            verdict,
+            messages: Vec::new(),
+        }];
+        r
+    }
+
+    fn produce_report(runs: Vec<EngineReport>) -> ScenarioReport {
+        let mut s = golden_report(runs);
+        s.golden_expected = None;
+        s.produce = true;
+        s
+    }
+
+    #[test]
+    fn produce_fails_only_when_the_control_passes_the_same_validator() {
+        use crate::produce::Verdict::{Fail, Pass, Skipped};
+        let finding = produce_report(vec![produce_run("ffmpeg", Pass), produce_run("g2g", Fail)]);
+        assert!(!finding.passed(), "g2g fails where ffmpeg passes");
+
+        let advisory = produce_report(vec![produce_run("ffmpeg", Fail), produce_run("g2g", Fail)]);
+        assert!(advisory.passed(), "both fail: a validator quirk, advisory");
+
+        let skipped = produce_report(vec![
+            produce_run("ffmpeg", Skipped),
+            produce_run("g2g", Skipped),
+        ]);
+        assert!(skipped.passed(), "an absent validator judges nothing");
+
+        let mut crashed =
+            produce_report(vec![produce_run("ffmpeg", Pass), produce_run("g2g", Pass)]);
+        crashed.runs[1].run.status = RunStatus::Signaled { signal: 11 };
+        assert!(!crashed.passed(), "a producer crash fails");
     }
 }

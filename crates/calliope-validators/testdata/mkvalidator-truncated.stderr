@@ -1,0 +1,4 @@
+ERR203: Invalid checksum for element 'Cluster' at 249542
+ERR042: The segment's size 594683 doesn't match the position where it ends 489098
+ERR066: The SeekPoint at 106 references an unknown Cues at 594635
+WRN800: The segment has Clusters but no Cues section (bad for seeking)
