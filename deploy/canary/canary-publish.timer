@@ -1,5 +1,5 @@
 [Unit]
-Description=publish the g2g canary status page every 5 minutes
+Description=publish the g2g canary status page and alerts every 5 minutes
 
 [Timer]
 OnBootSec=5min

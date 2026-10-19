@@ -1,7 +1,8 @@
 [Unit]
-Description=publish the g2g canary status page
+Description=publish the g2g canary status page and mail incident alerts
 
 [Service]
 Type=oneshot
 EnvironmentFile=%h/g2g-canary/publish.env
 ExecStart=%h/g2g-canary/canary-publish.sh %h/g2g-canary/data/canary-out/status ${CANARY_PUBLISH_DESTINATION}
+ExecStart=%h/g2g-canary/canary-alert.sh %h/g2g-canary/data/canary-out/status/status.json %h/g2g-canary/alerts-sent ${CANARY_ALERT_TOPIC}

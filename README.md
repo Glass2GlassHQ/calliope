@@ -335,23 +335,49 @@ listens.
 
 ### Deploy
 
-The image bundles `calliope` and a `g2g-launch` built from the g2g checkout's
-committed `HEAD`. Three podman Quadlet units run it under the user's systemd:
-`g2g-canary-mediamtx`, `g2g-canary-feeder` and `g2g-canary`. A
-`canary-publish.timer` copies the status page every 5 minutes.
+The image bundles `calliope` and a `g2g-launch` built from one g2g commit, which
+it reports in `G2G_COMMIT`. Three podman Quadlet units run under the user's
+systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder` and `g2g-canary`, which runs
+`ghcr.io/glass2glasshq/g2g-canary:latest`. A `canary-publish.timer` copies the
+status page and sends incident alerts every 5 minutes.
+
+The g2g repo's `canary image` workflow builds the image after each master commit
+passes CI and pushes it as `:latest` and `:<short sha>`. On the host,
+`podman-auto-update.timer` pulls `:latest` daily at midnight and restarts the
+units whose image changed.
 
 ```sh
-tools/canary-image.sh ~/src/glass2glass    # builds localhost/g2g-canary:latest
 tools/canary-deploy.sh local               # or <ssh-host>
 ```
 
-`canary-deploy.sh` copies `deploy/canary/*.container` to
-`~/.config/containers/systemd/`, the publish units to `~/.config/systemd/user/`,
-and the config, `mediamtx.yml`, `feeder.sh` and `canary-publish.sh` to
-`~/g2g-canary/`. Logs and the status page land in `~/g2g-canary/data/canary-out/`.
+`canary-deploy.sh` pulls the image on the host and copies
+`deploy/canary/*.container` to `~/.config/containers/systemd/`, the publish units
+to `~/.config/systemd/user/`, and the config, `mediamtx.yml`, `feeder.sh`,
+`canary-publish.sh` and `canary-alert.sh` to `~/g2g-canary/`. It then restarts
+the units and enables `podman-auto-update.timer`. Logs and the status page land
+in `~/g2g-canary/data/canary-out/`.
+
+A unit that runs the canary image sets `Image=ghcr.io/glass2glasshq/g2g-canary:latest`
+and `AutoUpdate=registry`, so one auto-update run restarts all of them on a new image.
+
+To run an image built here instead of the registry's:
+
+```sh
+tools/canary-image.sh ~/src/glass2glass    # builds localhost/g2g-canary:latest
+CANARY_IMAGE=localhost/g2g-canary:latest tools/canary-deploy.sh <ssh-host>
+```
+
+The deploy copies it with `podman save | ssh podman load` and tags it with the
+ghcr name. It runs until the next auto-update, which replaces it with the
+registry's `:latest` because the digests differ.
+
 The publish timer starts only when `~/g2g-canary/publish.env` exists, see
-`deploy/canary/publish.env.example`. Its destination is an `s3://` url or a local
-directory.
+`deploy/canary/publish.env.example`. `CANARY_PUBLISH_DESTINATION` is an `s3://`
+url or a local directory. `CANARY_ALERT_TOPIC` is the SNS topic arn that
+`canary-alert.sh` publishes to: one message when an incident opens and one when
+it closes. It reads the incidents from `status.json`, because an open incident is
+in no log file until it closes. It lists what it sent in `~/g2g-canary/alerts-sent`,
+so a restart sends nothing twice, and its first run marks the closed history as sent.
 
 ### EC2
 
@@ -360,13 +386,8 @@ x86_64 AMI from fedoraproject.org/cloud/download, default user `fedora`, a 20 GB
 gp3 root volume, and a security group that allows inbound ssh only. Every
 pipeline pulls outbound and mediamtx binds loopback.
 
-The image builds natively here or on hercules in minutes, so a g2g update
-redeploys quickly. It is copied over ssh with `podman save | ssh podman load`,
-so no registry is involved.
-
 ```sh
-tools/canary-image.sh ~/src/glass2glass
-ssh fedora@<host> 'sudo dnf -y install podman awscli2 && sudo loginctl enable-linger fedora'
+ssh fedora@<host> 'sudo dnf -y install podman awscli2 jq && sudo loginctl enable-linger fedora'
 tools/canary-deploy.sh fedora@<host>
 ```
 
@@ -375,18 +396,19 @@ With `CANARY_SECURITY_GROUP` set to the instance's security group id,
 current public address, so a changed home IP does not lock the deploy out. It
 runs `aws` with whatever `AWS_PROFILE` the shell sets.
 
-Linger starts the user units at boot without a login. The deploy script tags the
-loaded image `localhost/g2g-canary:latest` on the instance, which is the tag
-`g2g-canary.container` runs.
+Linger starts the user units and timers at boot without a login. The image
+package on ghcr.io is public, so the host pulls it without a login.
 
 The status page goes to an S3 bucket and the g2g docs site links to it. Create a
 bucket, turn off "block public access" for it, and add a bucket policy that
 allows public `s3:GetObject` on `g2g-canary/*`. Give the instance an IAM role
-that allows `s3:ListBucket` on the bucket and `s3:PutObject` and
-`s3:DeleteObject` on `g2g-canary/*`. Then enable the timer on the instance:
+that allows `s3:ListBucket` on the bucket, `s3:PutObject` and `s3:DeleteObject`
+on `g2g-canary/*`, and `sns:Publish` on the alert topic. Then enable the timer on
+the instance:
 
 ```sh
-ssh fedora@<host> 'echo CANARY_PUBLISH_DESTINATION=s3://<bucket>/g2g-canary > g2g-canary/publish.env \
+ssh fedora@<host> 'printf "%s\n" CANARY_PUBLISH_DESTINATION=s3://<bucket>/g2g-canary \
+        CANARY_ALERT_TOPIC=arn:aws:sns:<region>:<account>:<topic> > g2g-canary/publish.env \
     && systemctl --user enable --now canary-publish.timer'
 ```
 

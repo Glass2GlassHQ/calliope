@@ -15,6 +15,7 @@ git -C "$calliope_dir" archive HEAD | tar -x -C "$context/calliope"
 podman build \
     --build-context g2g="$context/g2g" \
     --build-arg CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-4}" \
+    --build-arg G2G_COMMIT="$(git -C "$g2g_dir" rev-parse HEAD)" \
     -f "$context/calliope/deploy/canary/Containerfile" \
     -t "$image" \
     "$context/calliope"
