@@ -1,19 +1,19 @@
 # gst-medias sweep triage
 
-218 files, 284 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master b97fa5da built with linux-full minus vaapi, pipewire and portal in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/gst-medias`.
+218 files, 284 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master 388309f4 built with linux-full minus vaapi, pipewire and portal in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/gst-medias`.
 
 | class | scenarios |
 | :--- | ---: |
 | gstreamer diverges | 9 |
 | reference quirk | 3 |
-| unsupported codec | 43 |
-| agree | 229 |
+| unsupported codec | 34 |
+| agree | 238 |
 
 Every scenario outside the agree class, by diagnosis:
 
 | diagnosis | scenarios |
 | :--- | ---: |
-| unsupported | 43 |
+| unsupported | 34 |
 | reference quirk | 3 |
 | gstreamer only | 9 |
 
@@ -53,18 +53,12 @@ g2g-launch reports these itself: no typefind match for the container, or no deco
 | dvvideo yuv420p | unsupported container or codec | 1 |
 | h264 yuv420p | unsupported container | 8 |
 | h264 yuv422p10le | unsupported container | 1 |
-| indeo3 yuv410p | unsupported codec | 1 |
 | mpeg2video yuv422p | unsupported container | 5 |
 | msmpeg4v3 yuv420p | unsupported container or codec | 1 |
 | opus | unsupported container | 1 |
 | pcm_s16le | unsupported container | 5 |
 | pcm_s24le | unsupported container | 1 |
-| prores yuv422p10le | unsupported codec | 1 |
-| prores yuva444p12le | unsupported codec | 1 |
-| rawvideo uyvy422 | unsupported codec | 1 |
-| rawvideo yuv420p | unsupported codec | 2 |
 | svg none | unsupported container or codec | 1 |
-| theora yuv420p | unsupported codec | 3 |
 | vp8 yuv420p | unsupported container | 1 |
 | wmav2 | unsupported container or codec | 2 |
 | wmv1 yuv420p | unsupported container or codec | 1 |

@@ -299,13 +299,15 @@ decode outcome is the oracle.
 calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
 calliope sweep --corpus corpus/gst-medias.toml --title gst-medias --report runs/gst-medias.json
 python3 -I tools/sweep-triage.py runs/fate-suite.json fate-suite \
-  "master b97fa5da built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
+  "master 388309f4 built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
 ```
 Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
 gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
 space in its name and is skipped. g2g-launch is linux-full in release. The
-first sweep ran g2g master 42c0a809. The current one runs b97fa5da without
-vaapi, pipewire and portal, which do not build on the Fedora 44 sweep host.
+first sweep ran g2g master 42c0a809. The current one runs 388309f4 without
+vaapi, pipewire and portal, which do not build on the Fedora 44 sweep host,
+and with `ffmpeg-long-tail`, the libavcodec fallback for codecs g2g has no
+typed caps for.
 
 Result at 42c0a809: 948 fate-suite and 149 gst-medias scenarios agreed, and
 262 failed from 22 g2g bugs. All 22 are fixed (bugs 7 to 28 below). The
@@ -315,16 +317,21 @@ The sweep at b84a510a found 13 more, fixed in M1562 to M1582 (38 to 57).
 The sweep at 6c675bef found 3 more and checking them by hand found a fourth,
 fixed in M1583 to M1586 (59 to 62).
 
-Result at b97fa5da, fate-suite: 1094 scenarios agree. Of the other 1317,
-none are g2g bugs, 1119 are codecs, containers or pixel formats g2g does not
-support, 102 are harness limits, 37 are reference quirks, 56 are
-GStreamer-only failures and 3 are open. gst-medias: 229 agree. Of the other
-55, 43 are unsupported, 3 reference quirks and 9 GStreamer-only.
+Result at 388309f4, fate-suite: 1222 scenarios agree. Of the other 1189,
+none are g2g bugs, 870 are codecs, containers or pixel formats g2g does not
+support, 102 are harness limits, 40 are reference quirks, 169 are
+GStreamer-only failures and 8 are open. gst-medias: 238 agree. Of the other
+46, 34 are unsupported, 3 reference quirks and 9 GStreamer-only. Against
+b97fa5da no scenario stopped agreeing. Typed raw video, Theora, ProRes and
+DNxHD (M1587 to M1589) and the libavcodec fallback (M1590) moved 240
+fate-suite and 9 gst-medias scenarios out of unsupported.
 
 Open: an MPEG-4 Studio profile stream decodes to different samples than
 ffmpeg with the same libavcodec, `mov/empty_edit_5s.mp4` has decode errors
 from frame 0 where even ffmpeg's threaded and single-thread decodes differ,
-and a progressive 4:4:4 JPEG fails in MjpegDec.
+a progressive 4:4:4 JPEG fails in MjpegDec, g2g does not apply the MOV `clap`
+clean aperture that ffmpeg 8 crops to (4 scenarios), and VC-1 in ISMV lacks
+its `dvc1` extradata.
 
 Harness limits: 10 resolution-changing streams cannot be hashed at one
 geometry, and g2g is bit-exact with `ffmpeg -noautoscale` on all of them.
