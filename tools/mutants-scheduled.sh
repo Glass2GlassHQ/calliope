@@ -7,7 +7,7 @@ MUTANTS_HOME="${MUTANTS_HOME:-$HOME/g2g-mutants}"
 G2G_CLONE="$MUTANTS_HOME/glass2glass"
 LAST_FINISHED="$MUTANTS_HOME/last-finished-commit"
 G2G_URL=https://github.com/Glass2GlassHQ/glass2glass.git
-# a 5 minute load average above this means another job is using the box
+# a 5 minute load average of this or more means another job is using the box
 MAX_IDLE_LOAD="${MAX_IDLE_LOAD:-4}"
 # the host-validation timer starts its run ten minutes after boot
 BOOT_SETTLE_SECONDS=1200
@@ -26,7 +26,7 @@ host_busy() {
         return 0
     fi
     load_five_minutes=$(cut -d' ' -f2 /proc/loadavg)
-    awk -v load="$load_five_minutes" -v limit="$MAX_IDLE_LOAD" 'BEGIN { exit !(load > limit) }'
+    [ "${load_five_minutes%.*}" -ge "$MAX_IDLE_LOAD" ]
 }
 
 # the plugins test binaries that name a module the diff touches

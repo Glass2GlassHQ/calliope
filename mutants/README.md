@@ -73,7 +73,7 @@ https, runs cargo-mutants `--in-diff` on the commits since
 and g2g-plugins (`--lib` plus the test files naming a changed module), writes
 `~/g2g-mutants/runs/<date>-<from>-<to>/`, and moves the commit file only when
 both runs finish. It waits up to 8 hours for 20 minutes of uptime, no active
-`glass2glass-validation@` unit and a 5 minute load average of at most 4.
+`glass2glass-validation@` unit and a 5 minute load average under 4.
 
 ```bash
 ssh hercules 'mkdir -p ~/g2g-mutants ~/.config/systemd/user'
