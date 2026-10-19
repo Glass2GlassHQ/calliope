@@ -10,6 +10,7 @@ const DEFAULT_OBSERVE_BASE_PORT: u16 = 18700;
 const DEFAULT_BACKOFF_MIN_SECS: u64 = 1;
 const DEFAULT_BACKOFF_MAX_SECS: u64 = 300;
 const DEFAULT_HEALTHY_RUN_SECS: u64 = 600;
+const DEFAULT_STARTUP_GRACE_SECS: u64 = 120;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
@@ -33,6 +34,9 @@ pub struct CanaryConfig {
     // a run that lasted this long resets the restart backoff
     #[serde(default = "default_healthy_run_secs")]
     pub healthy_run_secs: u64,
+    // failures this soon after the canary starts open no incident, the streams it reads start alongside it
+    #[serde(default = "default_startup_grace_secs")]
+    pub startup_grace_secs: u64,
     #[serde(rename = "pipeline")]
     pub pipelines: Vec<PipelineConfig>,
 }
@@ -94,6 +98,9 @@ fn default_backoff_max_secs() -> u64 {
 }
 fn default_healthy_run_secs() -> u64 {
     DEFAULT_HEALTHY_RUN_SECS
+}
+fn default_startup_grace_secs() -> u64 {
+    DEFAULT_STARTUP_GRACE_SECS
 }
 
 impl CanaryConfig {

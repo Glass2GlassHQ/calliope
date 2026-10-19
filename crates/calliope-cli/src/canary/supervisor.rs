@@ -54,6 +54,7 @@ pub struct Supervisor {
     backoff_min: Duration,
     backoff_max: Duration,
     healthy_run: Duration,
+    startup_grace_ends: Instant,
     state: SharedState,
     open_incidents: SharedOpenIncidents,
 }
@@ -87,6 +88,7 @@ impl Supervisor {
             backoff_min: Duration::from_secs(config.backoff_min_secs),
             backoff_max: Duration::from_secs(config.backoff_max_secs),
             healthy_run: Duration::from_secs(config.healthy_run_secs),
+            startup_grace_ends: Instant::now() + Duration::from_secs(config.startup_grace_secs),
             state,
             open_incidents,
         }
@@ -236,6 +238,9 @@ impl Supervisor {
             incident.restarts += 1;
             return open_incidents.put(incident);
         }
+        if Instant::now() < self.startup_grace_ends {
+            return Ok(());
+        }
         let id = format!("{}-{}", self.pipeline.id, end.failed_at);
         let stderr = format!("{STDERR_DIR}/{id}.log");
         let mut text = end.stderr_tail.join("\n");
@@ -328,6 +333,15 @@ mod tests {
     }
 
     fn config(dir: &Path, program: &Path, port: u16) -> CanaryConfig {
+        config_with_grace(dir, program, port, 0)
+    }
+
+    fn config_with_grace(
+        dir: &Path,
+        program: &Path,
+        port: u16,
+        startup_grace_secs: u64,
+    ) -> CanaryConfig {
         toml::from_str(&format!(
             r#"
             log-dir = "{dir}"
@@ -336,6 +350,7 @@ mod tests {
             stall-secs = {STALL_SECS}
             observe-base-port = {port}
             backoff-min-secs = 1
+            startup-grace-secs = {startup_grace_secs}
             [[pipeline]]
             id = "fake"
             tier = "self-hosted"
@@ -383,6 +398,20 @@ mod tests {
         assert_eq!(incident.tier, Tier::SelfHosted);
         let stderr = std::fs::read_to_string(dir.join(incident.stderr.as_ref().unwrap())).unwrap();
         assert!(stderr.contains("fake: waiting for stream"));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn failures_during_the_startup_grace_open_no_incident() {
+        let dir = scratch("grace");
+        let program = fake_launch(&dir, "echo 'pipeline error: not published yet' >&2\nexit 1");
+        let grace_secs = OBSERVE_FOR.as_secs() + 1;
+        let config = config_with_grace(&dir, &program, unused_port(), grace_secs);
+        let state = SharedState::default();
+        supervise_for(&config, &state).await;
+
+        assert!(state.lock().unwrap().restarts >= 2);
+        assert!(reloaded_open_incidents(&dir).is_empty());
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

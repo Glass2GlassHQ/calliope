@@ -323,7 +323,10 @@ per `sample-secs` it appends one line per pipeline to
 `log/samples-<utc-date>.jsonl` with frames decoded, fps, decoder p50 latency, RSS,
 restart count and the frame checks below. Each failure opens an incident in
 `log/incidents-<utc-date>.jsonl` with the stderr tail under `log/stderr/`, and the
-incident closes when frames flow again. The status page is
+incident closes when frames flow again. For `startup-grace-secs` (default 120)
+after the canary starts, a failing run restarts without opening an incident,
+because mediamtx, the feeder and the egress publishers start alongside it. A run
+still failing after that opens one. The status page is
 `status/index.html` plus `status/status.json`, rewritten every sample.
 
 The `self-hosted` tier decodes a looped clip that mediamtx and an ffmpeg feeder
