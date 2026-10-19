@@ -27,8 +27,6 @@ FFMPEG_DECODES_TRUNCATED_AC3 = 'reference quirk: the last AC-3 packet is truncat
 
 MOV_CLEAN_APERTURE = 'known difference: ffmpeg 8 crops to the MOV clap clean aperture, g2g and gstreamer do not. g2g is bit-exact with ffmpeg -apply_cropping none'
 
-FFMPEG_DECODES_CUT_CHUNK = 'reference quirk: the file is cut inside its last chunk, ffmpeg decodes the cut chunk and g2g drops it. Every common frame is bit-exact'
-
 def resolution_change(frames):
     return f'harness: resolution changes mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with ffmpeg -noautoscale on all {frames} frames'
 
@@ -72,10 +70,9 @@ OVERRIDES = {
     'dv/dvcprohd_1080i50.mov/video': MOV_CLEAN_APERTURE,
     'dv/dvcprohd_1080p25.mov/video': MOV_CLEAN_APERTURE,
     'dv/dvcprohd_720p50.mov/video': MOV_CLEAN_APERTURE,
-    'cllc/sample-cllc-yuy2-noblock.avi/video': FFMPEG_DECODES_CUT_CHUNK,
-    'fic/fic-partial-2MB.avi/video': FFMPEG_DECODES_CUT_CHUNK,
-    'vp5/potter512-400-partial.avi/video': FFMPEG_DECODES_CUT_CHUNK,
-    'isom/vc1-wmapro.ism/video': 'open: VC-1 in an ISMV track needs the dvc1 atom as decoder extradata, g2g does not pass it',
+    'spv1/16bpp_555.avi/video': 'g2g bug 63: libavcodec rejects the cut last chunk M1600 keeps, and ffmpegdec failed the stream instead of skipping the packet. Fixed in M1615, bit-exact with ffmpeg',
+    'spv1/32bpp.avi/video': 'g2g bug 63: libavcodec rejects the cut last chunk M1600 keeps, and ffmpegdec failed the stream instead of skipping the packet. Fixed in M1615, bit-exact with ffmpeg',
+    'tscc/2004-12-17-uebung9-partial.avi/video': 'g2g bug 63: libavcodec rejects the cut last chunk M1600 keeps, and ffmpegdec failed the stream instead of skipping the packet. Fixed in M1615, bit-exact with ffmpeg',
     'jpg/jpg-8930-3.jpg/video': 'open: progressive 4:4:4 JPEG, MjpegDec fails CapsMismatch',
     'probe-format/roundup997/video': 'reference quirk: ffmpeg drops the first B-frame by timestamp in its default constant frame rate mode. g2g is bit-exact with ffmpeg -fps_mode passthrough on all 5 frames',
     'probe-format/roundup997/audio': 'reference quirk: the first PS audio packet opens on a partial MP2 frame and ffmpeg rejects the whole packet, losing the first whole frame, then decodes the truncated last one. g2g decodes the 7 whole frames, bit-exact with ffmpeg on the same frames',
@@ -142,7 +139,7 @@ def cell(text):
 def bucket(diagnosis):
     if diagnosis.startswith('g2g bug'):
         return 'g2g bug'
-    for prefix in ('unsupported', 'harness', 'reference quirk', 'open'):
+    for prefix in ('unsupported', 'harness', 'reference quirk', 'known difference', 'open'):
         if diagnosis.startswith(prefix):
             return prefix
     if diagnosis.startswith('gstreamer'):
@@ -169,7 +166,7 @@ for e in entries:
         raise SystemExit(f"no diagnosis for {e['report']['scenario']} in class {e['class']}")
 by_bucket = collections.Counter(bucket(e['diagnosis']) for e in entries if e['class'] != 'agree')
 out += ['', 'Every scenario outside the agree class, by diagnosis:', '', '| diagnosis | scenarios |', '| :--- | ---: |']
-for name in ('g2g bug', 'unsupported', 'harness', 'reference quirk', 'gstreamer only', 'open'):
+for name in ('g2g bug', 'unsupported', 'harness', 'reference quirk', 'known difference', 'gstreamer only', 'open'):
     if by_bucket[name]:
         out.append(f'| {name} | {by_bucket[name]} |')
 by_bug = collections.Counter(int(m.group(1)) for e in entries if (m := re.match(r'g2g bug (\d+)', e['diagnosis'])))

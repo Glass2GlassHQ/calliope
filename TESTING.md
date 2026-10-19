@@ -299,12 +299,12 @@ decode outcome is the oracle.
 calliope sweep --corpus corpus/fate-suite.toml --title fate-suite --report runs/fate-suite.json
 calliope sweep --corpus corpus/gst-medias.toml --title gst-medias --report runs/gst-medias.json
 python3 -I tools/sweep-triage.py runs/fate-suite.json fate-suite \
-  "master 388309f4 built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
+  "master a988298b built with linux-full minus vaapi, pipewire and portal in release" triage/fate-suite.md
 ```
 Volume: fate-suite 2221 files, 2411 scenarios (25 minutes at `--jobs 3`).
 gst-medias 218 files, 284 scenarios (6 minutes). One gst-medias file has a
 space in its name and is skipped. g2g-launch is linux-full in release. The
-first sweep ran g2g master 42c0a809. The current one runs 388309f4 without
+first sweep ran g2g master 42c0a809. The current one runs a988298b without
 vaapi, pipewire and portal, which do not build on the Fedora 44 sweep host,
 and with `ffmpeg-long-tail`, the libavcodec fallback for codecs g2g has no
 typed caps for.
@@ -315,22 +315,23 @@ re-sweeps at e4629017 and 5f25e5b8 found four more, also fixed (29 to 32).
 
 The sweep at b84a510a found 13 more, fixed in M1562 to M1582 (38 to 57).
 The sweep at 6c675bef found 3 more and checking them by hand found a fourth,
-fixed in M1583 to M1586 (59 to 62).
+fixed in M1583 to M1586 (59 to 62). The sweep at a988298b found one more,
+fixed in M1615 (63).
 
-Result at 388309f4, fate-suite: 1222 scenarios agree. Of the other 1189,
-none are g2g bugs, 870 are codecs, containers or pixel formats g2g does not
-support, 102 are harness limits, 40 are reference quirks, 169 are
-GStreamer-only failures and 8 are open. gst-medias: 238 agree. Of the other
-46, 34 are unsupported, 3 reference quirks and 9 GStreamer-only. Against
-b97fa5da no scenario stopped agreeing. Typed raw video, Theora, ProRes and
-DNxHD (M1587 to M1589) and the libavcodec fallback (M1590) moved 240
-fate-suite and 9 gst-medias scenarios out of unsupported.
+Result at a988298b, fate-suite: 1225 scenarios agree. Of the other 1186,
+3 are bug 63, 857 are codecs, containers or pixel formats g2g does not
+support, 102 are harness limits, 37 are reference quirks, 4 are a known
+difference, 180 are GStreamer-only failures and 3 are open. gst-medias: 238
+agree. Of the other 46, 34 are unsupported, 3 reference quirks and 9
+GStreamer-only. Against 388309f4 only the 3 scenarios of bug 63 stopped
+matching ffmpeg. M1593 to M1600 moved 13 fate-suite scenarios out of
+unsupported, and g2g now matches ffmpeg on the cut last chunk of 3 truncated
+AVI files and on VC-1 in ISMV.
 
 Open: an MPEG-4 Studio profile stream decodes to different samples than
 ffmpeg with the same libavcodec, `mov/empty_edit_5s.mp4` has decode errors
 from frame 0 where even ffmpeg's threaded and single-thread decodes differ,
-a progressive 4:4:4 JPEG fails in MjpegDec, and VC-1 in ISMV lacks its
-`dvc1` extradata.
+and a progressive 4:4:4 JPEG fails in MjpegDec.
 
 Known difference: ffmpeg 8 crops to the MOV `clap` clean aperture (4
 scenarios). g2g follows gstreamer and does not crop.
@@ -520,8 +521,9 @@ Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio
 decode differential (technique 13), bugs 5-6 by the interlace / audio surface
 added 2026-08 (techniques 1 and 13), bugs 7-28 by the corpus sweep at 42c0a809
 bugs 29-32 and 33-36 by its re-sweeps (technique 15), bug 37 by building the
-sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a and bug 58
-by the canary (technique 17). All are fixed in g2g with regression tests.
+sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a, bug 58
+by the canary (technique 17), bugs 59-62 by the sweep at 6c675bef and bug 63
+by the sweep at a988298b. All are fixed in g2g with regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -637,6 +639,7 @@ by the canary (technique 17). All are fixed in g2g with regression tests.
 60. **Typefind missed elementary streams that do not start at byte 0** (M1584).
 61. **AviDemux did not map `VP60` and the mp4 demuxers did not map `AVDJ`** (M1585).
 62. **aacparse dropped the last ADTS frame of a file ending in an ID3v1 tag** (M1586).
+63. **ffmpegdec failed a tagged stream on the cut last chunk libavcodec rejects** (M1615).
 
 ## Not a gap
 
