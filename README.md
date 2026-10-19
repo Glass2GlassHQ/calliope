@@ -476,7 +476,7 @@ so a restart sends nothing twice, and its first run marks the closed history as 
 
 ### EC2
 
-The canary runs on a t3.small (2 x86-64 vCPU, 2 GB) with the Fedora Cloud 43
+The canary runs on a c7a.xlarge (4 x86-64 vCPU, 8 GB) with the Fedora Cloud 43
 x86_64 AMI from fedoraproject.org/cloud/download, default user `fedora`, a 20 GB
 gp3 root volume, and a security group that allows inbound ssh only. Every
 pipeline pulls outbound and mediamtx binds loopback.

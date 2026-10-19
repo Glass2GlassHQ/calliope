@@ -54,7 +54,7 @@ copy_to "$install_dir" "$deploy_dir"/{mediamtx.yml,feeder.sh,canary.toml} "$call
 copy_to "$quadlet_dir" "$deploy_dir"/*.container
 copy_to "$unit_dir" "$deploy_dir"/canary-publish.{service,timer}
 on_host "systemctl --user daemon-reload \
-    && systemctl --user restart g2g-canary-mediamtx.service g2g-canary-feeder.service g2g-canary.service \
+    && systemctl --user restart g2g-canary-mediamtx.service g2g-canary-feeder.service g2g-canary-faulted.service g2g-canary.service \
     && systemctl --user enable --now podman-auto-update.timer \
     && if [ -f $install_dir/publish.env ]; then systemctl --user enable --now canary-publish.timer; fi \
     && systemctl --user --no-pager status g2g-canary.service | head -5"
