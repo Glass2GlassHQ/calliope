@@ -25,7 +25,7 @@ FFMPEG_EXTRA_LAST_FRAME = 'reference quirk: ffmpeg emits one more final frame, g
 
 FFMPEG_DECODES_TRUNCATED_AC3 = 'reference quirk: the last AC-3 packet is truncated and ffmpeg decodes it (1536 samples more), g2g drops it. g2g is bit-exact with ffmpeg over every common sample'
 
-MOV_CLEAN_APERTURE = 'open: ffmpeg 8 crops to the MOV clap clean aperture and g2g does not. g2g is bit-exact with ffmpeg -apply_cropping none'
+MOV_CLEAN_APERTURE = 'known difference: ffmpeg 8 crops to the MOV clap clean aperture, g2g and gstreamer do not. g2g is bit-exact with ffmpeg -apply_cropping none'
 
 FFMPEG_DECODES_CUT_CHUNK = 'reference quirk: the file is cut inside its last chunk, ffmpeg decodes the cut chunk and g2g drops it. Every common frame is bit-exact'
 

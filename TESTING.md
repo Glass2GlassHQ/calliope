@@ -329,9 +329,11 @@ fate-suite and 9 gst-medias scenarios out of unsupported.
 Open: an MPEG-4 Studio profile stream decodes to different samples than
 ffmpeg with the same libavcodec, `mov/empty_edit_5s.mp4` has decode errors
 from frame 0 where even ffmpeg's threaded and single-thread decodes differ,
-a progressive 4:4:4 JPEG fails in MjpegDec, g2g does not apply the MOV `clap`
-clean aperture that ffmpeg 8 crops to (4 scenarios), and VC-1 in ISMV lacks
-its `dvc1` extradata.
+a progressive 4:4:4 JPEG fails in MjpegDec, and VC-1 in ISMV lacks its
+`dvc1` extradata.
+
+Known difference: ffmpeg 8 crops to the MOV `clap` clean aperture (4
+scenarios). g2g follows gstreamer and does not crop.
 
 Harness limits: 10 resolution-changing streams cannot be hashed at one
 geometry, and g2g is bit-exact with `ffmpeg -noautoscale` on all of them.
