@@ -1,51 +1,200 @@
 g2g-plugins/src/h265parse.rs:63:9: replace <impl NalCodec for H265Codec>::nal_type -> Option<u8> with None
+g2g-plugins/src/h265parse.rs:73:9: replace <impl NalCodec for H265Codec>::unit_role -> Option<StartCodeRole> with None
+g2g-plugins/src/h265parse.rs:74:21: replace <= with > in <impl NalCodec for H265Codec>::unit_role
+g2g-plugins/src/h265parse.rs:63:9: replace <impl NalCodec for H265Codec>::nal_type -> Option<u8> with Some(0)
 g2g-plugins/src/h265parse.rs:75:62: replace != with == in <impl NalCodec for H265Codec>::unit_role
 g2g-plugins/src/h265parse.rs:75:55: replace & with | in <impl NalCodec for H265Codec>::unit_role
-g2g-plugins/src/h265parse.rs:75:55: replace & with ^ in <impl NalCodec for H265Codec>::unit_role
-g2g-plugins/src/h265parse.rs:63:9: replace <impl NalCodec for H265Codec>::nal_type -> Option<u8> with Some(0)
-g2g-plugins/src/h265parse.rs:107:5: replace with_sps_rbsp -> Option<T> with None
-g2g-plugins/src/h265parse.rs:74:21: replace <= with > in <impl NalCodec for H265Codec>::unit_role
-g2g-plugins/src/h265parse.rs:111:43: replace & with | in with_sps_rbsp
-g2g-plugins/src/h265parse.rs:108:22: replace < with > in with_sps_rbsp
-g2g-plugins/src/h265parse.rs:111:43: replace & with ^ in with_sps_rbsp
-g2g-plugins/src/h265parse.rs:73:9: replace <impl NalCodec for H265Codec>::unit_role -> Option<StartCodeRole> with None
-g2g-plugins/src/h265parse.rs:111:37: replace >> with << in with_sps_rbsp
-g2g-plugins/src/h265parse.rs:112:26: replace != with == in with_sps_rbsp
 g2g-plugins/src/h265parse.rs:63:9: replace <impl NalCodec for H265Codec>::nal_type -> Option<u8> with Some(1)
-g2g-plugins/src/h265parse.rs:139:9: delete match arm 0 in h265_codec_string
-g2g-plugins/src/h265parse.rs:135:5: replace h265_codec_string -> Option<String> with None
-g2g-plugins/src/h265parse.rs:140:9: delete match arm 1 in h265_codec_string
-g2g-plugins/src/h265parse.rs:135:5: replace h265_codec_string -> Option<String> with Some(String::new())
+g2g-plugins/src/h265parse.rs:75:55: replace & with ^ in <impl NalCodec for H265Codec>::unit_role
 g2g-plugins/src/h265parse.rs:90:9: replace <impl NalCodec for H265Codec>::sps_info -> Option<SpsGeometry> with None
-g2g-plugins/src/h265parse.rs:135:5: replace h265_codec_string -> Option<String> with Some("xyzzy".into())
-g2g-plugins/src/h265parse.rs:145:33: replace == with != in h265_codec_string
-g2g-plugins/src/h265parse.rs:191:61: replace && with || in parse_h265_sps_head
-g2g-plugins/src/h265parse.rs:191:56: replace == with != in parse_h265_sps_head
-g2g-plugins/src/h265parse.rs:152:76: replace != with == in h265_codec_string
-g2g-plugins/src/h265parse.rs:184:5: replace parse_h265_sps_head -> Option<(H265SpsHead, BitReader<'_>)> with None
-g2g-plugins/src/h265parse.rs:194:50: replace == with != in parse_h265_sps_head
-g2g-plugins/src/h265parse.rs:220:5: replace parse_sps -> Option<SpsGeometry> with None
-g2g-plugins/src/h265parse.rs:237:9: delete match arm 1 in parse_sps
-g2g-plugins/src/h265parse.rs:255:13: delete field separate_colour_plane_flag from struct crate::poc::SpsPocParams expression in parse_sps
-g2g-plugins/src/h265parse.rs:301:5: replace parse_vui_framerate -> Option<u32> with None
-g2g-plugins/src/h265parse.rs:301:5: replace parse_vui_framerate -> Option<u32> with Some(0)
-g2g-plugins/src/h265parse.rs:311:23: replace != with == in parse_vui_framerate
-g2g-plugins/src/h265parse.rs:301:5: replace parse_vui_framerate -> Option<u32> with Some(1)
-g2g-plugins/src/h265parse.rs:305:40: replace + with - in parse_vui_framerate
-g2g-plugins/src/h265parse.rs:320:23: replace == with != in parse_vui_framerate
-g2g-plugins/src/h265parse.rs:407:42: replace > with < in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:328:23: replace == with != in parse_vui_framerate
-g2g-plugins/src/h265parse.rs:335:23: replace != with == in parse_vui_framerate
-g2g-plugins/src/h265parse.rs:404:5: replace read_h265_sps_middle -> Option<()> with None
-g2g-plugins/src/h265parse.rs:404:5: replace read_h265_sps_middle -> Option<()> with Some(())
-g2g-plugins/src/h265parse.rs:413:26: replace >= with < in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:447:46: replace == with != in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:438:55: replace == with != in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:457:36: replace > with < in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:467:61: replace == with != in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:495:50: replace + with - in skip_scaling_list_data
-g2g-plugins/src/h265parse.rs:609:30: replace > with == in read_profile_tier_level
-g2g-plugins/src/h265parse.rs:574:5: replace read_general_profile_tier_level -> Option<GeneralProfileTierLevel> with None
-g2g-plugins/src/h265parse.rs:601:5: replace read_profile_tier_level -> Option<GeneralProfileTierLevel> with None
-g2g-plugins/src/h265parse.rs:609:30: replace > with >= in read_profile_tier_level
-g2g-plugins/src/h265parse.rs:743:30: replace > with < in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:124:9: replace LeadingRaslFilter::restart with ()
+g2g-plugins/src/h265parse.rs:128:9: replace LeadingRaslFilter::keeps_access_unit -> bool with true
+g2g-plugins/src/h265parse.rs:128:9: replace LeadingRaslFilter::keeps_access_unit -> bool with false
+g2g-plugins/src/h265parse.rs:130:13: delete match arm Some(nal_type @16..= 23) in LeadingRaslFilter::keeps_access_unit
+g2g-plugins/src/h265parse.rs:135:13: delete match arm Some(RASL_N_NUT | RASL_R_NUT) in LeadingRaslFilter::keeps_access_unit
+g2g-plugins/src/h265parse.rs:129:64: replace <= with > in LeadingRaslFilter::keeps_access_unit
+g2g-plugins/src/h265parse.rs:131:72: replace || with && in LeadingRaslFilter::keeps_access_unit
+g2g-plugins/src/h265parse.rs:131:84: replace != with == in LeadingRaslFilter::keeps_access_unit
+g2g-plugins/src/h265parse.rs:135:46: delete ! in LeadingRaslFilter::keeps_access_unit
+g2g-plugins/src/h265parse.rs:155:22: replace < with == in with_sps_rbsp
+g2g-plugins/src/h265parse.rs:154:5: replace with_sps_rbsp -> Option<T> with None
+g2g-plugins/src/h265parse.rs:155:22: replace < with > in with_sps_rbsp
+g2g-plugins/src/h265parse.rs:158:43: replace & with ^ in with_sps_rbsp
+g2g-plugins/src/h265parse.rs:158:37: replace >> with << in with_sps_rbsp
+g2g-plugins/src/h265parse.rs:158:43: replace & with | in with_sps_rbsp
+g2g-plugins/src/h265parse.rs:159:26: replace != with == in with_sps_rbsp
+g2g-plugins/src/h265parse.rs:182:5: replace h265_codec_string -> Option<String> with None
+g2g-plugins/src/h265parse.rs:182:5: replace h265_codec_string -> Option<String> with Some(String::new())
+g2g-plugins/src/h265parse.rs:182:5: replace h265_codec_string -> Option<String> with Some("xyzzy".into())
+g2g-plugins/src/h265parse.rs:186:9: delete match arm 0 in h265_codec_string
+g2g-plugins/src/h265parse.rs:187:9: delete match arm 1 in h265_codec_string
+g2g-plugins/src/h265parse.rs:188:9: delete match arm 2 in h265_codec_string
+g2g-plugins/src/h265parse.rs:189:9: delete match arm 3 in h265_codec_string
+g2g-plugins/src/h265parse.rs:192:33: replace == with != in h265_codec_string
+g2g-plugins/src/h265parse.rs:199:76: replace != with == in h265_codec_string
+g2g-plugins/src/h265parse.rs:234:55: replace == with != in parse_h265_sps_head
+g2g-plugins/src/h265parse.rs:238:61: replace && with || in parse_h265_sps_head
+g2g-plugins/src/h265parse.rs:231:5: replace parse_h265_sps_head -> Option<(H265SpsHead, BitReader<'_>)> with None
+g2g-plugins/src/h265parse.rs:238:56: replace == with != in parse_h265_sps_head
+g2g-plugins/src/h265parse.rs:238:79: replace == with != in parse_h265_sps_head
+g2g-plugins/src/h265parse.rs:241:50: replace == with != in parse_h265_sps_head
+g2g-plugins/src/h265parse.rs:267:5: replace parse_sps -> Option<SpsGeometry> with None
+g2g-plugins/src/h265parse.rs:284:9: delete match arm 1 in parse_sps
+g2g-plugins/src/h265parse.rs:285:9: delete match arm 2 in parse_sps
+g2g-plugins/src/h265parse.rs:302:13: delete field separate_colour_plane_flag from struct crate::poc::SpsPocParams expression in parse_sps
+g2g-plugins/src/h265parse.rs:301:13: delete field log2_max_pic_order_cnt_lsb from struct crate::poc::SpsPocParams expression in parse_sps
+g2g-plugins/src/h265parse.rs:317:56: replace == with != in parse_sps
+g2g-plugins/src/h265parse.rs:348:5: replace parse_vui_framerate -> Option<u32> with None
+g2g-plugins/src/h265parse.rs:348:5: replace parse_vui_framerate -> Option<u32> with Some(0)
+g2g-plugins/src/h265parse.rs:348:5: replace parse_vui_framerate -> Option<u32> with Some(1)
+g2g-plugins/src/h265parse.rs:352:40: replace + with - in parse_vui_framerate
+g2g-plugins/src/h265parse.rs:352:40: replace + with * in parse_vui_framerate
+g2g-plugins/src/h265parse.rs:358:23: replace != with == in parse_vui_framerate
+g2g-plugins/src/h265parse.rs:367:23: replace == with != in parse_vui_framerate
+g2g-plugins/src/h265parse.rs:375:23: replace == with != in parse_vui_framerate
+g2g-plugins/src/h265parse.rs:382:23: replace != with == in parse_vui_framerate
+g2g-plugins/src/h265parse.rs:454:42: replace > with == in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:454:42: replace > with < in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:451:5: replace read_h265_sps_middle -> Option<()> with None
+g2g-plugins/src/h265parse.rs:451:5: replace read_h265_sps_middle -> Option<()> with Some(())
+g2g-plugins/src/h265parse.rs:454:42: replace > with >= in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:464:43: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:460:26: replace >= with < in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:464:9: delete field info_present_flag from struct H265SubLayerOrdering expression in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:485:55: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:487:68: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:492:46: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:493:65: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:494:46: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:500:63: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:504:36: replace > with == in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:504:36: replace > with < in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:504:36: replace > with >= in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:514:61: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:517:48: replace > with == in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:517:48: replace > with >= in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:523:64: replace + with - in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:523:64: replace + with * in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:524:70: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:527:59: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:528:65: replace == with != in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:537:35: replace == with != in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:536:5: replace skip_scaling_list_data -> Option<()> with None
+g2g-plugins/src/h265parse.rs:539:31: replace == with != in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:536:5: replace skip_scaling_list_data -> Option<()> with Some(())
+g2g-plugins/src/h265parse.rs:542:50: replace + with - in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:542:50: replace + with * in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:542:44: replace << with >> in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:542:61: replace << with >> in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:543:28: replace > with == in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:543:28: replace > with < in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:543:28: replace > with >= in skip_scaling_list_data
+g2g-plugins/src/h265parse.rs:597:70: replace & with | in GeneralProfileTierLevel::source_flag
+g2g-plugins/src/h265parse.rs:596:9: replace GeneralProfileTierLevel::source_flag -> u8 with 0
+g2g-plugins/src/h265parse.rs:596:9: replace GeneralProfileTierLevel::source_flag -> u8 with 1
+g2g-plugins/src/h265parse.rs:597:70: replace & with ^ in GeneralProfileTierLevel::source_flag
+g2g-plugins/src/h265parse.rs:597:60: replace - with + in GeneralProfileTierLevel::source_flag
+g2g-plugins/src/h265parse.rs:597:35: replace >> with << in GeneralProfileTierLevel::source_flag
+g2g-plugins/src/h265parse.rs:597:60: replace - with / in GeneralProfileTierLevel::source_flag
+g2g-plugins/src/h265parse.rs:601:9: replace GeneralProfileTierLevel::progressive_source_flag -> u8 with 0
+g2g-plugins/src/h265parse.rs:601:9: replace GeneralProfileTierLevel::progressive_source_flag -> u8 with 1
+g2g-plugins/src/h265parse.rs:605:9: replace GeneralProfileTierLevel::interlaced_source_flag -> u8 with 0
+g2g-plugins/src/h265parse.rs:605:9: replace GeneralProfileTierLevel::interlaced_source_flag -> u8 with 1
+g2g-plugins/src/h265parse.rs:609:9: replace GeneralProfileTierLevel::non_packed_constraint_flag -> u8 with 0
+g2g-plugins/src/h265parse.rs:609:9: replace GeneralProfileTierLevel::non_packed_constraint_flag -> u8 with 1
+g2g-plugins/src/h265parse.rs:613:9: replace GeneralProfileTierLevel::frame_only_constraint_flag -> u8 with 0
+g2g-plugins/src/h265parse.rs:613:9: replace GeneralProfileTierLevel::frame_only_constraint_flag -> u8 with 1
+g2g-plugins/src/h265parse.rs:621:5: replace read_general_profile_tier_level -> Option<GeneralProfileTierLevel> with None
+g2g-plugins/src/h265parse.rs:648:5: replace read_profile_tier_level -> Option<GeneralProfileTierLevel> with None
+g2g-plugins/src/h265parse.rs:654:47: replace == with != in read_profile_tier_level
+g2g-plugins/src/h265parse.rs:653:49: replace == with != in read_profile_tier_level
+g2g-plugins/src/h265parse.rs:656:30: replace > with < in read_profile_tier_level
+g2g-plugins/src/h265parse.rs:656:30: replace > with == in read_profile_tier_level
+g2g-plugins/src/h265parse.rs:656:30: replace > with >= in read_profile_tier_level
+g2g-plugins/src/h265parse.rs:707:5: replace parse_h265_short_term_rps -> Option<(H265ShortTermRps, u8)> with None
+g2g-plugins/src/h265parse.rs:707:5: replace parse_h265_short_term_rps -> Option<(H265ShortTermRps, u8)> with Some((Default::default(), 0))
+g2g-plugins/src/h265parse.rs:707:5: replace parse_h265_short_term_rps -> Option<(H265ShortTermRps, u8)> with Some((Default::default(), 1))
+g2g-plugins/src/h265parse.rs:709:29: replace != with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:709:51: replace == with != in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:714:32: replace == with != in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:715:36: replace + with - in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:715:36: replace + with * in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:723:16: replace - with + in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:723:20: replace * with + in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:723:16: replace - with / in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:723:20: replace * with / in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:726:38: replace + with - in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:726:38: replace + with * in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:733:36: replace == with != in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:735:64: replace == with != in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:26: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:52: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:22: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:22: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:22: replace < with <= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:47: replace + with - in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:47: replace + with * in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:57: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:742:57: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:744:55: replace + with - in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:744:55: replace + with * in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:745:19: replace += with -= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:745:19: replace += with *= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:55: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:26: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:22: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:22: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:60: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:60: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:748:60: replace < with <= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:751:15: replace += with -= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:751:15: replace += with *= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:42: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:26: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:22: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:22: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:22: replace < with <= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:47: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:47: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:755:47: replace < with <= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:758:19: replace += with -= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:758:19: replace += with *= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:42: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:26: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:22: replace > with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:22: replace > with < in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:22: replace > with >= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:47: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:767:47: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:770:19: replace += with -= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:770:19: replace += with *= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:55: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:26: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:22: replace > with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:22: replace > with < in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:60: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:60: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:773:60: replace < with <= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:776:15: replace += with -= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:776:15: replace += with *= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:52: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:26: replace && with || in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:22: replace > with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:22: replace > with < in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:22: replace > with >= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:47: replace + with - in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:47: replace + with * in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:57: replace < with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:57: replace < with > in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:780:57: replace < with <= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:782:55: replace + with - in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:782:55: replace + with * in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:783:19: replace += with -= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:783:19: replace += with *= in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:790:35: replace || with && in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:790:30: replace > with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:790:30: replace > with < in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:790:56: replace > with == in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:790:56: replace > with < in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:796:45: replace == with != in parse_h265_short_term_rps
+g2g-plugins/src/h265parse.rs:804:45: replace == with != in parse_h265_short_term_rps

@@ -1,8 +1,8 @@
 g2g-plugins/src/h265parse.rs:73:9: replace <impl NalCodec for H265Codec>::unit_role -> Option<StartCodeRole> with Some(Default::default())
 g2g-plugins/src/h265parse.rs:90:9: replace <impl NalCodec for H265Codec>::sps_info -> Option<SpsGeometry> with Some(Default::default())
-g2g-plugins/src/h265parse.rs:107:5: replace with_sps_rbsp -> Option<T> with Some(Default::default())
-g2g-plugins/src/h265parse.rs:184:5: replace parse_h265_sps_head -> Option<(H265SpsHead, BitReader<'_>)> with Some((Default::default(), Default::default()))
-g2g-plugins/src/h265parse.rs:220:5: replace parse_sps -> Option<SpsGeometry> with Some(Default::default())
-g2g-plugins/src/h265parse.rs:470:48: replace > with < in read_h265_sps_middle
-g2g-plugins/src/h265parse.rs:574:5: replace read_general_profile_tier_level -> Option<GeneralProfileTierLevel> with Some(Default::default())
-g2g-plugins/src/h265parse.rs:601:5: replace read_profile_tier_level -> Option<GeneralProfileTierLevel> with Some(Default::default())
+g2g-plugins/src/h265parse.rs:154:5: replace with_sps_rbsp -> Option<T> with Some(Default::default())
+g2g-plugins/src/h265parse.rs:231:5: replace parse_h265_sps_head -> Option<(H265SpsHead, BitReader<'_>)> with Some((Default::default(), Default::default()))
+g2g-plugins/src/h265parse.rs:267:5: replace parse_sps -> Option<SpsGeometry> with Some(Default::default())
+g2g-plugins/src/h265parse.rs:517:48: replace > with < in read_h265_sps_middle
+g2g-plugins/src/h265parse.rs:621:5: replace read_general_profile_tier_level -> Option<GeneralProfileTierLevel> with Some(Default::default())
+g2g-plugins/src/h265parse.rs:648:5: replace read_profile_tier_level -> Option<GeneralProfileTierLevel> with Some(Default::default())
