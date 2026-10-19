@@ -7,7 +7,8 @@ use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 
-use super::config::Tier;
+use super::checks::{ContentCounts, TimestampCounts};
+use super::config::{PipelineConfig, Tier};
 
 pub const SECS_PER_DAY: u64 = 86_400;
 const SECS_PER_HOUR: u64 = 3_600;
@@ -15,6 +16,7 @@ const SECS_PER_MINUTE: u64 = 60;
 pub const SAMPLES_PREFIX: &str = "samples";
 pub const INCIDENTS_PREFIX: &str = "incidents";
 pub const STDERR_DIR: &str = "stderr";
+const OPEN_INCIDENTS_FILE: &str = "open-incidents.json";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Sample {
@@ -31,6 +33,13 @@ pub struct Sample {
     // restarts since the canary started
     pub restarts: u64,
     pub last_error: Option<String>,
+    // the video sink's frames against expect-hashes
+    pub content: Option<ContentCounts>,
+    // checksum lines from every sink, none when no line arrived
+    pub timestamps: Option<TimestampCounts>,
+    pub av_drift_ms: Option<f64>,
+    // the run's rss slope over the last day, none until it has run a day
+    pub rss_growth_kib_per_hour: Option<f64>,
 }
 
 impl Sample {
@@ -47,6 +56,81 @@ pub enum Cause {
     Signal { signal: i32 },
     Stall { secs: u64 },
     SpawnFailed { message: String },
+    // totals over the incident
+    Content { mismatched: u64, skipped: u64 },
+    Timestamps { backward: u64, forward_jumps: u64 },
+    // the highest slope while open
+    MemoryGrowth { kib_per_hour: f64 },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IncidentKind {
+    Down,
+    Content,
+    Timestamps,
+    MemoryGrowth,
+}
+
+impl IncidentKind {
+    pub fn label(self) -> &'static str {
+        match self {
+            IncidentKind::Down => "down",
+            IncidentKind::Content => "content",
+            IncidentKind::Timestamps => "timestamps",
+            IncidentKind::MemoryGrowth => "memory-growth",
+        }
+    }
+}
+
+impl Cause {
+    pub fn kind(&self) -> IncidentKind {
+        match self {
+            Cause::Exit { .. } | Cause::Signal { .. } | Cause::Stall { .. } => IncidentKind::Down,
+            Cause::SpawnFailed { .. } => IncidentKind::Down,
+            Cause::Content { .. } => IncidentKind::Content,
+            Cause::Timestamps { .. } => IncidentKind::Timestamps,
+            Cause::MemoryGrowth { .. } => IncidentKind::MemoryGrowth,
+        }
+    }
+
+    // folds a later sample's finding of the same kind into an open incident
+    fn absorb(&mut self, later: Cause) {
+        match (self, later) {
+            (
+                Cause::Content {
+                    mismatched,
+                    skipped,
+                },
+                Cause::Content {
+                    mismatched: later_mismatched,
+                    skipped: later_skipped,
+                },
+            ) => {
+                *mismatched += later_mismatched;
+                *skipped += later_skipped;
+            }
+            (
+                Cause::Timestamps {
+                    backward,
+                    forward_jumps,
+                },
+                Cause::Timestamps {
+                    backward: later_backward,
+                    forward_jumps: later_forward_jumps,
+                },
+            ) => {
+                *backward += later_backward;
+                *forward_jumps += later_forward_jumps;
+            }
+            (
+                Cause::MemoryGrowth { kib_per_hour },
+                Cause::MemoryGrowth {
+                    kib_per_hour: later_kib_per_hour,
+                },
+            ) => *kib_per_hour = kib_per_hour.max(later_kib_per_hour),
+            (cause, later) => unreachable!("{later:?} folded into {cause:?}"),
+        }
+    }
 }
 
 impl fmt::Display for Cause {
@@ -57,6 +141,26 @@ impl fmt::Display for Cause {
             Cause::Signal { signal } => write!(f, "killed by signal {signal}"),
             Cause::Stall { secs } => write!(f, "stall: no frame for {secs} s"),
             Cause::SpawnFailed { message } => write!(f, "spawn failed: {message}"),
+            Cause::Content {
+                mismatched,
+                skipped,
+            } => write!(
+                f,
+                "content: {mismatched} frames not in the reference, {skipped} skipped"
+            ),
+            Cause::Timestamps {
+                backward,
+                forward_jumps,
+            } => write!(
+                f,
+                "timestamps: {backward} backward, {forward_jumps} forward jumps"
+            ),
+            Cause::MemoryGrowth { kib_per_hour } => {
+                write!(
+                    f,
+                    "memory growth: rss up {kib_per_hour:.0} KiB/h over a day"
+                )
+            }
         }
     }
 }
@@ -75,6 +179,129 @@ pub struct Incident {
     pub last_error: Option<String>,
     // stderr tail, relative to the log dir
     pub stderr: Option<String>,
+}
+
+// every open incident, rewritten on each change so an incident spans a canary restart
+#[derive(Debug)]
+pub struct OpenIncidents {
+    log_dir: PathBuf,
+    open: Vec<Incident>,
+}
+
+pub type SharedOpenIncidents = std::sync::Arc<std::sync::Mutex<OpenIncidents>>;
+
+impl OpenIncidents {
+    pub fn load(log_dir: &Path) -> Result<Self> {
+        let path = log_dir.join(OPEN_INCIDENTS_FILE);
+        let open = match std::fs::read_to_string(&path) {
+            Ok(text) => {
+                serde_json::from_str(&text).with_context(|| format!("parse {}", path.display()))?
+            }
+            Err(e) if e.kind() == ErrorKind::NotFound => Vec::new(),
+            Err(e) => return Err(e).with_context(|| format!("read {}", path.display())),
+        };
+        Ok(OpenIncidents {
+            log_dir: log_dir.to_path_buf(),
+            open,
+        })
+    }
+
+    // a pipeline dropped from the config leaves nothing that could close its incidents
+    pub fn close_unconfigured(&mut self, pipelines: &[PipelineConfig], now: u64) -> Result<()> {
+        let unconfigured: Vec<(String, IncidentKind)> = self
+            .open
+            .iter()
+            .filter(|open| {
+                !pipelines
+                    .iter()
+                    .any(|pipeline| pipeline.id == open.pipeline)
+            })
+            .map(|open| (open.pipeline.clone(), open.cause.kind()))
+            .collect();
+        for (pipeline, kind) in unconfigured {
+            self.close(&pipeline, kind, now)?;
+        }
+        Ok(())
+    }
+
+    pub fn all(&self) -> &[Incident] {
+        &self.open
+    }
+
+    pub fn get(&self, pipeline: &str, kind: IncidentKind) -> Option<&Incident> {
+        self.open
+            .iter()
+            .find(|incident| incident.pipeline == pipeline && incident.cause.kind() == kind)
+    }
+
+    // replaces the open incident of the same pipeline and kind
+    pub fn put(&mut self, incident: Incident) -> Result<()> {
+        let kind = incident.cause.kind();
+        self.open
+            .retain(|open| !(open.pipeline == incident.pipeline && open.cause.kind() == kind));
+        self.open.push(incident);
+        self.save()
+    }
+
+    pub fn close(&mut self, pipeline: &str, kind: IncidentKind, now: u64) -> Result<()> {
+        let Some(position) = self
+            .open
+            .iter()
+            .position(|open| open.pipeline == pipeline && open.cause.kind() == kind)
+        else {
+            return Ok(());
+        };
+        let mut incident = self.open.remove(position);
+        incident.end = Some(now);
+        // appended before the rewrite, so a crash between the two repeats the close rather than losing it
+        append(&self.log_dir, INCIDENTS_PREFIX, now, &incident)?;
+        self.save()
+    }
+
+    // opens or extends the incident a sample check found, closes it on a clean sample
+    pub fn track(
+        &mut self,
+        pipeline: &PipelineConfig,
+        kind: IncidentKind,
+        finding: Option<Cause>,
+        clean: bool,
+        now: u64,
+    ) -> Result<()> {
+        let Some(cause) = finding else {
+            return if clean {
+                self.close(&pipeline.id, kind, now)
+            } else {
+                Ok(())
+            };
+        };
+        let incident = match self.get(&pipeline.id, kind) {
+            Some(open) => {
+                let mut extended = open.clone();
+                extended.cause.absorb(cause);
+                extended
+            }
+            None => Incident {
+                id: format!("{}-{}-{now}", pipeline.id, kind.label()),
+                pipeline: pipeline.id.clone(),
+                tier: pipeline.tier,
+                start: now,
+                end: None,
+                cause,
+                restarts: 0,
+                last_error: None,
+                stderr: None,
+            },
+        };
+        self.put(incident)
+    }
+
+    fn save(&self) -> Result<()> {
+        let path = self.log_dir.join(OPEN_INCIDENTS_FILE);
+        let partial = self.log_dir.join(format!(".{OPEN_INCIDENTS_FILE}.partial"));
+        std::fs::write(&partial, serde_json::to_string_pretty(&self.open)?)
+            .with_context(|| format!("write {}", partial.display()))?;
+        std::fs::rename(&partial, &path).with_context(|| format!("rename to {}", path.display()))
+    }
 }
 
 pub fn unix_now() -> u64 {
@@ -192,6 +419,14 @@ mod tests {
             rss_kb: Some(1024),
             restarts: 0,
             last_error: None,
+            content: Some(ContentCounts {
+                matched: 29,
+                mismatched: 1,
+                skipped: 0,
+            }),
+            timestamps: None,
+            av_drift_ms: Some(-3.5),
+            rss_growth_kib_per_hour: None,
         };
         append(&dir, SAMPLES_PREFIX, day_one, &sample(day_one)).unwrap();
         append(
@@ -220,6 +455,94 @@ mod tests {
         )
         .unwrap();
         assert_eq!(second.len(), 1);
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    // written by the canary deployed on 2026-10-18, before the frame checks existed
+    const OLD_SAMPLE: &str = r#"{"ts":1792317683,"pipeline":"baseline-rtsp","tier":"self-hosted","alive":true,"frames":1682,"fps":28.03296596738814,"decode_latency_ms":4.194304,"rss_kb":51852,"restarts":2,"last_error":"pipeline error: Hardware(Other)"}"#;
+
+    #[test]
+    fn reads_samples_written_before_the_frame_checks() {
+        let sample: Sample = serde_json::from_str(OLD_SAMPLE).unwrap();
+        assert_eq!(sample.frames, 1682);
+        assert_eq!(sample.content, None);
+        assert_eq!(sample.rss_growth_kib_per_hour, None);
+    }
+
+    fn checked_pipeline() -> PipelineConfig {
+        PipelineConfig {
+            id: "baseline-rtsp".into(),
+            tier: Tier::SelfHosted,
+            launch: "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! decodebin ! checksumsink name=video".into(),
+            vod: false,
+            video_sink: Some("video".into()),
+            audio_sink: None,
+            expect_hashes: None,
+        }
+    }
+
+    #[test]
+    fn check_incidents_accumulate_survive_a_reload_and_close_on_a_clean_sample() {
+        let dir = std::env::temp_dir().join(format!("calliope-canary-open-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let pipeline = checked_pipeline();
+        let start = 1_792_317_683;
+        let content = |mismatched, skipped| Cause::Content {
+            mismatched,
+            skipped,
+        };
+        let mut open = OpenIncidents::load(&dir).unwrap();
+        open.track(
+            &pipeline,
+            IncidentKind::Content,
+            Some(content(2, 0)),
+            false,
+            start,
+        )
+        .unwrap();
+        // a sample with no frames neither extends nor closes it
+        open.track(&pipeline, IncidentKind::Content, None, false, start + 60)
+            .unwrap();
+        open.track(
+            &pipeline,
+            IncidentKind::Content,
+            Some(content(1, 5)),
+            false,
+            start + 120,
+        )
+        .unwrap();
+
+        let mut reloaded = OpenIncidents::load(&dir).unwrap();
+        let incident = reloaded.get(&pipeline.id, IncidentKind::Content).unwrap();
+        assert_eq!(incident.id, format!("baseline-rtsp-content-{start}"));
+        assert_eq!(incident.cause, content(3, 5));
+        assert!(reloaded.get(&pipeline.id, IncidentKind::Down).is_none());
+
+        reloaded
+            .track(&pipeline, IncidentKind::Content, None, true, start + 180)
+            .unwrap();
+        assert!(OpenIncidents::load(&dir).unwrap().all().is_empty());
+        let closed: Vec<Incident> = read_days(&dir, INCIDENTS_PREFIX, start, start + 180).unwrap();
+        assert_eq!(closed.len(), 1);
+        assert_eq!(closed[0].end, Some(start + 180));
+
+        reloaded
+            .track(
+                &pipeline,
+                IncidentKind::Content,
+                Some(content(1, 0)),
+                false,
+                start + 240,
+            )
+            .unwrap();
+        let mut removed_from_config = OpenIncidents::load(&dir).unwrap();
+        removed_from_config
+            .close_unconfigured(&[], start + 300)
+            .unwrap();
+        assert!(OpenIncidents::load(&dir).unwrap().all().is_empty());
+        let closed: Vec<Incident> = read_days(&dir, INCIDENTS_PREFIX, start, start + 300).unwrap();
+        assert_eq!(closed.last().unwrap().end, Some(start + 300));
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }

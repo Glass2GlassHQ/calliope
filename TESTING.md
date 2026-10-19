@@ -490,6 +490,27 @@ IDR, so the decoder gets slices before any SPS and PPS and fails the pipeline.
 The other g2g WebRTC receivers drop video until the first keyframe and
 `whepsrc` does not. A run that joins the stream on an IDR decodes: the run that
 started 19 minutes in decoded 30 fps (RSS 29 to 51 MB, 4.2 ms) to the end.
+
+Frame checks: a 7 minute local run on 2026-10-19 with `g2g-launch` from g2g
+a988298b plus M1610, three pipelines at a 10 s sample interval. A table was made
+with the README command from a 4 s 720p30 clip. `srtsrc ! tsdemux ! h264parse !
+avdec_h264 ! checksumsink name=video`, fed by a looped ffmpeg SRT push, and
+`rtspsrc ! h264parse ! avdec_h264 ! checksumsink name=video` from a local
+mediamtx matched every frame over about 90 and 45 loops of the clip, with no
+skipped frame and no timestamp jump. A file A/V row paced by `clocksync` on each branch
+reported audio 7 to 12 ms earlier than video. Swapping the SRT feed to a
+different clip opened a `content` incident (240 frames not in the reference).
+The canary was restarted with it open, and the incident closed on the first
+sample after the right clip was back, once and under its original id. Decoding the clip through
+`qtdemux` and through `tsdemux` gave the same digests.
+
+The same run found a g2g limit. Demux fan-out on a network source fails
+negotiation: `srtsrc ! tsdemux name=d d. ! h264parse ! ... d. ! aacparse !
+avdec_aac ! ...` and the `rtspsrc name=s s.video_0 ... s.audio_0` form both end
+in `AacParse -> FfmpegAudioDec: video/x-h264 ... CapsMismatch` before any data
+arrives, whichever branch comes first. PORTING.md lists network demux fan-out
+as file sources only. So no live A/V row can run yet.
+
 ### 18. Mutation testing (cargo-mutants)
 The other techniques look for bugs in g2g. This one checks the g2g test suite
 instead. cargo-mutants injects one bug at a time into g2g's source (a function

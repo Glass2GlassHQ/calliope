@@ -8,11 +8,12 @@ use anyhow::{Context, Result};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, Command};
 
-use calliope_adapter_g2g::observe::{TelemetryReading, follow_telemetry, observe_args};
+use calliope_adapter_g2g::observe::{ObserveMessage, follow_observe, observe_args};
 use calliope_core::runner::{RunStatus, exit_to_status};
 
+use super::checks::FrameChecks;
 use super::config::{CanaryConfig, PipelineConfig};
-use super::record::{self, Cause, INCIDENTS_PREFIX, Incident, STDERR_DIR, unix_now};
+use super::record::{Cause, Incident, IncidentKind, STDERR_DIR, SharedOpenIncidents, unix_now};
 
 pub const STDERR_TAIL_LINES: usize = 50;
 const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
@@ -27,9 +28,18 @@ pub struct PipelineState {
     pub decode_latency_ns: Option<u64>,
     pub restarts: u64,
     pub last_error: Option<String>,
-    pub open_incident: Option<Incident>,
+    pub checks: FrameChecks,
     // the current run's last frame, as (monotonic, unix seconds)
     last_frame: Option<(Instant, u64)>,
+}
+
+impl PipelineState {
+    pub fn new(checks: FrameChecks) -> Self {
+        PipelineState {
+            checks,
+            ..PipelineState::default()
+        }
+    }
 }
 
 pub type SharedState = Arc<Mutex<PipelineState>>;
@@ -45,6 +55,7 @@ pub struct Supervisor {
     backoff_max: Duration,
     healthy_run: Duration,
     state: SharedState,
+    open_incidents: SharedOpenIncidents,
 }
 
 #[derive(Debug)]
@@ -58,7 +69,12 @@ struct RunEnd {
 }
 
 impl Supervisor {
-    pub fn new(config: &CanaryConfig, index: usize, state: SharedState) -> Self {
+    pub fn new(
+        config: &CanaryConfig,
+        index: usize,
+        state: SharedState,
+        open_incidents: SharedOpenIncidents,
+    ) -> Self {
         Supervisor {
             pipeline: config.pipelines[index].clone(),
             program: config
@@ -72,6 +88,7 @@ impl Supervisor {
             backoff_max: Duration::from_secs(config.backoff_max_secs),
             healthy_run: Duration::from_secs(config.healthy_run_secs),
             state,
+            open_incidents,
         }
     }
 
@@ -122,6 +139,7 @@ impl Supervisor {
             let mut state = self.lock();
             state.pid = child.id();
             state.last_frame = None;
+            state.checks.restart();
         }
         let tail = Arc::new(Mutex::new(VecDeque::with_capacity(STDERR_TAIL_LINES)));
         let stderr_reader = child.stderr.take().map(|stderr| {
@@ -131,7 +149,7 @@ impl Supervisor {
                 Arc::clone(&self.state),
             ))
         });
-        let telemetry = tokio::spawn(follow_telemetry(self.port, self.on_reading()));
+        let telemetry = tokio::spawn(follow_observe(self.port, self.on_message()));
 
         let watched = self.watch(&mut child, spawned_at, spawned_unix).await;
         telemetry.abort();
@@ -185,17 +203,26 @@ impl Supervisor {
         }
     }
 
-    fn on_reading(&self) -> impl FnMut(TelemetryReading) + Send + 'static {
+    fn on_message(&self) -> impl FnMut(ObserveMessage) + Send + 'static {
         let state = Arc::clone(&self.state);
         let mut seen_packets = 0;
-        move |reading| {
-            let new_packets = reading.sink_packets.saturating_sub(seen_packets);
-            seen_packets = reading.sink_packets;
+        let run_started = Instant::now();
+        move |message| {
             let mut state = state.lock().expect("pipeline state lock");
-            state.decode_latency_ns = reading.decoder_p50_ns;
-            if new_packets > 0 {
-                state.frames_total += new_packets;
-                state.last_frame = Some((Instant::now(), unix_now()));
+            match message {
+                ObserveMessage::Telemetry(reading) => {
+                    let new_packets = reading.sink_packets.saturating_sub(seen_packets);
+                    seen_packets = reading.sink_packets;
+                    state.decode_latency_ns = reading.decoder_p50_ns;
+                    if new_packets > 0 {
+                        state.frames_total += new_packets;
+                        state.last_frame = Some((Instant::now(), unix_now()));
+                    }
+                }
+                ObserveMessage::Checksum(reading) => {
+                    let arrival_ns = run_started.elapsed().as_nanos() as i128;
+                    state.checks.observe(&reading, arrival_ns);
+                }
             }
         }
     }
@@ -203,9 +230,11 @@ impl Supervisor {
     fn record_failure(&self, end: RunEnd) -> Result<()> {
         let mut state = self.lock();
         state.restarts += 1;
-        if let Some(incident) = state.open_incident.as_mut() {
+        let mut open_incidents = self.open_incidents.lock().expect("open incidents lock");
+        if let Some(open) = open_incidents.get(&self.pipeline.id, IncidentKind::Down) {
+            let mut incident = open.clone();
             incident.restarts += 1;
-            return Ok(());
+            return open_incidents.put(incident);
         }
         let id = format!("{}-{}", self.pipeline.id, end.failed_at);
         let stderr = format!("{STDERR_DIR}/{id}.log");
@@ -213,7 +242,7 @@ impl Supervisor {
         text.push('\n');
         let path = self.log_dir.join(&stderr);
         std::fs::write(&path, text).with_context(|| format!("write {}", path.display()))?;
-        state.open_incident = Some(Incident {
+        open_incidents.put(Incident {
             id,
             pipeline: self.pipeline.id.clone(),
             tier: self.pipeline.tier,
@@ -223,18 +252,14 @@ impl Supervisor {
             restarts: 1,
             last_error: state.last_error.clone(),
             stderr: Some(stderr),
-        });
-        Ok(())
+        })
     }
 
     fn close_incident(&self) -> Result<()> {
-        let mut state = self.lock();
-        let Some(mut incident) = state.open_incident.take() else {
-            return Ok(());
-        };
-        let now = unix_now();
-        incident.end = Some(now);
-        record::append(&self.log_dir, INCIDENTS_PREFIX, now, &incident)
+        self.open_incidents
+            .lock()
+            .expect("open incidents lock")
+            .close(&self.pipeline.id, IncidentKind::Down, unix_now())
     }
 
     fn lock(&self) -> std::sync::MutexGuard<'_, PipelineState> {
@@ -275,7 +300,7 @@ fn exit_cause(status: ExitStatus) -> Cause {
 mod tests {
     use super::*;
     use crate::canary::config::Tier;
-    use crate::canary::record::{INCIDENTS_PREFIX, read_days};
+    use crate::canary::record::{INCIDENTS_PREFIX, OpenIncidents, read_days};
     use futures::SinkExt;
     use std::os::unix::fs::PermissionsExt;
     use std::path::Path;
@@ -322,8 +347,14 @@ mod tests {
         .unwrap()
     }
 
+    // the open incidents as a fresh canary process reads them back from disk
+    fn reloaded_open_incidents(dir: &Path) -> Vec<Incident> {
+        OpenIncidents::load(dir).unwrap().all().to_vec()
+    }
+
     async fn supervise_for(config: &CanaryConfig, state: &SharedState) {
-        let supervisor = Supervisor::new(config, 0, Arc::clone(state));
+        let open_incidents = Arc::new(Mutex::new(OpenIncidents::load(&config.log_dir).unwrap()));
+        let supervisor = Supervisor::new(config, 0, Arc::clone(state), open_incidents);
         let ended = tokio::time::timeout(OBSERVE_FOR, supervisor.run()).await;
         assert!(ended.is_err(), "supervisor returned early: {ended:?}");
     }
@@ -346,10 +377,8 @@ mod tests {
 
         let state = state.lock().unwrap();
         assert!(state.restarts >= 1);
-        let incident = state
-            .open_incident
-            .as_ref()
-            .expect("stall opens an incident");
+        let open = reloaded_open_incidents(&dir);
+        let incident = open.first().expect("stall opens an incident");
         assert_eq!(incident.cause, Cause::Stall { secs: STALL_SECS });
         assert_eq!(incident.tier, Tier::SelfHosted);
         let stderr = std::fs::read_to_string(dir.join(incident.stderr.as_ref().unwrap())).unwrap();
@@ -366,10 +395,9 @@ mod tests {
         supervise_for(&config, &state).await;
 
         let state = state.lock().unwrap();
-        let incident = state
-            .open_incident
-            .as_ref()
-            .expect("exit opens an incident");
+        let open = reloaded_open_incidents(&dir);
+        assert_eq!(open.len(), 1);
+        let incident = &open[0];
         assert_eq!(incident.cause, Cause::Exit { code: 3 });
         assert_eq!(incident.last_error.as_deref(), Some("pipeline error: boom"));
         assert!(state.restarts >= 2, "restarts {}", state.restarts);
@@ -396,15 +424,8 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    async fn flowing_frames_close_the_open_incident() {
-        let dir = scratch("flow");
-        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-        let port = listener.local_addr().unwrap().port();
-        tokio::spawn(serve_growing_telemetry(listener));
-        let program = fake_launch(&dir, "exec sleep 60");
-        let config = config(&dir, &program, port);
-        let earlier = Incident {
+    fn earlier_incident() -> Incident {
+        Incident {
             id: "fake-1".into(),
             pipeline: "fake".into(),
             tier: Tier::SelfHosted,
@@ -414,9 +435,24 @@ mod tests {
             restarts: 1,
             last_error: None,
             stderr: None,
-        };
+        }
+    }
+
+    // an incident the previous canary process left open on disk
+    fn leave_open(dir: &Path, incident: Incident) {
+        OpenIncidents::load(dir).unwrap().put(incident).unwrap();
+    }
+
+    #[tokio::test]
+    async fn flowing_frames_close_an_incident_from_before_the_restart() {
+        let dir = scratch("flow");
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(serve_growing_telemetry(listener));
+        let program = fake_launch(&dir, "exec sleep 60");
+        let config = config(&dir, &program, port);
+        leave_open(&dir, earlier_incident());
         let state = SharedState::default();
-        state.lock().unwrap().open_incident = Some(earlier);
         supervise_for(&config, &state).await;
 
         let state = state.lock().unwrap();
@@ -426,10 +462,31 @@ mod tests {
         );
         assert!(state.frames_total >= PACKETS_PER_TICK * 10);
         assert_eq!(state.decode_latency_ns, Some(2_000_000));
-        assert!(state.open_incident.is_none());
+        assert!(reloaded_open_incidents(&dir).is_empty());
         let closed: Vec<Incident> = read_days(&dir, INCIDENTS_PREFIX, 0, unix_now()).unwrap();
         assert_eq!(closed.len(), 1);
+        assert_eq!(
+            closed[0].id,
+            earlier_incident().id,
+            "the id survives the restart"
+        );
         assert!(closed[0].end.is_some());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_stream_still_down_after_a_restart_extends_the_same_incident() {
+        let dir = scratch("still-down");
+        let program = fake_launch(&dir, "exit 1");
+        let config = config(&dir, &program, unused_port());
+        leave_open(&dir, earlier_incident());
+        let state = SharedState::default();
+        supervise_for(&config, &state).await;
+
+        let open = reloaded_open_incidents(&dir);
+        assert_eq!(open.len(), 1, "no second incident: {open:?}");
+        assert_eq!(open[0].id, earlier_incident().id);
+        assert!(open[0].restarts > earlier_incident().restarts);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }

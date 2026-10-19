@@ -47,6 +47,12 @@ pub struct PipelineConfig {
     // a clean exit at the end of a finite stream restarts it without an incident
     #[serde(default)]
     pub vod: bool,
+    // the `name=` of the checksumsink ending the video branch
+    pub video_sink: Option<String>,
+    // the `name=` of the checksumsink ending the audio branch, for a/v drift
+    pub audio_sink: Option<String>,
+    // the video sink's digests of the looped clip, one checksumsink line per frame
+    pub expect_hashes: Option<PathBuf>,
 }
 
 // self-hosted streams separate a g2g failure from the internet failing
@@ -55,13 +61,18 @@ pub struct PipelineConfig {
 pub enum Tier {
     SelfHosted,
     Public,
+    // self-hosted streams pushed through injected network faults
+    Faulted,
 }
 
 impl Tier {
+    pub const ALL: [Tier; 3] = [Tier::SelfHosted, Tier::Public, Tier::Faulted];
+
     pub fn label(self) -> &'static str {
         match self {
             Tier::SelfHosted => "self-hosted",
             Tier::Public => "public",
+            Tier::Faulted => "faulted",
         }
     }
 }
@@ -119,6 +130,18 @@ impl CanaryConfig {
                 "duplicate pipeline id '{}'",
                 pipeline.id
             );
+            let checks_without_video_sink = pipeline.video_sink.is_none()
+                && (pipeline.expect_hashes.is_some() || pipeline.audio_sink.is_some());
+            ensure!(
+                !checks_without_video_sink,
+                "pipeline '{}': expect-hashes and audio-sink need video-sink",
+                pipeline.id
+            );
+            ensure!(
+                pipeline.video_sink.is_none() || pipeline.video_sink != pipeline.audio_sink,
+                "pipeline '{}': video-sink and audio-sink name the same sink",
+                pipeline.id
+            );
         }
         let last_port = usize::from(self.observe_base_port) + self.pipelines.len() - 1;
         ensure!(
@@ -168,6 +191,25 @@ mod tests {
         assert_eq!(config.pipelines[0].tier, Tier::SelfHosted);
         assert!(config.pipelines[1].vod);
         assert_eq!(config.observe_port(1), DEFAULT_OBSERVE_BASE_PORT + 1);
+    }
+
+    #[test]
+    fn parses_frame_checks_and_the_faulted_tier() {
+        let checked = TWO_PIPELINES.replace("tier = \"public\"", "tier = \"faulted\"").replace(
+            "vod = true",
+            "vod = true\nvideo-sink = \"video\"\naudio-sink = \"audio\"\nexpect-hashes = \"/etc/canary/hashes/mux.txt\"",
+        );
+        let config = parse(&checked).unwrap();
+        let pipeline = &config.pipelines[1];
+        assert_eq!(pipeline.tier, Tier::Faulted);
+        assert_eq!(pipeline.video_sink.as_deref(), Some("video"));
+        assert_eq!(pipeline.audio_sink.as_deref(), Some("audio"));
+        assert_eq!(
+            pipeline.expect_hashes.as_deref(),
+            Some(Path::new("/etc/canary/hashes/mux.txt"))
+        );
+        let no_video_sink = checked.replace("video-sink = \"video\"\n", "");
+        assert!(parse(&no_video_sink).is_err());
     }
 
     #[test]
