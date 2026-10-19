@@ -9,8 +9,8 @@ g2g-plugins/src/av1parse.rs:361:5: replace obu_ranges -> Option<Vec<ObuRange>> w
 g2g-plugins/src/av1parse.rs:412:5: replace obus -> Vec<Obu<'_>> with vec![]
 g2g-plugins/src/av1parse.rs:412:5: replace obus -> Vec<Obu<'_>> with vec![Default::default()]
 g2g-plugins/src/av1parse.rs:452:5: replace delimited_obu_at -> Result<Option<ObuRange>, G2gError> with Ok(Some(Default::default()))
-g2g-plugins/src/av1parse.rs:527:9: replace TemporalUnitFramer::push -> Result<Vec<FramedTemporalUnit>, G2gError> with Ok(vec![Default::default()])
 g2g-plugins/src/av1parse.rs:527:9: replace TemporalUnitFramer::push -> Result<Vec<FramedTemporalUnit>, G2gError> with Ok(vec![])
+g2g-plugins/src/av1parse.rs:527:9: replace TemporalUnitFramer::push -> Result<Vec<FramedTemporalUnit>, G2gError> with Ok(vec![Default::default()])
 g2g-plugins/src/av1parse.rs:566:9: replace TemporalUnitFramer::split_off -> Vec<FramedTemporalUnit> with vec![]
 g2g-plugins/src/av1parse.rs:566:9: replace TemporalUnitFramer::split_off -> Vec<FramedTemporalUnit> with vec![Default::default()]
 g2g-plugins/src/av1parse.rs:593:5: replace extract_seq_header -> Option<Av1SeqHeader> with Some(Default::default())

@@ -29,10 +29,10 @@ compile.
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | g2g-core (caps, solver, clock, memory, frame, channel, runner) | 1438 | 1011 | 119 | 27 | 281 | 89% | 1h17m |
 | g2g-plugins aacparse.rs | 253 | 168 | 60 | 1 | 24 | 74% | 9m |
-| g2g-plugins av1parse.rs | 278 | 148 | 103 | 1 | 26 | 59% | 10m |
+| g2g-plugins av1parse.rs | 276 | 246 | 3 | 1 | 26 | 99% | 15m |
 | g2g-plugins flv.rs | 217 | 159 | 21 | 0 | 37 | 88% | 9m |
-| g2g-plugins h264parse.rs | 70 | 33 | 31 | 0 | 6 | 52% | 4m |
-| g2g-plugins h265parse.rs | 206 | 51 | 147 | 0 | 8 | 26% | 8m |
+| g2g-plugins h264parse.rs | 70 | 64 | 0 | 0 | 6 | 100% | 6m |
+| g2g-plugins h265parse.rs | 215 | 200 | 7 | 0 | 8 | 97% | 12m |
 | g2g-plugins hls.rs | 134 | 109 | 7 | 1 | 17 | 94% | 6m |
 | g2g-plugins matroska.rs | 804 | 574 | 85 | 6 | 139 | 87% | 31m |
 | g2g-plugins mp4demuxn.rs | 114 | 57 | 24 | 6 | 27 | 70% | 8m |
@@ -55,6 +55,14 @@ and index arithmetic, plus the `SourceLoop` trait defaults, the ProRes fourcc
 and alpha plane lookups, `SystemSlice::make_shared` on a shared slice and two
 channel flags. `i *= 1` in the `DomainSet::ALL` const block makes rustc loop in
 const evaluation, so that mutant was killed after an hour and counts as unviable.
+
+The av1parse, h264parse and h265parse rows are g2g c073b11, after M1620 to M1625.
+Their scopes now compile the `ffmpeg` feature for h264parse, whose reorder depth
+code it gates, and run `m1555_hevc_leading_rasl` for h265parse. The 10 still
+missed are a 2-byte SPS NAL, which parses to nothing either way, a deltaRps of 0,
+which the syntax cannot code, a 17th picture in a loop over at most 16, rejecting
+16 pictures a side, which the spec already forbids, the element description text,
+and the 16 MiB temporal unit cap, which the tests use by name.
 
 ## Scheduled runs
 

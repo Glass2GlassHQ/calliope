@@ -1,136 +1,173 @@
 g2g-plugins/src/av1parse.rs:80:9: replace Av1Parse::reframing -> Self with Default::default()
-g2g-plugins/src/av1parse.rs:123:32: replace += with -= in Av1Parse::emit_temporal_unit
-g2g-plugins/src/av1parse.rs:123:32: replace += with *= in Av1Parse::emit_temporal_unit
-g2g-plugins/src/av1parse.rs:81:13: delete field reframe from struct Self expression in Av1Parse::reframing
-g2g-plugins/src/av1parse.rs:168:13: delete match arm Caps::CompressedVideo{codec:VideoCodec::Av1, ..} in <impl AsyncElement for Av1Parse>::configure_pipeline
-g2g-plugins/src/av1parse.rs:185:16: delete ! in <impl AsyncElement for Av1Parse>::process
-g2g-plugins/src/av1parse.rs:195:66: replace || with && in <impl AsyncElement for Av1Parse>::process
-g2g-plugins/src/av1parse.rs:117:9: replace Av1Parse::emit_temporal_unit -> Result<(), G2gError> with Ok(())
-g2g-plugins/src/av1parse.rs:195:38: replace && with || in <impl AsyncElement for Av1Parse>::process
-g2g-plugins/src/av1parse.rs:89:9: replace Av1Parse::caps_changes_emitted -> u64 with 0
-g2g-plugins/src/av1parse.rs:97:9: replace Av1Parse::refine_caps -> Result<(), G2gError> with Ok(())
 g2g-plugins/src/av1parse.rs:89:9: replace Av1Parse::caps_changes_emitted -> u64 with 1
-g2g-plugins/src/av1parse.rs:195:42: delete ! in <impl AsyncElement for Av1Parse>::process
+g2g-plugins/src/av1parse.rs:97:9: replace Av1Parse::refine_caps -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/av1parse.rs:81:13: delete field reframe from struct Self expression in Av1Parse::reframing
+g2g-plugins/src/av1parse.rs:123:32: replace += with -= in Av1Parse::emit_temporal_unit
+g2g-plugins/src/av1parse.rs:89:9: replace Av1Parse::caps_changes_emitted -> u64 with 0
+g2g-plugins/src/av1parse.rs:117:9: replace Av1Parse::emit_temporal_unit -> Result<(), G2gError> with Ok(())
+g2g-plugins/src/av1parse.rs:123:32: replace += with *= in Av1Parse::emit_temporal_unit
+g2g-plugins/src/av1parse.rs:185:16: delete ! in <impl AsyncElement for Av1Parse>::process
+g2g-plugins/src/av1parse.rs:168:13: delete match arm Caps::CompressedVideo{codec:VideoCodec::Av1, ..} in <impl AsyncElement for Av1Parse>::configure_pipeline
+g2g-plugins/src/av1parse.rs:195:38: replace && with || in <impl AsyncElement for Av1Parse>::process
+g2g-plugins/src/av1parse.rs:195:66: replace || with && in <impl AsyncElement for Av1Parse>::process
 g2g-plugins/src/av1parse.rs:196:24: delete ! in <impl AsyncElement for Av1Parse>::process
-g2g-plugins/src/av1parse.rs:333:5: replace read_leb128 -> Option<u64> with Some(0)
+g2g-plugins/src/av1parse.rs:195:42: delete ! in <impl AsyncElement for Av1Parse>::process
 g2g-plugins/src/av1parse.rs:333:5: replace read_leb128 -> Option<u64> with None
-g2g-plugins/src/av1parse.rs:336:14: replace += with *= in read_leb128
+g2g-plugins/src/av1parse.rs:333:5: replace read_leb128 -> Option<u64> with Some(0)
 g2g-plugins/src/av1parse.rs:333:5: replace read_leb128 -> Option<u64> with Some(1)
+g2g-plugins/src/av1parse.rs:336:14: replace += with *= in read_leb128
 g2g-plugins/src/av1parse.rs:337:15: replace |= with &= in read_leb128
-g2g-plugins/src/av1parse.rs:337:33: replace & with ^ in read_leb128
 g2g-plugins/src/av1parse.rs:337:41: replace << with >> in read_leb128
 g2g-plugins/src/av1parse.rs:337:33: replace & with | in read_leb128
+g2g-plugins/src/av1parse.rs:337:33: replace & with ^ in read_leb128
 g2g-plugins/src/av1parse.rs:337:47: replace * with + in read_leb128
 g2g-plugins/src/av1parse.rs:338:24: replace == with != in read_leb128
 g2g-plugins/src/av1parse.rs:337:47: replace * with / in read_leb128
-g2g-plugins/src/av1parse.rs:338:17: replace & with | in read_leb128
 g2g-plugins/src/av1parse.rs:338:17: replace & with ^ in read_leb128
-g2g-plugins/src/av1parse.rs:363:15: replace < with > in obu_ranges
-g2g-plugins/src/av1parse.rs:363:15: replace < with <= in obu_ranges
+g2g-plugins/src/av1parse.rs:338:17: replace & with | in read_leb128
 g2g-plugins/src/av1parse.rs:361:5: replace obu_ranges -> Option<Vec<ObuRange>> with None
 g2g-plugins/src/av1parse.rs:363:15: replace < with == in obu_ranges
+g2g-plugins/src/av1parse.rs:363:15: replace < with > in obu_ranges
+g2g-plugins/src/av1parse.rs:363:15: replace < with <= in obu_ranges
 g2g-plugins/src/av1parse.rs:366:13: replace += with -= in obu_ranges
 g2g-plugins/src/av1parse.rs:366:13: replace += with *= in obu_ranges
 g2g-plugins/src/av1parse.rs:367:26: replace != with == in obu_ranges
+g2g-plugins/src/av1parse.rs:367:19: replace & with | in obu_ranges
 g2g-plugins/src/av1parse.rs:367:19: replace & with ^ in obu_ranges
 g2g-plugins/src/av1parse.rs:370:38: replace & with | in obu_ranges
 g2g-plugins/src/av1parse.rs:370:38: replace & with ^ in obu_ranges
 g2g-plugins/src/av1parse.rs:370:32: replace >> with << in obu_ranges
 g2g-plugins/src/av1parse.rs:371:47: replace == with != in obu_ranges
-g2g-plugins/src/av1parse.rs:367:19: replace & with | in obu_ranges
+g2g-plugins/src/av1parse.rs:371:43: replace & with | in obu_ranges
+g2g-plugins/src/av1parse.rs:371:37: replace >> with << in obu_ranges
+g2g-plugins/src/av1parse.rs:371:43: replace & with ^ in obu_ranges
 g2g-plugins/src/av1parse.rs:372:42: replace == with != in obu_ranges
 g2g-plugins/src/av1parse.rs:372:38: replace & with | in obu_ranges
 g2g-plugins/src/av1parse.rs:372:38: replace & with ^ in obu_ranges
-g2g-plugins/src/av1parse.rs:374:17: replace += with -= in obu_ranges
 g2g-plugins/src/av1parse.rs:372:32: replace >> with << in obu_ranges
-g2g-plugins/src/av1parse.rs:386:16: replace > with < in obu_ranges
+g2g-plugins/src/av1parse.rs:374:17: replace += with -= in obu_ranges
+g2g-plugins/src/av1parse.rs:374:17: replace += with *= in obu_ranges
+g2g-plugins/src/av1parse.rs:375:20: replace > with == in obu_ranges
+g2g-plugins/src/av1parse.rs:375:20: replace > with < in obu_ranges
+g2g-plugins/src/av1parse.rs:375:20: replace > with >= in obu_ranges
 g2g-plugins/src/av1parse.rs:386:16: replace > with == in obu_ranges
+g2g-plugins/src/av1parse.rs:386:16: replace > with < in obu_ranges
 g2g-plugins/src/av1parse.rs:386:16: replace > with >= in obu_ranges
-g2g-plugins/src/av1parse.rs:426:72: replace == with != in has_sequence_header
 g2g-plugins/src/av1parse.rs:426:5: replace has_sequence_header -> bool with true
+g2g-plugins/src/av1parse.rs:426:72: replace == with != in has_sequence_header
 g2g-plugins/src/av1parse.rs:426:5: replace has_sequence_header -> bool with false
 g2g-plugins/src/av1parse.rs:430:50: replace * with /
 g2g-plugins/src/av1parse.rs:430:43: replace * with /
+g2g-plugins/src/av1parse.rs:442:19: replace & with | in obu_type
+g2g-plugins/src/av1parse.rs:442:5: replace obu_type -> u8 with 0
+g2g-plugins/src/av1parse.rs:442:5: replace obu_type -> u8 with 1
 g2g-plugins/src/av1parse.rs:442:19: replace & with ^ in obu_type
 g2g-plugins/src/av1parse.rs:442:13: replace >> with << in obu_type
-g2g-plugins/src/av1parse.rs:442:5: replace obu_type -> u8 with 0
-g2g-plugins/src/av1parse.rs:442:19: replace & with | in obu_type
-g2g-plugins/src/av1parse.rs:442:5: replace obu_type -> u8 with 1
-g2g-plugins/src/av1parse.rs:447:49: replace == with != in opens_temporal_unit
 g2g-plugins/src/av1parse.rs:446:5: replace opens_temporal_unit -> bool with true
 g2g-plugins/src/av1parse.rs:446:5: replace opens_temporal_unit -> bool with false
+g2g-plugins/src/av1parse.rs:447:49: replace == with != in opens_temporal_unit
 g2g-plugins/src/av1parse.rs:452:5: replace delimited_obu_at -> Result<Option<ObuRange>, G2gError> with Ok(None)
 g2g-plugins/src/av1parse.rs:455:43: replace == with != in delimited_obu_at
-g2g-plugins/src/av1parse.rs:456:28: replace >> with << in delimited_obu_at
-g2g-plugins/src/av1parse.rs:458:22: replace != with == in delimited_obu_at
+g2g-plugins/src/av1parse.rs:455:33: replace >> with << in delimited_obu_at
+g2g-plugins/src/av1parse.rs:455:39: replace & with | in delimited_obu_at
+g2g-plugins/src/av1parse.rs:455:39: replace & with ^ in delimited_obu_at
 g2g-plugins/src/av1parse.rs:456:38: replace == with != in delimited_obu_at
 g2g-plugins/src/av1parse.rs:456:34: replace & with | in delimited_obu_at
 g2g-plugins/src/av1parse.rs:456:34: replace & with ^ in delimited_obu_at
+g2g-plugins/src/av1parse.rs:456:28: replace >> with << in delimited_obu_at
+g2g-plugins/src/av1parse.rs:458:27: replace || with && in delimited_obu_at
+g2g-plugins/src/av1parse.rs:458:22: replace != with == in delimited_obu_at
 g2g-plugins/src/av1parse.rs:458:15: replace & with | in delimited_obu_at
-g2g-plugins/src/av1parse.rs:458:30: delete ! in delimited_obu_at
 g2g-plugins/src/av1parse.rs:458:15: replace & with ^ in delimited_obu_at
-g2g-plugins/src/av1parse.rs:461:32: replace + with * in delimited_obu_at
+g2g-plugins/src/av1parse.rs:458:30: delete ! in delimited_obu_at
+g2g-plugins/src/av1parse.rs:461:32: replace + with - in delimited_obu_at
 g2g-plugins/src/av1parse.rs:461:28: replace + with - in delimited_obu_at
+g2g-plugins/src/av1parse.rs:461:32: replace + with * in delimited_obu_at
 g2g-plugins/src/av1parse.rs:461:28: replace + with * in delimited_obu_at
 g2g-plugins/src/av1parse.rs:464:68: replace < with > in delimited_obu_at
 g2g-plugins/src/av1parse.rs:464:68: replace < with == in delimited_obu_at
+g2g-plugins/src/av1parse.rs:464:68: replace < with <= in delimited_obu_at
 g2g-plugins/src/av1parse.rs:473:30: replace <= with > in delimited_obu_at
 g2g-plugins/src/av1parse.rs:476:13: replace <= with > in delimited_obu_at
-g2g-plugins/src/av1parse.rs:493:35: replace == with != in opens_obu_stream
-g2g-plugins/src/av1parse.rs:493:31: replace & with | in opens_obu_stream
-g2g-plugins/src/av1parse.rs:493:31: replace & with ^ in opens_obu_stream
+g2g-plugins/src/av1parse.rs:493:40: replace && with || in opens_obu_stream
 g2g-plugins/src/av1parse.rs:486:5: replace opens_obu_stream -> bool with true
-g2g-plugins/src/av1parse.rs:493:75: replace == with != in opens_obu_stream
-g2g-plugins/src/av1parse.rs:493:71: replace & with | in opens_obu_stream
 g2g-plugins/src/av1parse.rs:486:5: replace opens_obu_stream -> bool with false
+g2g-plugins/src/av1parse.rs:493:35: replace == with != in opens_obu_stream
+g2g-plugins/src/av1parse.rs:493:75: replace == with != in opens_obu_stream
+g2g-plugins/src/av1parse.rs:493:31: replace & with ^ in opens_obu_stream
+g2g-plugins/src/av1parse.rs:493:31: replace & with | in opens_obu_stream
+g2g-plugins/src/av1parse.rs:493:71: replace & with | in opens_obu_stream
 g2g-plugins/src/av1parse.rs:493:71: replace & with ^ in opens_obu_stream
+g2g-plugins/src/av1parse.rs:498:9: replace && with || in opens_obu_stream
+g2g-plugins/src/av1parse.rs:497:9: replace && with || in opens_obu_stream
 g2g-plugins/src/av1parse.rs:496:9: replace && with || in opens_obu_stream
 g2g-plugins/src/av1parse.rs:495:9: replace && with || in opens_obu_stream
-g2g-plugins/src/av1parse.rs:495:30: replace == with != in opens_obu_stream
-g2g-plugins/src/av1parse.rs:496:37: replace == with != in opens_obu_stream
 g2g-plugins/src/av1parse.rs:494:24: replace == with != in opens_obu_stream
 g2g-plugins/src/av1parse.rs:499:50: replace <= with > in opens_obu_stream
+g2g-plugins/src/av1parse.rs:496:37: replace == with != in opens_obu_stream
+g2g-plugins/src/av1parse.rs:495:30: replace == with != in opens_obu_stream
 g2g-plugins/src/av1parse.rs:519:9: replace TemporalUnitFramer::is_empty -> bool with true
 g2g-plugins/src/av1parse.rs:519:9: replace TemporalUnitFramer::is_empty -> bool with false
-g2g-plugins/src/av1parse.rs:530:29: replace == with != in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:536:21: replace > with == in TemporalUnitFramer::push
+g2g-plugins/src/av1parse.rs:530:29: replace == with != in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:536:21: replace > with < in TemporalUnitFramer::push
+g2g-plugins/src/av1parse.rs:536:21: replace > with >= in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:537:81: replace == with != in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:545:13: replace && with || in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:544:41: replace >= with < in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:545:28: replace == with != in TemporalUnitFramer::push
+g2g-plugins/src/av1parse.rs:552:31: replace > with == in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:552:31: replace > with < in TemporalUnitFramer::push
-g2g-plugins/src/av1parse.rs:559:24: replace != with == in TemporalUnitFramer::finish
-g2g-plugins/src/av1parse.rs:568:50: replace < with == in TemporalUnitFramer::split_off
+g2g-plugins/src/av1parse.rs:552:31: replace > with >= in TemporalUnitFramer::push
 g2g-plugins/src/av1parse.rs:559:9: replace TemporalUnitFramer::finish -> Result<Option<FramedTemporalUnit>, G2gError> with Ok(None)
 g2g-plugins/src/av1parse.rs:559:9: replace TemporalUnitFramer::finish -> Result<Option<FramedTemporalUnit>, G2gError> with Ok(Some(Default::default()))
+g2g-plugins/src/av1parse.rs:559:24: replace != with == in TemporalUnitFramer::finish
+g2g-plugins/src/av1parse.rs:568:50: replace < with == in TemporalUnitFramer::split_off
 g2g-plugins/src/av1parse.rs:568:50: replace < with > in TemporalUnitFramer::split_off
+g2g-plugins/src/av1parse.rs:574:20: replace -= with /= in TemporalUnitFramer::split_off
 g2g-plugins/src/av1parse.rs:568:50: replace < with <= in TemporalUnitFramer::split_off
 g2g-plugins/src/av1parse.rs:574:20: replace -= with += in TemporalUnitFramer::split_off
+g2g-plugins/src/av1parse.rs:576:21: replace -= with += in TemporalUnitFramer::split_off
 g2g-plugins/src/av1parse.rs:576:21: replace -= with /= in TemporalUnitFramer::split_off
 g2g-plugins/src/av1parse.rs:595:32: replace == with != in extract_seq_header
-g2g-plugins/src/av1parse.rs:574:20: replace -= with /= in TemporalUnitFramer::split_off
-g2g-plugins/src/av1parse.rs:576:21: replace -= with += in TemporalUnitFramer::split_off
 g2g-plugins/src/av1parse.rs:593:5: replace extract_seq_header -> Option<Av1SeqHeader> with None
 g2g-plugins/src/av1parse.rs:604:5: replace seq_header_obu -> Option<(Av1SeqHeader, &[u8])> with None
-g2g-plugins/src/av1parse.rs:646:39: replace == with != in av1_keyframe
+g2g-plugins/src/av1parse.rs:606:32: replace == with != in seq_header_obu
 g2g-plugins/src/av1parse.rs:630:23: replace != with == in strip_temporal_delimiters
-g2g-plugins/src/av1parse.rs:643:5: replace av1_keyframe -> bool with false
 g2g-plugins/src/av1parse.rs:643:5: replace av1_keyframe -> bool with true
+g2g-plugins/src/av1parse.rs:643:5: replace av1_keyframe -> bool with false
+g2g-plugins/src/av1parse.rs:646:39: replace == with != in av1_keyframe
+g2g-plugins/src/av1parse.rs:650:50: replace == with != in av1_keyframe
+g2g-plugins/src/av1parse.rs:650:36: replace || with && in av1_keyframe
+g2g-plugins/src/av1parse.rs:650:23: replace == with != in av1_keyframe
+g2g-plugins/src/av1parse.rs:657:41: replace == with != in av1_keyframe
+g2g-plugins/src/av1parse.rs:657:36: replace >> with << in av1_keyframe
+g2g-plugins/src/av1parse.rs:658:40: replace & with | in av1_keyframe
+g2g-plugins/src/av1parse.rs:658:40: replace & with ^ in av1_keyframe
 g2g-plugins/src/av1parse.rs:658:34: replace >> with << in av1_keyframe
 g2g-plugins/src/av1parse.rs:659:35: replace && with || in av1_keyframe
+g2g-plugins/src/av1parse.rs:659:20: delete ! in av1_keyframe
 g2g-plugins/src/av1parse.rs:659:49: replace == with != in av1_keyframe
-g2g-plugins/src/av1parse.rs:658:40: replace & with ^ in av1_keyframe
 g2g-plugins/src/av1parse.rs:670:5: replace parse_sequence_header -> Option<Av1SeqHeader> with None
 g2g-plugins/src/av1parse.rs:675:5: replace parse_complete_sequence_header -> Option<Av1SeqHeader> with None
 g2g-plugins/src/av1parse.rs:690:37: replace == with != in parse_sequence_header_at
-g2g-plugins/src/av1parse.rs:695:32: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:681:40: replace == with != in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:679:5: replace parse_sequence_header_at -> Option<Av1SeqHeader> with None
+g2g-plugins/src/av1parse.rs:695:32: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:698:31: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:702:43: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:703:56: replace + with - in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:703:56: replace + with * in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:714:45: replace > with == in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:714:45: replace > with < in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:714:45: replace > with >= in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:719:18: replace == with != in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:724:48: replace && with || in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:724:43: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:724:66: replace == with != in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:730:51: replace && with || in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:730:46: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:730:69: replace == with != in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:738:71: replace + with - in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:738:71: replace + with * in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:738:65: replace + with - in parse_sequence_header_at
@@ -139,10 +176,71 @@ g2g-plugins/src/av1parse.rs:739:73: replace + with - in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:739:73: replace + with * in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:739:67: replace + with - in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:739:67: replace + with * in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:772:53: replace && with || in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:772:35: delete ! in parse_sequence_header_at
 g2g-plugins/src/av1parse.rs:761:17: delete ! in parse_sequence_header_at
-g2g-plugins/src/av1parse.rs:840:42: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:772:71: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:773:56: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:777:17: delete ! in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:781:68: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:782:55: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:783:69: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:784:75: replace == with != in parse_sequence_header_at
+g2g-plugins/src/av1parse.rs:818:9: replace ColorConfig::colorimetry -> g2g_core::Colorimetry with Default::default()
+g2g-plugins/src/av1parse.rs:836:9: delete field seq_force_screen_content_tools from struct Av1SequenceTools expression in parse_color_config
 g2g-plugins/src/av1parse.rs:835:5: replace parse_color_config -> Option<(Av1SequenceTools, ColorConfig)> with None
+g2g-plugins/src/av1parse.rs:840:42: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:837:9: delete field seq_force_integer_mv from struct Av1SequenceTools expression in parse_color_config
+g2g-plugins/src/av1parse.rs:840:37: replace == with != in parse_color_config
 g2g-plugins/src/av1parse.rs:840:60: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:845:51: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:846:48: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:847:53: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:848:37: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:849:59: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:850:55: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:851:53: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:852:51: replace == with != in parse_color_config
 g2g-plugins/src/av1parse.rs:853:50: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:855:52: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:856:57: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:859:27: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:863:53: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:863:49: replace > with == in parse_color_config
+g2g-plugins/src/av1parse.rs:863:49: replace > with < in parse_color_config
+g2g-plugins/src/av1parse.rs:863:49: replace > with >= in parse_color_config
+g2g-plugins/src/av1parse.rs:863:71: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:867:60: replace + with - in parse_color_config
+g2g-plugins/src/av1parse.rs:867:60: replace + with * in parse_color_config
+g2g-plugins/src/av1parse.rs:870:44: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:871:40: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:872:47: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:875:40: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:876:42: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:876:37: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:877:24: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:881:37: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:884:24: replace == with != in parse_color_config
 g2g-plugins/src/av1parse.rs:887:57: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:909:57: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:909:39: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:909:34: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:909:52: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:909:69: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:911:44: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:921:40: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:927:42: replace == with != in parse_color_config
 g2g-plugins/src/av1parse.rs:923:9: delete match arm 0 in parse_color_config
+g2g-plugins/src/av1parse.rs:924:9: delete match arm 1 in parse_color_config
+g2g-plugins/src/av1parse.rs:928:51: replace == with != in parse_color_config
+g2g-plugins/src/av1parse.rs:937:12: replace && with || in parse_color_config
+g2g-plugins/src/av1parse.rs:946:5: replace read_uvlc -> Option<u32> with None
+g2g-plugins/src/av1parse.rs:946:5: replace read_uvlc -> Option<u32> with Some(0)
+g2g-plugins/src/av1parse.rs:946:5: replace read_uvlc -> Option<u32> with Some(1)
+g2g-plugins/src/av1parse.rs:947:26: replace == with != in read_uvlc
+g2g-plugins/src/av1parse.rs:950:22: replace >= with < in read_uvlc
+g2g-plugins/src/av1parse.rs:954:42: replace - with / in read_uvlc
+g2g-plugins/src/av1parse.rs:954:16: replace + with - in read_uvlc
+g2g-plugins/src/av1parse.rs:954:42: replace - with + in read_uvlc
+g2g-plugins/src/av1parse.rs:954:16: replace + with * in read_uvlc
+g2g-plugins/src/av1parse.rs:954:24: replace << with >> in read_uvlc
