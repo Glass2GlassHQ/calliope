@@ -22,6 +22,27 @@ copy_to() {
     if [ "$host" = local ]; then cp "$@" "$HOME/$destination/"; else scp "$@" "$host:$destination/"; fi
 }
 
+# replaces the security group's ssh rule with this machine's current address
+allow_ssh_from_here() {
+    local group=$1 address rules stale
+    address=$(curl -fsS https://checkip.amazonaws.com)/32
+    rules=$(aws ec2 describe-security-group-rules --filters Name=group-id,Values="$group" \
+        --query 'SecurityGroupRules[?!IsEgress && FromPort==`22`].[SecurityGroupRuleId,CidrIpv4]' \
+        --output text)
+    stale=$(awk -v keep="$address" '$2 != keep {print $1}' <<<"$rules")
+    if [ -n "$stale" ]; then
+        aws ec2 revoke-security-group-ingress --group-id "$group" \
+            --security-group-rule-ids $stale >/dev/null
+    fi
+    if ! awk -v keep="$address" '$2 == keep {found = 1} END {exit !found}' <<<"$rules"; then
+        aws ec2 authorize-security-group-ingress --group-id "$group" \
+            --protocol tcp --port 22 --cidr "$address" >/dev/null
+    fi
+}
+
+if [ -n "${CANARY_SECURITY_GROUP:-}" ]; then
+    allow_ssh_from_here "$CANARY_SECURITY_GROUP"
+fi
 if [ "$host" != local ]; then
     podman save "$image" | gzip | ssh "$host" "gunzip | podman load && podman tag $image $deployed_image"
 fi

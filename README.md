@@ -370,6 +370,11 @@ ssh fedora@<host> 'sudo dnf -y install podman awscli2 && sudo loginctl enable-li
 tools/canary-deploy.sh fedora@<host>
 ```
 
+With `CANARY_SECURITY_GROUP` set to the instance's security group id,
+`canary-deploy.sh` first replaces the group's ssh rule with this machine's
+current public address, so a changed home IP does not lock the deploy out. It
+runs `aws` with whatever `AWS_PROFILE` the shell sets.
+
 Linger starts the user units at boot without a login. The deploy script tags the
 loaded image `localhost/g2g-canary:latest` on the instance, which is the tag
 `g2g-canary.container` runs.
