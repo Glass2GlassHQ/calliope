@@ -29,6 +29,17 @@ host_busy() {
     [ "${load_five_minutes%.*}" -ge "$MAX_IDLE_LOAD" ]
 }
 
+PLUGINS_FEATURES=std,metadata,mp4-cenc
+
+# cargo refuses to build a named test target whose required features are off
+buildable_plugin_tests() {
+    (cd "$G2G_CLONE" && cargo metadata --no-deps --format-version 1) |
+        jq -r --arg enabled "$PLUGINS_FEATURES" '($enabled | split(",")) as $on
+            | .packages[] | select(.name == "g2g-plugins") | .targets[]
+            | select(.kind | index("test")) | select(((."required-features" // []) - $on) == [])
+            | .name'
+}
+
 # the plugins test binaries that name a module the diff touches
 plugin_test_targets() {
     local diff_from=$1 diff_to=$2 path module
@@ -41,10 +52,8 @@ plugin_test_targets() {
                 module=$(basename "$(dirname "$path")")
             fi
             grep -lw "$module" "$G2G_CLONE"/g2g-plugins/tests/*.rs || true
-        done | sort -u | while read -r path
-        do
-            echo "--cargo-arg=--test=$(basename "$path" .rs)"
-        done
+        done | xargs -r -n1 basename -s .rs | sort -u | grep -Fx -f <(buildable_plugin_tests) |
+        sed 's/^/--cargo-arg=--test=/'
 }
 
 # runs one package's mutants in the diff, prints the cargo-mutants exit status
@@ -119,7 +128,7 @@ export MUTANTS_JOBS="${MUTANTS_JOBS:-6}" MUTANTS_JOBSERVER_TASKS=4 CARGO_BUILD_J
 mapfile -t plugin_tests < <(plugin_test_targets "$from" "$to")
 core_status=$(run_scope g2g-core -p g2g-core --features std,multi-thread,runtime,metadata,dyn-slot,tracing \
     -E fuzz_parse -- --lib --tests)
-plugins_status=$(run_scope g2g-plugins -p g2g-plugins --features std,metadata,mp4-cenc \
+plugins_status=$(run_scope g2g-plugins -p g2g-plugins --features "$PLUGINS_FEATURES" \
     -E 'fuzz_parse|vp[89]parse\.rs.*is_keyframe' --cargo-arg=--lib "${plugin_tests[@]}")
 echo "g2g-core exit $core_status, g2g-plugins exit $plugins_status" | tee "$run_dir/status.txt"
 
