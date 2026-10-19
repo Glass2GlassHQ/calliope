@@ -1,191 +1,51 @@
-g2g-core/src/caps.rs:289:13: delete match arm (Caps::Klv, Caps::Klv) in Caps::intersect
-g2g-core/src/caps.rs:290:13: delete match arm (Caps::OnvifMetadata, Caps::OnvifMetadata) in Caps::intersect
-g2g-core/src/caps.rs:245:18: replace match guard fa == fb with true in Caps::intersect
-g2g-core/src/caps.rs:284:18: replace match guard da == db && sha == shb && la == lb with true in Caps::intersect
-g2g-core/src/caps.rs:285:87: replace match guard ea == eb with true in Caps::intersect
-g2g-core/src/caps.rs:285:87: replace match guard ea == eb with false in Caps::intersect
-g2g-core/src/caps.rs:288:71: replace match guard fa == fb with true in Caps::intersect
-g2g-core/src/caps.rs:294:81: replace match guard a == b with true in Caps::intersect
-g2g-core/src/caps.rs:294:81: replace match guard a == b with false in Caps::intersect
-g2g-core/src/caps.rs:284:41: replace && with || in Caps::intersect
-g2g-core/src/caps.rs:284:27: replace && with || in Caps::intersect
-g2g-core/src/caps.rs:285:90: replace == with != in Caps::intersect
-g2g-core/src/caps.rs:294:83: replace == with != in Caps::intersect
-g2g-core/src/caps.rs:508:52: replace && with || in Caps::to_gst_string
-g2g-core/src/caps.rs:554:61: replace > with == in batch_alternatives
-g2g-core/src/caps.rs:554:61: replace > with >= in batch_alternatives
-g2g-core/src/caps.rs:581:5: replace text_format_gst_media_type -> &'static str with ""
-g2g-core/src/caps.rs:581:5: replace text_format_gst_media_type -> &'static str with "xyzzy"
-g2g-core/src/caps.rs:613:5: replace subpicture_gst_media_type -> &'static str with ""
-g2g-core/src/caps.rs:613:5: replace subpicture_gst_media_type -> &'static str with "xyzzy"
-g2g-core/src/caps.rs:723:24: replace == with != in push_rate
-g2g-core/src/caps.rs:723:16: replace % with / in push_rate
-g2g-core/src/caps.rs:723:16: replace % with + in push_rate
-g2g-core/src/caps.rs:827:9: replace Rate::is_fixed -> bool with true
-g2g-core/src/caps.rs:911:13: delete match arm (Interlace::Any, x) |(x, Interlace::Any) in Interlace::intersect
-g2g-core/src/caps.rs:912:23: replace match guard a == b with true in Interlace::intersect
-g2g-core/src/caps.rs:998:9: replace LumaCoefficients::kg -> f32 with 0.0
-g2g-core/src/caps.rs:998:9: replace LumaCoefficients::kg -> f32 with 1.0
-g2g-core/src/caps.rs:998:9: replace LumaCoefficients::kg -> f32 with -1.0
-g2g-core/src/caps.rs:998:23: replace - with + in LumaCoefficients::kg
-g2g-core/src/caps.rs:998:23: replace - with / in LumaCoefficients::kg
-g2g-core/src/caps.rs:998:13: replace - with + in LumaCoefficients::kg
-g2g-core/src/caps.rs:998:13: replace - with / in LumaCoefficients::kg
-g2g-core/src/caps.rs:1272:13: delete match arm MatrixCoefficients::Bt709 in Colorimetry::yuv_conversion
-g2g-core/src/caps.rs:1273:13: delete match arm MatrixCoefficients::Bt2020Ncl in Colorimetry::yuv_conversion
-g2g-core/src/caps.rs:1362:9: delete match arm 0 in gst_range_from_num
-g2g-core/src/caps.rs:1363:9: delete match arm 1 in gst_range_from_num
-g2g-core/src/caps.rs:1380:9: delete match arm 0 in gst_matrix_from_num
-g2g-core/src/caps.rs:1381:9: delete match arm 1 in gst_matrix_from_num
-g2g-core/src/caps.rs:1383:9: delete match arm 4 in gst_matrix_from_num
-g2g-core/src/caps.rs:1384:9: delete match arm 6 in gst_matrix_from_num
-g2g-core/src/caps.rs:1403:9: delete match arm 0 in gst_transfer_from_num
-g2g-core/src/caps.rs:1404:9: delete match arm 5 in gst_transfer_from_num
-g2g-core/src/caps.rs:1405:9: delete match arm 7 in gst_transfer_from_num
-g2g-core/src/caps.rs:1406:9: delete match arm 11 | 13 in gst_transfer_from_num
-g2g-core/src/caps.rs:1407:9: delete match arm 14 in gst_transfer_from_num
-g2g-core/src/caps.rs:1408:9: delete match arm 15 in gst_transfer_from_num
-g2g-core/src/caps.rs:1415:5: replace gst_primaries_num -> u8 with 1
-g2g-core/src/caps.rs:1425:9: delete match arm 0 in gst_primaries_from_num
-g2g-core/src/caps.rs:1427:9: delete match arm 3 in gst_primaries_from_num
-g2g-core/src/caps.rs:1428:9: delete match arm 4 in gst_primaries_from_num
-g2g-core/src/caps.rs:1429:9: delete match arm 7 in gst_primaries_from_num
-g2g-core/src/caps.rs:1477:9: delete match arm (ANY_SAMPLE_RATE, x) |(x, ANY_SAMPLE_RATE) in intersect_sample_rate
-g2g-core/src/caps.rs:1478:19: replace match guard x == y with true in intersect_sample_rate
-g2g-core/src/caps.rs:2109:13: delete match arm RawVideoFormat::Rgb8 in RawVideoFormat::pixel_stride
-g2g-core/src/caps.rs:2110:13: delete match arm RawVideoFormat::Yuyv in RawVideoFormat::pixel_stride
-g2g-core/src/caps.rs:2357:28: replace || with && in TensorShape::from_slice
-g2g-core/src/caps.rs:2357:42: replace > with == in TensorShape::from_slice
-g2g-core/src/caps.rs:2357:42: replace > with >= in TensorShape::from_slice
-g2g-core/src/caps.rs:2381:9: replace TensorShape::dims_mut -> &mut[u32] with Vec::leak(Vec::new())
-g2g-core/src/caps.rs:2387:9: replace TensorShape::elements -> usize with 0
-g2g-core/src/caps.rs:2387:9: replace TensorShape::elements -> usize with 1
-g2g-core/src/caps.rs:2396:9: replace <impl core::fmt::Debug for TensorShape>::fmt -> core::fmt::Result with Ok(Default::default())
-g2g-core/src/caps.rs:3195:39: replace << with >> in tests::video_with_colorimetry
-g2g-core/src/frame.rs:119:9: replace FrameTiming::pts -> Option<u64> with None
-g2g-core/src/frame.rs:119:9: replace FrameTiming::pts -> Option<u64> with Some(0)
-g2g-core/src/frame.rs:119:9: replace FrameTiming::pts -> Option<u64> with Some(1)
-g2g-core/src/frame.rs:119:22: replace != with == in FrameTiming::pts
-g2g-core/src/memory.rs:112:9: replace MemoryDomainKind::is_system -> bool with true
-g2g-core/src/memory.rs:112:9: replace MemoryDomainKind::is_system -> bool with false
-g2g-core/src/memory.rs:199:21: replace | with ^ in DomainSet::with
-g2g-core/src/memory.rs:215:21: replace | with & in DomainSet::union
-g2g-core/src/memory.rs:215:21: replace | with ^ in DomainSet::union
-g2g-core/src/memory.rs:220:9: replace DomainSet::is_empty -> bool with true
-g2g-core/src/memory.rs:220:9: replace DomainSet::is_empty -> bool with false
-g2g-core/src/memory.rs:220:16: replace == with != in DomainSet::is_empty
-g2g-core/src/memory.rs:294:13: delete match arm MemoryDomain::SystemView(view) in MemoryDomain::require_system_bytes
-g2g-core/src/memory.rs:471:9: replace SystemSlice::is_uniquely_held -> bool with true
-g2g-core/src/memory.rs:471:9: replace SystemSlice::is_uniquely_held -> bool with false
-g2g-core/src/memory.rs:478:69: replace == with != in SystemSlice::is_uniquely_held
-g2g-core/src/memory.rs:480:88: replace == with != in SystemSlice::is_uniquely_held
-g2g-core/src/memory.rs:549:17: delete match arm SystemSliceInner::SharedPooled{buffer, len} in SystemSlice::as_mut_slice
-g2g-core/src/memory.rs:563:13: delete match arm SystemSliceInner::Pooled{buffer, len} in SystemSlice::as_mut_slice
-g2g-core/src/memory.rs:565:13: delete match arm SystemSliceInner::Foreign(f) in SystemSlice::as_mut_slice
+g2g-core/src/caps.rs:510:52: replace && with || in Caps::to_gst_string
+g2g-core/src/caps.rs:1851:9: replace ProResVariant::fourcc -> [u8; 4] with [0; 4]
+g2g-core/src/caps.rs:1851:9: replace ProResVariant::fourcc -> [u8; 4] with [1; 4]
+g2g-core/src/caps.rs:1864:46: replace == with != in ProResVariant::from_fourcc
+g2g-core/src/caps.rs:1862:9: replace ProResVariant::from_fourcc -> Option<Self> with None
+g2g-core/src/caps.rs:2205:9: replace RawVideoFormat::alpha_plane -> Option<usize> with Some(0)
+g2g-core/src/caps.rs:2205:9: replace RawVideoFormat::alpha_plane -> Option<usize> with None
+g2g-core/src/caps.rs:2206:13: delete match arm RawVideoFormat::A420 | RawVideoFormat::A444p12 in RawVideoFormat::alpha_plane
+g2g-core/src/caps.rs:2578:9: replace <impl core::fmt::Debug for TensorShape>::fmt -> core::fmt::Result with Ok(Default::default())
+g2g-core/src/caps.rs:3380:39: replace << with >> in tests::video_with_colorimetry
 g2g-core/src/memory.rs:578:13: delete match arm SystemSliceInner::Shared(_) in SystemSlice::make_shared
 g2g-core/src/memory.rs:579:13: delete match arm SystemSliceInner::SharedPooled{..} in SystemSlice::make_shared
-g2g-core/src/memory.rs:605:13: delete match arm SystemSliceInner::SharedPooled{buffer, len} in SystemSlice::share_handle
-g2g-core/src/memory.rs:645:21: replace == with != in ForeignSlice::as_mut_slice
-g2g-core/src/memory.rs:740:9: replace SyncFd::as_raw -> i32 with 0
-g2g-core/src/memory.rs:740:9: replace SyncFd::as_raw -> i32 with 1
-g2g-core/src/memory.rs:740:9: replace SyncFd::as_raw -> i32 with -1
-g2g-core/src/memory.rs:756:9: replace <impl Drop for DmaBufFd>::drop with ()
-g2g-core/src/memory.rs:786:9: replace OwnedDmaBuf::as_raw -> i32 with 0
-g2g-core/src/memory.rs:786:9: replace OwnedDmaBuf::as_raw -> i32 with 1
-g2g-core/src/memory.rs:786:9: replace OwnedDmaBuf::as_raw -> i32 with -1
-g2g-core/src/memory.rs:794:9: replace OwnedDmaBuf::share_count -> usize with 0
-g2g-core/src/memory.rs:794:9: replace OwnedDmaBuf::share_count -> usize with 1
-g2g-core/src/memory.rs:807:9: replace OwnedDmaBuf::sync_fd -> Option<i32> with None
-g2g-core/src/memory.rs:807:9: replace OwnedDmaBuf::sync_fd -> Option<i32> with Some(0)
-g2g-core/src/memory.rs:807:9: replace OwnedDmaBuf::sync_fd -> Option<i32> with Some(1)
-g2g-core/src/memory.rs:807:9: replace OwnedDmaBuf::sync_fd -> Option<i32> with Some(-1)
-g2g-core/src/memory.rs:812:9: replace OwnedDmaBuf::sync_value -> Option<u64> with None
-g2g-core/src/memory.rs:812:9: replace OwnedDmaBuf::sync_value -> Option<u64> with Some(0)
-g2g-core/src/memory.rs:812:9: replace OwnedDmaBuf::sync_value -> Option<u64> with Some(1)
-g2g-core/src/memory.rs:818:9: replace OwnedDmaBuf::sync -> Option<(SyncFd, u64)> with None
-g2g-core/src/memory.rs:1295:9: replace OwnedWgpuBuffer::plane_layout -> Option<&PlaneLayout> with None
-g2g-core/src/clock.rs:56:9: replace PipelineClock::healthy -> bool with false
-g2g-core/src/clock.rs:100:9: replace <impl PipelineClock for Arc<T>>::as_ticker -> Option<&dyn DynAsyncClock> with None
-g2g-core/src/clock.rs:104:9: replace <impl PipelineClock for Arc<T>>::shared_ticker -> Option<Arc<dyn DynAsyncClock +Send +Sync>> with None
-g2g-core/src/clock.rs:124:9: replace <impl PipelineClock for MonotonicClock>::now_ns -> u64 with 0
-g2g-core/src/clock.rs:124:9: replace <impl PipelineClock for MonotonicClock>::now_ns -> u64 with 1
 g2g-core/src/clock.rs:176:9: replace <impl core::fmt::Debug for ClockCandidate>::fmt -> core::fmt::Result with Ok(Default::default())
 g2g-core/src/clock.rs:386:9: replace <impl core::fmt::Debug for ClockSync>::fmt -> core::fmt::Result with Ok(Default::default())
-g2g-core/src/clock.rs:460:9: replace <impl PipelineClock for ElectedClock>::shared_ticker -> Option<Arc<dyn DynAsyncClock +Send +Sync>> with None
 g2g-core/src/clock.rs:470:9: replace <impl core::fmt::Debug for ElectedClock>::fmt -> core::fmt::Result with Ok(Default::default())
-g2g-core/src/clock.rs:654:21: replace > with >= in DriftClock::observe
-g2g-core/src/clock.rs:687:9: replace DriftClock::observations -> usize with 1
-g2g-core/src/clock.rs:710:32: replace * with + in DriftClock::project_through
-g2g-core/src/clock.rs:737:28: replace / with % in DriftClock::compute_fit
-g2g-core/src/clock.rs:737:28: replace / with * in DriftClock::compute_fit
-g2g-core/src/clock.rs:738:28: replace / with % in DriftClock::compute_fit
-g2g-core/src/clock.rs:763:25: replace - with + in DriftClock::compute_fit
-g2g-core/src/clock.rs:769:28: replace > with >= in DriftClock::compute_fit
 g2g-core/src/clock.rs:794:9: replace <impl core::fmt::Debug for DriftClock>::fmt -> core::fmt::Result with Ok(Default::default())
-g2g-core/src/clock.rs:985:29: replace + with - in drift_tests::master_at
-g2g-core/src/clock.rs:985:22: replace * with + in drift_tests::master_at
-g2g-core/src/clock.rs:985:22: replace * with / in drift_tests::master_at
-g2g-core/src/clock.rs:985:54: replace - with + in drift_tests::master_at
-g2g-core/src/clock.rs:991:9: replace drift_tests::jitter -> i64 with 0
-g2g-core/src/clock.rs:991:9: replace drift_tests::jitter -> i64 with 1
-g2g-core/src/clock.rs:991:9: replace drift_tests::jitter -> i64 with -1
-g2g-core/src/clock.rs:991:62: replace ^ with | in drift_tests::jitter
-g2g-core/src/clock.rs:991:62: replace ^ with & in drift_tests::jitter
-g2g-core/src/clock.rs:992:11: replace ^= with |= in drift_tests::jitter
-g2g-core/src/clock.rs:992:11: replace ^= with &= in drift_tests::jitter
-g2g-core/src/clock.rs:992:16: replace >> with << in drift_tests::jitter
-g2g-core/src/clock.rs:994:11: replace ^= with |= in drift_tests::jitter
-g2g-core/src/clock.rs:994:11: replace ^= with &= in drift_tests::jitter
-g2g-core/src/clock.rs:994:16: replace >> with << in drift_tests::jitter
-g2g-core/src/clock.rs:996:11: replace ^= with |= in drift_tests::jitter
-g2g-core/src/clock.rs:996:11: replace ^= with &= in drift_tests::jitter
-g2g-core/src/clock.rs:996:16: replace >> with << in drift_tests::jitter
-g2g-core/src/clock.rs:997:45: replace - with + in drift_tests::jitter
-g2g-core/src/clock.rs:997:45: replace - with / in drift_tests::jitter
-g2g-core/src/clock.rs:997:32: replace + with - in drift_tests::jitter
-g2g-core/src/clock.rs:997:32: replace + with * in drift_tests::jitter
-g2g-core/src/clock.rs:997:17: replace * with + in drift_tests::jitter
-g2g-core/src/clock.rs:997:17: replace * with / in drift_tests::jitter
-g2g-core/src/runtime/channel.rs:330:9: replace BitrateSlot::store with ()
-g2g-core/src/runtime/channel.rs:334:9: replace BitrateSlot::take -> Option<u32> with None
+g2g-core/src/clock.rs:1036:29: replace + with - in drift_tests::master_at
+g2g-core/src/clock.rs:1036:22: replace * with + in drift_tests::master_at
+g2g-core/src/clock.rs:1036:22: replace * with / in drift_tests::master_at
+g2g-core/src/clock.rs:1036:54: replace - with + in drift_tests::master_at
+g2g-core/src/clock.rs:1042:9: replace drift_tests::jitter -> i64 with 0
+g2g-core/src/clock.rs:1042:9: replace drift_tests::jitter -> i64 with 1
+g2g-core/src/clock.rs:1042:9: replace drift_tests::jitter -> i64 with -1
+g2g-core/src/clock.rs:1042:62: replace ^ with | in drift_tests::jitter
+g2g-core/src/clock.rs:1042:62: replace ^ with & in drift_tests::jitter
+g2g-core/src/clock.rs:1043:11: replace ^= with &= in drift_tests::jitter
+g2g-core/src/clock.rs:1043:11: replace ^= with |= in drift_tests::jitter
+g2g-core/src/clock.rs:1043:16: replace >> with << in drift_tests::jitter
+g2g-core/src/clock.rs:1045:11: replace ^= with |= in drift_tests::jitter
+g2g-core/src/clock.rs:1045:11: replace ^= with &= in drift_tests::jitter
+g2g-core/src/clock.rs:1045:16: replace >> with << in drift_tests::jitter
+g2g-core/src/clock.rs:1047:11: replace ^= with |= in drift_tests::jitter
+g2g-core/src/clock.rs:1047:11: replace ^= with &= in drift_tests::jitter
+g2g-core/src/clock.rs:1047:16: replace >> with << in drift_tests::jitter
+g2g-core/src/clock.rs:1048:45: replace - with + in drift_tests::jitter
+g2g-core/src/clock.rs:1048:45: replace - with / in drift_tests::jitter
+g2g-core/src/clock.rs:1048:32: replace + with * in drift_tests::jitter
+g2g-core/src/clock.rs:1048:32: replace + with - in drift_tests::jitter
+g2g-core/src/clock.rs:1048:17: replace * with + in drift_tests::jitter
+g2g-core/src/clock.rs:1048:17: replace * with / in drift_tests::jitter
 g2g-core/src/runtime/channel.rs:447:9: replace ProducerEndpoint::pending -> bool with true
-g2g-core/src/runtime/channel.rs:466:13: delete match arm PipelinePacket::CapsChanged(caps) in ProducerEndpoint::observe
-g2g-core/src/runtime/channel.rs:467:13: delete match arm PipelinePacket::Segment(segment) in ProducerEndpoint::observe
-g2g-core/src/runtime/channel.rs:473:42: replace - with + in ProducerEndpoint::observe
-g2g-core/src/runtime/channel.rs:610:9: replace ProducerEndpoint::rehome with ()
-g2g-core/src/runtime/channel.rs:735:9: replace LinkSender::set_counters with ()
-g2g-core/src/runtime/channel.rs:789:9: replace LinkSender::record_sent with ()
-g2g-core/src/runtime/channel.rs:799:5: replace packet_bytes -> u64 with 0
-g2g-core/src/runtime/channel.rs:799:5: replace packet_bytes -> u64 with 1
-g2g-core/src/runtime/channel.rs:800:9: delete match arm PipelinePacket::DataFrame(f) in packet_bytes
-g2g-core/src/runtime/channel.rs:801:13: delete match arm crate::memory::MemoryDomain::System(s) in packet_bytes
-g2g-core/src/runtime/channel.rs:802:13: delete match arm crate::memory::MemoryDomain::SystemView(v) in packet_bytes
-g2g-core/src/runtime/channel.rs:885:9: replace LinkReceiver::request_bitrate with ()
-g2g-core/src/runtime/channel.rs:907:9: replace LinkReceiver::bitrate_slot -> BitrateSlot with Default::default()
 g2g-core/src/runtime/channel.rs:989:9: replace <impl core::fmt::Debug for ProbeSlot>::fmt -> core::fmt::Result with Ok(Default::default())
-g2g-core/src/runtime/channel.rs:1115:5: replace advertise_orientation with ()
-g2g-core/src/runtime/channel.rs:1199:9: replace SenderSink::set_push_wait_probe with ()
-g2g-core/src/runtime/channel.rs:1205:9: replace SenderSink::record_push_wait with ()
 g2g-core/src/runtime/channel.rs:1213:9: replace SenderSink::wants_blocked_stamp -> bool with true
-g2g-core/src/runtime/channel.rs:1213:9: replace SenderSink::wants_blocked_stamp -> bool with false
-g2g-core/src/runtime/channel.rs:1213:38: replace || with && in SenderSink::wants_blocked_stamp
-g2g-core/src/runtime/channel.rs:1233:9: replace SenderSink::retired -> bool with true
-g2g-core/src/runtime/channel.rs:1289:9: replace SenderSink::relay_bitrate_to with ()
-g2g-core/src/runtime/channel.rs:1382:33: replace match guard parked with true in SenderSink::poll_blocking_send
-g2g-core/src/runtime/channel.rs:1382:33: replace match guard parked with false in SenderSink::poll_blocking_send
-g2g-core/src/runtime/channel.rs:1422:9: replace <impl OutputSink for SenderSink>::begin_push with ()
-g2g-core/src/runtime/channel.rs:1522:40: replace != with == in <impl OutputSink for SenderSink>::poll_push
-g2g-core/src/runtime/runner.rs:52:5: replace substantive_error -> Option<G2gError> with None
-g2g-core/src/runtime/runner.rs:55:15: replace != with == in substantive_error
 g2g-core/src/runtime/runner.rs:140:9: replace SourceLoop::latency -> LatencyReport with Default::default()
 g2g-core/src/runtime/runner.rs:148:9: replace SourceLoop::output_memory -> MemoryDomainKind with Default::default()
-g2g-core/src/runtime/runner.rs:169:9: replace SourceLoop::query_duration -> Option<u64> with Some(0)
-g2g-core/src/runtime/runner.rs:169:9: replace SourceLoop::query_duration -> Option<u64> with Some(1)
 g2g-core/src/runtime/runner.rs:216:9: replace SourceLoop::caps_preferences -> Option<CapsPreferences> with Some(Default::default())
-g2g-core/src/runtime/runner.rs:240:9: replace SourceLoop::probe_output_caps -> Result<Option<Caps>, G2gError> with Ok(None)
 g2g-core/src/runtime/runner.rs:249:9: replace SourceLoop::properties -> &'static[PropertySpec] with Vec::leak(Vec::new())
 g2g-core/src/runtime/runner.rs:255:9: replace SourceLoop::metadata -> ElementMetadata with Default::default()
-g2g-core/src/runtime/runner.rs:277:9: replace SourceLoop::set_property -> Result<(), PropError> with Ok(())
 g2g-core/src/runtime/runner.rs:409:32: replace > with >= in RunStats::report
 g2g-core/src/runtime/runner.rs:446:12: delete ! in RunStats::report
 g2g-core/src/runtime/runner.rs:451:33: replace > with == in RunStats::report
@@ -200,38 +60,14 @@ g2g-core/src/runtime/runner.rs:468:57: replace > with >= in RunStats::report
 g2g-core/src/runtime/runner.rs:480:54: replace > with == in RunStats::report
 g2g-core/src/runtime/runner.rs:480:54: replace > with < in RunStats::report
 g2g-core/src/runtime/runner.rs:480:54: replace > with >= in RunStats::report
-g2g-core/src/runtime/runner.rs:582:5: replace run_simple_pipeline_stateful -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:609:5: replace run_simple_pipeline_with_bus -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:640:18: replace += with *= in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:641:21: replace > with == in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:641:21: replace > with >= in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:691:20: replace match guard p.constrains_pool() with true in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:691:20: replace match guard p.constrains_pool() with false in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:742:9: delete field bus from struct SinkArmIo expression in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:743:9: delete field state from struct SinkArmIo expression in run_simple_pipeline_inner
-g2g-core/src/runtime/runner.rs:797:5: replace run_source_fanout -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:819:5: replace run_source_fanout_observed -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:848:5: replace run_source_fanout_with_bus -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:867:5: replace run_source_fanout_inner -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:943:9: replace DynamicFanoutHandle<'a>::add_branch -> Result<(), G2gError> with Ok(())
 g2g-core/src/runtime/runner.rs:967:9: replace FanOutMode::category -> &'static str with ""
 g2g-core/src/runtime/runner.rs:967:9: replace FanOutMode::category -> &'static str with "xyzzy"
-g2g-core/src/runtime/runner.rs:1223:50: replace += with -= in run_source_fanout_dynamic
-g2g-core/src/runtime/runner.rs:1223:50: replace += with *= in run_source_fanout_dynamic
-g2g-core/src/runtime/runner.rs:1257:5: replace attach_branch -> Result<(), G2gError> with Ok(())
-g2g-core/src/runtime/runner.rs:1300:5: replace route_packet -> Result<bool, G2gError> with Ok(true)
-g2g-core/src/runtime/runner.rs:1300:5: replace route_packet -> Result<bool, G2gError> with Ok(false)
-g2g-core/src/runtime/runner.rs:1302:16: delete ! in route_packet
-g2g-core/src/runtime/runner.rs:1305:39: replace % with / in route_packet
-g2g-core/src/runtime/runner.rs:1305:39: replace % with + in route_packet
-g2g-core/src/runtime/runner.rs:1368:5: replace run_fanout_session -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:1387:5: replace run_fanout_session_observed -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:1402:5: replace run_fanout_session_inner -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:1475:5: replace run_linear_chain -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:1495:5: replace run_linear_chain_with_bus -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/runner.rs:1631:5: replace run_source_transform_sink_with_bus -> Result<RunStats, G2gError> with Ok(Default::default())
-g2g-core/src/runtime/solver.rs:161:78: replace - with + in solve_linear_preferred
-g2g-core/src/runtime/solver.rs:161:78: replace - with / in solve_linear_preferred
+g2g-core/src/runtime/runner.rs:1741:13: replace run_tests::<impl PipelineClock for ZeroClock>::now_ns -> u64 with 1
+g2g-core/src/runtime/runner.rs:1750:39: replace << with >> in run_tests::caps
+g2g-core/src/runtime/runner.rs:1849:65: replace >= with < in run_tests::<impl AsyncElement for TestSink>::process
+g2g-core/src/runtime/runner.rs:1910:27: replace * with / in run_tests::<impl MultiOutputSource for TwoOutputSession>::run
+g2g-core/src/runtime/runner.rs:1910:27: replace * with + in run_tests::<impl MultiOutputSource for TwoOutputSession>::run
+g2g-core/src/runtime/runner.rs:1916:9: replace run_tests::assert_ran_every_frame with ()
 g2g-core/src/runtime/solver.rs:187:33: replace + with - in solve_linear_preferred
 g2g-core/src/runtime/solver.rs:187:33: replace + with * in solve_linear_preferred
 g2g-core/src/runtime/solver.rs:187:23: replace * with + in solve_linear_preferred
@@ -240,10 +76,8 @@ g2g-core/src/runtime/solver.rs:201:18: replace == with != in solve_linear_prefer
 g2g-core/src/runtime/solver.rs:211:58: replace + with * in solve_linear_preferred
 g2g-core/src/runtime/solver.rs:213:62: replace + with - in solve_linear_preferred
 g2g-core/src/runtime/solver.rs:213:62: replace + with * in solve_linear_preferred
-g2g-core/src/runtime/solver.rs:219:32: replace + with * in solve_linear_preferred
 g2g-core/src/runtime/solver.rs:253:61: replace - with + in forward_propagate
 g2g-core/src/runtime/solver.rs:253:61: replace - with / in forward_propagate
-g2g-core/src/runtime/solver.rs:261:20: delete ! in forward_propagate
 g2g-core/src/runtime/solver.rs:268:61: replace - with + in forward_propagate
 g2g-core/src/runtime/solver.rs:268:61: replace - with / in forward_propagate
 g2g-core/src/runtime/solver.rs:294:21: replace - with + in derived_forward
@@ -252,82 +86,27 @@ g2g-core/src/runtime/solver.rs:299:56: replace + with - in derived_forward
 g2g-core/src/runtime/solver.rs:299:56: replace + with * in derived_forward
 g2g-core/src/runtime/solver.rs:339:10: replace < with == in downstream_feasibility
 g2g-core/src/runtime/solver.rs:339:10: replace < with <= in downstream_feasibility
-g2g-core/src/runtime/solver.rs:372:9: delete match arm CapsConstraint::Identity(s) in backward_feasible
-g2g-core/src/runtime/solver.rs:377:9: delete match arm CapsConstraint::Mapping(pairs) in backward_feasible
-g2g-core/src/runtime/solver.rs:394:9: delete match arm CapsConstraint::DerivedFields(t) in backward_feasible
-g2g-core/src/runtime/solver.rs:381:32: delete ! in backward_feasible
-g2g-core/src/runtime/solver.rs:399:24: delete ! in backward_feasible
-g2g-core/src/runtime/solver.rs:444:5: replace derived_fields_inputs -> Option<Vec<Caps>> with None
-g2g-core/src/runtime/solver.rs:450:9: delete match arm (CapsTransform::RawVideo{accept, ..}, Caps::RawVideo{width, height, framerate, interlace, colorimetry, ..},) in derived_fields_inputs
-g2g-core/src/runtime/solver.rs:471:9: delete match arm (CapsTransform::Audio{accept, ..}, Caps::Audio{channels, sample_rate, channel_layout, ..},) in derived_fields_inputs
-g2g-core/src/runtime/solver.rs:498:29: delete ! in derived_fields_inputs
-g2g-core/src/runtime/solver.rs:539:13: delete match arm CapsConstraint::DerivedFields(t) in resolve_forward_output
-g2g-core/src/runtime/solver.rs:558:9: delete match arm CapsConstraint::DerivedFields(t) in resolve_forward_output
-g2g-core/src/runtime/solver.rs:571:18: delete ! in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:572:25: delete ! in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:576:17: delete match arm (Caps::Audio{channels:s_ch, sample_rate:s_rate, ..}, Caps::Audio{channels:i_ch, sample_rate:i_rate, ..},) in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:63: replace && with || in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:42: replace || with && in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:22: delete ! in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:52: replace == with != in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:84: replace || with && in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:67: delete ! in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:588:92: replace == with != in resolve_forward_output::tracks_input
-g2g-core/src/runtime/solver.rs:615:25: replace match guard derives_from_input || tracks_input(one, input, copied_fields) with true in resolve_forward_output
 g2g-core/src/runtime/solver.rs:667:41: replace - with + in apply_constraint
 g2g-core/src/runtime/solver.rs:667:41: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:674:41: replace - with + in apply_constraint
-g2g-core/src/runtime/solver.rs:674:41: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:677:44: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:677:44: replace + with * in apply_constraint
-g2g-core/src/runtime/solver.rs:685:69: replace - with + in apply_constraint
-g2g-core/src/runtime/solver.rs:685:69: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:685:76: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:685:76: replace + with * in apply_constraint
 g2g-core/src/runtime/solver.rs:713:34: replace || with && in apply_constraint
-g2g-core/src/runtime/solver.rs:714:61: replace - with + in apply_constraint
-g2g-core/src/runtime/solver.rs:714:61: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:714:68: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:714:68: replace + with * in apply_constraint
-g2g-core/src/runtime/solver.rs:732:68: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:732:68: replace + with * in apply_constraint
-g2g-core/src/runtime/solver.rs:734:50: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:734:50: replace + with * in apply_constraint
 g2g-core/src/runtime/solver.rs:745:76: replace - with + in apply_constraint
 g2g-core/src/runtime/solver.rs:745:76: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:759:68: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:759:68: replace + with * in apply_constraint
-g2g-core/src/runtime/solver.rs:761:50: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:761:50: replace + with * in apply_constraint
 g2g-core/src/runtime/solver.rs:769:76: replace - with + in apply_constraint
 g2g-core/src/runtime/solver.rs:769:76: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:789:73: replace - with + in apply_constraint
-g2g-core/src/runtime/solver.rs:789:73: replace - with / in apply_constraint
-g2g-core/src/runtime/solver.rs:789:80: replace + with - in apply_constraint
-g2g-core/src/runtime/solver.rs:789:80: replace + with * in apply_constraint
-g2g-core/src/runtime/solver.rs:917:14: replace || with && in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:972:39: replace || with && in solve_graph_preferred
-g2g-core/src/runtime/solver.rs:972:33: replace == with != in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:972:44: replace == with != in solve_graph_preferred
+g2g-core/src/runtime/solver.rs:972:33: replace == with != in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:988:28: replace + with - in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:988:28: replace + with * in solve_graph_preferred
-g2g-core/src/runtime/solver.rs:988:23: replace * with + in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:988:23: replace * with / in solve_graph_preferred
+g2g-core/src/runtime/solver.rs:988:23: replace * with + in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:1003:18: replace == with != in solve_graph_preferred
 g2g-core/src/runtime/solver.rs:1024:24: replace match guard !s.is_empty() with true in solve_graph_preferred
-g2g-core/src/runtime/solver.rs:1144:9: delete match arm CapsConstraint::Identity(set) in alternative_index
-g2g-core/src/runtime/solver.rs:1145:9: delete match arm CapsConstraint::Mapping(pairs) in alternative_index
-g2g-core/src/runtime/solver.rs:1149:53: replace && with || in alternative_index
 g2g-core/src/runtime/solver.rs:1170:27: replace || with && in min_cost_chain
-g2g-core/src/runtime/solver.rs:1189:44: replace - with / in min_cost_chain
 g2g-core/src/runtime/solver.rs:1226:38: replace < with <= in is_better
 g2g-core/src/runtime/solver.rs:1274:14: replace || with && in chain_order
 g2g-core/src/runtime/solver.rs:1286:43: replace || with && in chain_order
-g2g-core/src/runtime/solver.rs:1372:13: delete match arm NodeConstraint::BatchMuxer{..} in node_consistent
-g2g-core/src/runtime/solver.rs:1384:13: delete match arm NodeConstraint::Demux{ports, ..} in node_consistent
 g2g-core/src/runtime/solver.rs:1390:44: replace match guard streams.len() == out_e.len() with true in node_consistent
-g2g-core/src/runtime/solver.rs:1416:9: delete match arm CapsConstraint::DerivedOutput(f) in transform_pair_consistent
-g2g-core/src/runtime/solver.rs:1417:9: delete match arm CapsConstraint::DerivedFields(t) in transform_pair_consistent
 g2g-core/src/runtime/solver.rs:1427:5: replace node_label_default -> String with String::new()
 g2g-core/src/runtime/solver.rs:1427:5: replace node_label_default -> String with "xyzzy".into()
 g2g-core/src/runtime/solver.rs:1431:5: replace kind_short -> &'static str with ""
@@ -336,16 +115,5 @@ g2g-core/src/runtime/solver.rs:1462:5: replace fmt_set_opt -> String with String
 g2g-core/src/runtime/solver.rs:1462:5: replace fmt_set_opt -> String with "xyzzy".into()
 g2g-core/src/runtime/solver.rs:1470:5: replace fmt_constraint -> String with String::new()
 g2g-core/src/runtime/solver.rs:1470:5: replace fmt_constraint -> String with "xyzzy".into()
-g2g-core/src/runtime/solver.rs:1557:25: delete match arm CapsConstraint::Accepts(s) in graph_downstream_feasibility
-g2g-core/src/runtime/solver.rs:1636:13: delete match arm NodeConstraint::Demux{input, ports} in apply_node
-g2g-core/src/runtime/solver.rs:1819:9: delete match arm CapsConstraint::DerivedFields(t) in apply_transform_node
-g2g-core/src/runtime/solver.rs:1769:41: replace && with || in apply_transform_node
 g2g-core/src/runtime/solver.rs:1774:34: replace || with && in apply_transform_node
-g2g-core/src/runtime/solver.rs:1882:5: replace backward_filter_derived -> Result<Option<CapsSet>, ()> with Ok(None)
-g2g-core/src/runtime/solver.rs:1882:36: replace <= with > in backward_filter_derived
-g2g-core/src/runtime/solver.rs:1888:21: delete ! in backward_filter_derived
-g2g-core/src/runtime/solver.rs:1894:19: replace == with != in backward_filter_derived
 g2g-core/src/runtime/solver.rs:1970:12: delete ! in backward_field_narrow
-g2g-core/src/runtime/solver.rs:2058:5: replace narrow_muxer_inputs -> Result<(), NegotiationFailure> with Ok(())
-g2g-core/src/runtime/solver.rs:2229:27: replace > with == in apply_batch_demux_node
-g2g-core/src/runtime/solver.rs:2229:27: replace > with >= in apply_batch_demux_node

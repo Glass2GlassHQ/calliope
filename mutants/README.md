@@ -25,7 +25,7 @@ compile.
 
 | Scope | Mutants | Caught | Missed | Timeout | Unviable | Score | Wall |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| g2g-core (caps, solver, clock, memory, frame, channel, runner) | 1114 | 516 | 351 | 26 | 221 | 59% | 3h |
+| g2g-core (caps, solver, clock, memory, frame, channel, runner) | 1438 | 1011 | 119 | 27 | 281 | 89% | 1h17m |
 | g2g-plugins aacparse.rs | 253 | 168 | 60 | 1 | 24 | 74% | 9m |
 | g2g-plugins av1parse.rs | 278 | 148 | 103 | 1 | 26 | 59% | 10m |
 | g2g-plugins flv.rs | 217 | 159 | 21 | 0 | 37 | 88% | 9m |
@@ -45,6 +45,11 @@ compile.
 | g2g-plugins vp8parse.rs | 50 | 34 | 9 | 0 | 7 | 79% | 3m |
 | g2g-plugins vp9parse.rs | 40 | 28 | 5 | 0 | 7 | 85% | 3m |
 
-The g2g-core row is the suite before g2g M1530 and M1531, which added tests for
-245 of its 351 missed mutants. The other 106 are formatting, log lines, test
-helper code, equivalent mutants or results the caller discards.
+The g2g-core row is g2g 0825085, after M1530 and M1531 added tests for 245 of
+the 351 mutants missed at 439f4e3. The seven files now yield 1438 mutants. Of the
+119 missed, 31 are in test helper code and 31 in `Debug` output, solver labels
+and the run report. The other 57 are not triaged yet: mostly solver preference
+and index arithmetic, plus the `SourceLoop` trait defaults, the ProRes fourcc
+and alpha plane lookups, `SystemSlice::make_shared` on a shared slice and two
+channel flags. `i *= 1` in the `DomainSet::ALL` const block makes rustc loop in
+const evaluation, so that mutant was killed after an hour and counts as unviable.

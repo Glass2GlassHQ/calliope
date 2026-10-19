@@ -1,6 +1,6 @@
-command: cargo mutants --jobs 1 --jobserver-tasks 2 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-core --features std,multi-thread,runtime,metadata,dyn-slot,tracing --iterate -f g2g-core/src/caps.rs -f g2g-core/src/runtime/solver.rs -f g2g-core/src/clock.rs -f g2g-core/src/memory.rs -f g2g-core/src/frame.rs -f g2g-core/src/runtime/channel.rs -f g2g-core/src/runtime/runner.rs -- --lib --tests
-g2g: 439f4e3
+command: cargo mutants --jobs 4 --jobserver-tasks 4 --cap-lints true --timeout-multiplier 3 --colors never -p g2g-core --features std,multi-thread,runtime,metadata,dyn-slot,tracing --iterate -f g2g-core/src/caps.rs -f g2g-core/src/runtime/solver.rs -f g2g-core/src/clock.rs -f g2g-core/src/memory.rs -f g2g-core/src/frame.rs -f g2g-core/src/runtime/channel.rs -f g2g-core/src/runtime/runner.rs -- --lib --tests
+g2g: 0825085
 cargo-mutants: cargo-mutants 27.1.0
-wall: 3h 0m (two sessions, resumed with --iterate)
-exit: 2
-1114 mutants tested in 3h: 351 missed, 516 caught, 221 unviable, 26 timeouts
+wall: 1h 17m
+exit: 3
+1438 mutants tested in 77m: 119 missed, 1011 caught, 281 unviable, 27 timeouts

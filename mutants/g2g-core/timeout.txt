@@ -1,6 +1,6 @@
 g2g-core/src/runtime/channel.rs:52:9: replace Inner<T>::wake_senders with ()
-g2g-core/src/runtime/channel.rs:79:9: replace <impl Drop for Sender<T>>::drop with ()
 g2g-core/src/runtime/channel.rs:80:19: replace -= with += in <impl Drop for Sender<T>>::drop
+g2g-core/src/runtime/channel.rs:79:9: replace <impl Drop for Sender<T>>::drop with ()
 g2g-core/src/runtime/channel.rs:80:19: replace -= with /= in <impl Drop for Sender<T>>::drop
 g2g-core/src/runtime/channel.rs:81:22: replace == with != in <impl Drop for Sender<T>>::drop
 g2g-core/src/runtime/channel.rs:97:9: replace <impl Drop for Receiver<T>>::drop with ()
@@ -15,12 +15,13 @@ g2g-core/src/runtime/channel.rs:447:9: replace ProducerEndpoint::pending -> bool
 g2g-core/src/runtime/channel.rs:524:9: replace ProducerEndpoint::request_park with ()
 g2g-core/src/runtime/channel.rs:552:9: replace ProducerEndpoint::unpark with ()
 g2g-core/src/runtime/channel.rs:572:9: replace ProducerEndpoint::cancel_park with ()
-g2g-core/src/runtime/channel.rs:637:9: replace ProducerEndpoint::poll_producer -> Poll<()> with Poll::from(())
 g2g-core/src/runtime/channel.rs:643:16: delete ! in ProducerEndpoint::poll_producer
 g2g-core/src/runtime/channel.rs:665:9: replace ProducerEndpoint::producer_gone with ()
+g2g-core/src/runtime/channel.rs:637:9: replace ProducerEndpoint::poll_producer -> Poll<()> with Poll::from(())
 g2g-core/src/runtime/channel.rs:668:26: replace && with || in ProducerEndpoint::producer_gone
 g2g-core/src/runtime/channel.rs:751:9: replace LinkSender::set_mutation with ()
 g2g-core/src/runtime/channel.rs:1219:9: replace SenderSink::eos_forwarded -> bool with true
 g2g-core/src/runtime/channel.rs:1241:9: replace SenderSink::strip_terminal with ()
 g2g-core/src/runtime/channel.rs:1412:9: replace <impl Drop for SenderSink>::drop with ()
+g2g-core/src/runtime/runner.rs:1300:5: replace route_packet -> Result<bool, G2gError> with Ok(false)
 g2g-core/src/runtime/solver.rs:1659:13: delete match arm NodeConstraint::Muxer{inputs, ..} in apply_node
