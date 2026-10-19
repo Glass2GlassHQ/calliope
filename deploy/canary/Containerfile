@@ -1,5 +1,11 @@
 # the g2g source arrives as the `g2g` build context, a git archive of the checkout
 ARG FEDORA_RELEASE=43
+# the feeder unit runs this image, so the clips built here match the ones it loops
+ARG MEDIAMTX_IMAGE=docker.io/bluenviron/mediamtx:1.21.2-ffmpeg
+
+FROM ${MEDIAMTX_IMAGE} AS mediamtx
+COPY deploy/canary/feeder.sh /feeder.sh
+RUN sh /feeder.sh clips /clips
 
 FROM registry.fedoraproject.org/fedora:${FEDORA_RELEASE} AS base
 # fedora's ffmpeg-free decodes h264 only through openh264, rpm fusion ships the native decoder
@@ -8,8 +14,9 @@ RUN dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-rel
 
 FROM base AS build
 RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
+        opus-devel libdav1d-devel \
     && dnf clean all
-ARG G2G_FEATURES=std,multi-thread,rtsp,srt,webrtc,http-src,hls,ffmpeg,observe
+ARG G2G_FEATURES=std,multi-thread,rtsp,rtsp-server,srt,rist,rtmp,webrtc,http-src,hls,dash,ffmpeg,opus,dav1d,observe
 ARG CARGO_BUILD_JOBS=4
 ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 COPY --from=g2g . /src/glass2glass
@@ -19,9 +26,28 @@ COPY . /src/calliope
 RUN cd /src/calliope && cargo build --release --locked -p calliope-cli
 
 FROM base AS runtime
-RUN dnf -y install --allowerasing ffmpeg-libs openssl-libs ca-certificates && dnf clean all
+# ffmpeg, iproute-tc and mediamtx run the faulted feed in g2g-canary-faulted.container
+RUN dnf -y install --allowerasing ffmpeg ffmpeg-libs opus libdav1d iproute-tc openssl-libs ca-certificates \
+    && dnf clean all
 COPY --from=build /src/glass2glass/target/release/g2g-launch /usr/local/bin/g2g-launch
 COPY --from=build /src/calliope/target/release/calliope /usr/local/bin/calliope
+COPY --from=mediamtx /mediamtx /usr/local/bin/mediamtx
+COPY --from=mediamtx /clips /usr/share/g2g-canary/clips
+COPY --chmod=0755 deploy/canary/faulted.sh /usr/local/bin/canary-faulted.sh
+COPY deploy/canary/mediamtx-faulted.yml /etc/canary/mediamtx-faulted.yml
+# each table decodes a clip through the same chain as the rows that name it
+RUN mkdir -p /etc/canary/hashes && cd /usr/share/g2g-canary/clips \
+    && g2g-launch -q filesrc location=baseline.mp4 ! qtdemux ! h264parse ! avdec_h264 ! checksumsink \
+        > /etc/canary/hashes/baseline.txt \
+    && g2g-launch -q filesrc location=hevc.mp4 ! qtdemux ! h265parse ! avdec_h265 ! checksumsink \
+        > /etc/canary/hashes/hevc.txt \
+    && g2g-launch -q filesrc location=av1.mp4 ! qtdemux ! av1parse ! avdec_av1 ! checksumsink \
+        > /etc/canary/hashes/av1.txt \
+    && g2g-launch -q filesrc location=vp9.webm ! matroskademux ! avdec_vp9 ! checksumsink \
+        > /etc/canary/hashes/vp9.txt
 COPY deploy/canary/canary.toml /etc/canary/canary.toml
+ARG G2G_COMMIT
+RUN test -n "${G2G_COMMIT}" || { echo "build with --build-arg G2G_COMMIT=<g2g commit>" >&2; exit 1; }
+ENV G2G_COMMIT=${G2G_COMMIT}
 WORKDIR /var/lib/canary
 ENTRYPOINT ["calliope", "canary", "--config", "/etc/canary/canary.toml"]

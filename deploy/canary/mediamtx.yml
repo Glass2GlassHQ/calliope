@@ -5,18 +5,21 @@ rtspTransports: [tcp]
 rtspAddress: 127.0.0.1:18554
 hls: true
 hlsAddress: 127.0.0.1:18888
-# g2g plays mpeg-ts hls, its fmp4 hls path fails caps negotiation
+# the self-hosted hls rows cover mpeg-ts, the public rows fmp4
 hlsVariant: mpegts
-# keep the playlist ready, a restarted pipeline would otherwise wait for a fresh muxer
-hlsAlwaysRemux: true
-rtmp: false
+# muxers start on request, so the hevc, av1 and vp9 paths mpeg-ts hls cannot carry never start one
+hlsAlwaysRemux: false
+rtmp: true
+rtmpAddress: 127.0.0.1:18935
 webrtc: true
 webrtcAddress: 127.0.0.1:18889
 webrtcLocalUDPAddress: 127.0.0.1:18189
 # offer only the loopback candidate, the udp socket is not bound on the other interfaces
 webrtcIPsFromInterfaces: false
 webrtcAdditionalHosts: [127.0.0.1]
-srt: false
+# the listener g2g's srtsink calls into
+srt: true
+srtAddress: 127.0.0.1:18891
 moq: false
 api: false
 metrics: false
@@ -24,3 +27,14 @@ pprof: false
 playback: false
 paths:
   baseline: {}
+  hevc: {}
+  av1: {}
+  vp9-opus: {}
+  h264-aac: {}
+  egress-rtmp: {}
+  egress-whip: {}
+  egress-srt: {}
+  # pulled from g2g's rtspserversink, mediamtx retries until the serve row is up
+  egress-rtsp:
+    source: rtsp://127.0.0.1:18560/egress
+    rtspTransport: tcp

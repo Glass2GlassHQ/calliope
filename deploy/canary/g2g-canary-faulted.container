@@ -1,0 +1,21 @@
+[Unit]
+Description=g2g canary: a second mediamtx and feeder behind scheduled netem loss, jitter and reorder
+
+[Container]
+Image=localhost/g2g-canary:latest
+ContainerName=g2g-canary-faulted
+Entrypoint=/usr/local/bin/canary-faulted.sh
+# netem on the container's own loopback, the host network is untouched
+AddCapability=NET_ADMIN
+# -T reaches the clean mediamtx on the host, -U the g2g srt and rist listeners
+Network=pasta:-T,18554,-U,18892,-U,18896-18897
+PublishPort=127.0.0.1:19554:19554
+PublishPort=127.0.0.1:19888:19888
+RunInit=true
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

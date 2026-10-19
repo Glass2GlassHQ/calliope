@@ -5,27 +5,160 @@ sample-secs = 60
 stall-secs = 30
 
 # self-hosted: mediamtx and the feeder on the same host, a failure here is g2g's
+# rows that decode a feeder clip end in `checksumsink name=video`, matched against its table
 
 [[pipeline]]
 id = "baseline-rtsp"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! decodebin ! fakesink"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! decodebin ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 [[pipeline]]
 id = "baseline-hls"
 tier = "self-hosted"
-launch = "hlssrc location=http://127.0.0.1:18888/baseline/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+launch = "hlssrc location=http://127.0.0.1:18888/baseline/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
 
-# the feeder is the srt caller, g2g's srtsrc only listens
+# the feeder is the srt and rist caller, g2g's srtsrc and ristsrc only listen
 [[pipeline]]
 id = "baseline-srt"
 tier = "self-hosted"
-launch = "srtsrc address=127.0.0.1 port=18890 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+launch = "srtsrc address=127.0.0.1 port=18890 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# ffmpeg's librist sends the simple profile, a non-g2g peer
+[[pipeline]]
+id = "baseline-rist"
+tier = "self-hosted"
+launch = "ristsrc address=127.0.0.1 port=18894 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 [[pipeline]]
 id = "baseline-webrtc"
 tier = "self-hosted"
-launch = "whepsrc location=http://127.0.0.1:18889/baseline/whep ! h264parse ! avdec_h264 ! fakesink"
+launch = "whepsrc location=http://127.0.0.1:18889/baseline/whep ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+[[pipeline]]
+id = "hevc-rtsp"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/hevc ! h265parse ! avdec_h265 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/hevc.txt"
+
+# mediamtx carries av1 and vp9 to a reader over webrtc and rtsp, and g2g's rtspsrc reads only h264 and h265
+[[pipeline]]
+id = "av1-webrtc"
+tier = "self-hosted"
+launch = "whepsrc location=http://127.0.0.1:18889/av1/whep video-codec=av1 ! av1parse ! avdec_av1 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/av1.txt"
+
+[[pipeline]]
+id = "vp9-webrtc"
+tier = "self-hosted"
+launch = "whepsrc location=http://127.0.0.1:18889/vp9-opus/whep video-codec=vp9 ! avdec_vp9 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/vp9.txt"
+
+[[pipeline]]
+id = "opus-webrtc"
+tier = "self-hosted"
+launch = "whepsrc location=http://127.0.0.1:18889/vp9-opus/whep media=audio ! opusdec ! fakesink"
+
+# audio and video decoded together: the audio sink turns on the a/v drift check
+[[pipeline]]
+id = "h264-aac-rtsp"
+tier = "self-hosted"
+launch = "rtspsrcn name=s location=rtsp://127.0.0.1:18554/h264-aac s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! aacparse ! avdec_aac ! checksumsink name=audio"
+video-sink = "video"
+audio-sink = "audio"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+[[pipeline]]
+id = "h264-aac-hls"
+tier = "self-hosted"
+launch = "hlssrc location=http://127.0.0.1:18888/h264-aac/index.m3u8 ! tsdemux name=d d. ! h264parse ! avdec_h264 ! checksumsink name=video d. ! aacparse ! avdec_aac ! checksumsink name=audio"
+video-sink = "video"
+audio-sink = "audio"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# egress: g2g encodes and publishes into mediamtx, a second row reads it back over rtsp
+# videotestsrc runs ahead of real time, clocksync paces it
+
+[[pipeline]]
+id = "egress-rtmp-publish"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! flvmux ! rtmpsink location=rtmp://127.0.0.1:18935/egress-rtmp"
+
+[[pipeline]]
+id = "egress-rtmp-play"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtmp ! h264parse ! avdec_h264 ! fakesink"
+
+[[pipeline]]
+id = "egress-whip-publish"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! whipsink location=http://127.0.0.1:18889/egress-whip/whip"
+
+[[pipeline]]
+id = "egress-whip-play"
+tier = "self-hosted"
+launch = "whepsrc location=http://127.0.0.1:18889/egress-whip/whep ! h264parse ! avdec_h264 ! fakesink"
+
+[[pipeline]]
+id = "egress-srt-publish"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! mpegtsmux ! srtsink host=127.0.0.1 port=18891 streamid=publish:egress-srt"
+
+[[pipeline]]
+id = "egress-srt-play"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-srt ! h264parse ! avdec_h264 ! fakesink"
+
+# g2g serves rtsp and mediamtx pulls it as the egress-rtsp path's source
+[[pipeline]]
+id = "egress-rtsp-serve"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! rtspserversink address=127.0.0.1 port=18560"
+
+[[pipeline]]
+id = "egress-rtsp-play"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp ! h264parse ! avdec_h264 ! fakesink"
+
+# faulted: the baseline clip through g2g-canary-faulted, whose loopback has scheduled netem
+# loss, jitter and reorder and whose mediamtx restarts every 20 minutes
+# tcp repairs every loss, so the rtsp and hls frames still match the table
+
+[[pipeline]]
+id = "faulted-rtsp"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+[[pipeline]]
+id = "faulted-hls"
+tier = "faulted"
+launch = "hlssrc location=http://127.0.0.1:19888/faulted/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+[[pipeline]]
+id = "faulted-srt"
+tier = "faulted"
+launch = "srtsrc address=127.0.0.1 port=18892 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+
+[[pipeline]]
+id = "faulted-rist"
+tier = "faulted"
+launch = "ristsrc address=127.0.0.1 port=18896 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
 
 # public: third-party test streams with no uptime promise
 
@@ -42,6 +175,26 @@ launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.strea
 
 # no public srt entry: g2g's srtsrc only listens, a public srt server never calls in
 
+# dash-if livesim2: live cmaf with 64-bit media times, the epoch is its availabilityStartTime
+[[pipeline]]
+id = "livesim2-dash"
+tier = "public"
+launch = "dashsrc location=https://livesim2.dashif.org/livesim2/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+
+# a new period every minute
+[[pipeline]]
+id = "livesim2-multiperiod"
+tier = "public"
+launch = "dashsrc location=https://livesim2.dashif.org/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+
+# ll-hls with fmp4 parts, the stream restarts every 12 hours
+[[pipeline]]
+id = "mux-llhls"
+tier = "public"
+launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8 max-bandwidth=1000000 ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+
+# no public moq row: moq.dev's relay negotiates the ietf draft, but its broadcasts use the hang catalog and containers moqtsrc does not read
+
 # vod streams loop: clocksync paces them to real time, the lowest variant keeps bandwidth down
 [[pipeline]]
 id = "mux-vod-hls"
@@ -54,3 +207,10 @@ id = "apple-vod-hls"
 tier = "public"
 vod = true
 launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
+
+# the same bipbop content as fmp4 segments
+[[pipeline]]
+id = "apple-fmp4-vod-hls"
+tier = "public"
+vod = true
+launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8 max-bandwidth=1000000 ! fmp4demux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
