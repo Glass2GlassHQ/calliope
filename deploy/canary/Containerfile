@@ -9,7 +9,7 @@ RUN sh /feeder.sh clips /clips
 
 FROM registry.fedoraproject.org/fedora:${FEDORA_RELEASE} AS base
 # fedora's ffmpeg-free decodes h264 only through openh264, rpm fusion ships the native decoder
-RUN dnf -y install "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
+RUN dnf -y install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
     && dnf clean all
 
 FROM base AS build
