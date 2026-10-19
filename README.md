@@ -403,13 +403,38 @@ digests of different lengths, so a `g2g-launch` run without `-q` fails at
 startup instead of reporting every frame as mismatched. The clip must loop with
 `-c copy` so the live frames are the table's frames.
 
+### Feeds
+
+`feeder.sh` encodes six 16 s clips: H.264 (`baseline`), H.265, AV1 and VP9 at
+640x360 and 30 fps, and AAC and Opus tones. It encodes with ffmpeg's plain C code on
+one thread, so every machine writes the same bytes, and checks the video clips
+against the md5 list in the script. The image build runs the same script in the
+same mediamtx image and decodes each video clip into a reference table under
+`/etc/canary/hashes/`. The feeder publishes the clips to mediamtx over RTSP as
+`baseline`, `hevc`, `av1`, `vp9-opus` and `h264-aac`, pushes `baseline` to
+g2g's SRT listener, and sends it with ffmpeg's librist to g2g's RIST listener.
+
+The egress rows encode a 320x240 `videotestsrc` and publish it into mediamtx
+over RTMP, WHIP and SRT, or serve it over RTSP for mediamtx to pull as the
+`egress-rtsp` path. A second row reads each one back over RTSP or WHEP.
+
+The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
+container with its own network namespace that runs a second mediamtx and
+feeder. Netem on its loopback runs a 10 minute cycle of loss, jitter, reorder
+and burst loss on the reader-facing ports only, and its mediamtx restarts every
+20 minutes. Rootless podman allows this: the container has `CAP_NET_ADMIN` in
+its own namespace, and pasta publishes its RTSP and HLS ports on the host
+loopback and forwards its SRT and RIST sends to the host. Netem runs only
+inside that namespace, so the self-hosted rows never see it.
+
 ### Deploy
 
 The image bundles `calliope` and a `g2g-launch` built from one g2g commit, which
-it reports in `G2G_COMMIT`. Three podman Quadlet units run under the user's
-systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder` and `g2g-canary`, which runs
-`ghcr.io/glass2glasshq/g2g-canary:latest`. A `canary-publish.timer` copies the
-status page and sends incident alerts every 5 minutes.
+it reports in `G2G_COMMIT`. Four podman Quadlet units run under the user's
+systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder`, `g2g-canary-faulted` and
+`g2g-canary`. The last two run `ghcr.io/glass2glasshq/g2g-canary:latest`. A
+`canary-publish.timer` copies the status page and sends incident alerts every 5
+minutes.
 
 The g2g repo's `canary image` workflow builds the image after each master commit
 passes CI and pushes it as `:latest` and `:<short sha>`. On the host,

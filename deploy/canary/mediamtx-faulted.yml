@@ -1,0 +1,21 @@
+# the faulted container's own network namespace, the readers reach it through published loopback ports
+# pasta hands a published connection over on the container's address, so these bind every address
+logLevel: warn
+rtsp: true
+rtspTransports: [tcp]
+rtspAddress: :19554
+hls: true
+hlsAddress: :19888
+hlsVariant: mpegts
+hlsAlwaysRemux: true
+rtmp: true
+rtmpAddress: :19935
+webrtc: false
+srt: false
+moq: false
+api: false
+metrics: false
+pprof: false
+playback: false
+paths:
+  faulted: {}
