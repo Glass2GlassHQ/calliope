@@ -320,8 +320,8 @@ meaningless).
 in the config running as a `g2g-launch --observe` subprocess. It restarts a run
 that exits or decodes no frame for `stall-secs`, with exponential backoff. Once
 per `sample-secs` it appends one line per pipeline to
-`log/samples-<utc-date>.jsonl` with frames decoded, fps, decoder p50 latency, RSS
-and restart count. Each failure opens an incident in
+`log/samples-<utc-date>.jsonl` with frames decoded, fps, decoder p50 latency, RSS,
+restart count and the frame checks below. Each failure opens an incident in
 `log/incidents-<utc-date>.jsonl` with the stderr tail under `log/stderr/`, and the
 incident closes when frames flow again. The status page is
 `status/index.html` plus `status/status.json`, rewritten every sample.
@@ -331,7 +331,77 @@ serve on the same host over RTSP, HLS, SRT and WebRTC (WHEP). A failure there
 is g2g's. The clip has no B-frames because mediamtx closes a WebRTC session on
 H.264 with B-frames. The `public` tier pulls third-party HLS and RTSP streams
 with no uptime promise. There is no public SRT entry because g2g's `srtsrc` only
-listens.
+listens. The `faulted` tier runs self-hosted streams through injected network
+faults. The status page shows each tier as its own table, so faulted uptime never
+counts toward the self-hosted numbers.
+
+The canary refuses to start unless `G2G_COMMIT` names the g2g commit its
+`g2g-launch` was built from. The commit is `g2g_commit` in `status.json` and is
+shown on the page.
+
+### Frame checks
+
+`checksumsink` posts each frame's pts and digest under its `name=`, and the
+canary reads them from the `--observe` socket. Three optional `[[pipeline]]`
+fields use them:
+
+```toml
+video-sink = "video"                           # the checksumsink name= on the video branch
+audio-sink = "audio"                           # the checksumsink name= on the audio branch
+expect-hashes = "/etc/canary/hashes/baseline.txt"  # reference table for video-sink
+```
+
+`expect-hashes` and `audio-sink` need `video-sink`. g2g cannot yet fan a
+network source out to audio and video branches, so `audio-sink` only works on a
+file row for now. Every sample line then has:
+
+- `content`, with `expect-hashes`: `matched` frames have a digest in the table,
+  `mismatched` frames do not, and `skipped` counts the frames missing between
+  two matched ones, by table index modulo the clip length. A mismatched frame
+  takes the next index, so one corrupt frame counts once. Each run starts at
+  whatever frame it joins on.
+- `timestamps`, from every checksumsink: `backward` counts a pts below the same
+  sink's previous one, `forward_jumps` a pts step more than 1 s longer than the
+  wall clock time between the two frames arriving. A correct pipeline stays
+  monotonic across the MPEG-TS 33-bit and RTP timestamp wraps.
+- `av_drift_ms`, with `audio-sink`: the mean of arrival time minus pts for the
+  audio sink minus the same mean for the video sink, over the sample. Positive
+  means audio arrives later.
+- `rss_growth_kib_per_hour`: the least squares slope of RSS over the last 24 h
+  of one `g2g-launch` run, empty until a run has lasted 24 h.
+
+Besides the `down` incidents for exits, signals, stalls and spawn failures,
+three kinds open from the samples. `content` opens on a sample with mismatched
+or skipped frames and closes on one with matched frames and neither.
+`timestamps` opens on a backward or forward jump and closes on a sample with
+neither. `memory-growth` opens when the RSS slope exceeds 512 KiB/h, about
+2 GiB over six months, and closes when a whole day's slope is back under it.
+Open incidents are kept in `log/open-incidents.json`, rewritten on every change
+and reloaded at start, so an incident spans a canary restart with the same id.
+
+#### Reference tables
+
+A table is the stdout of decoding the clip the feeder loops, through the same
+chain from the parser to `checksumsink` as the live pipeline, with the same
+`hash=`:
+
+```sh
+g2g-launch -q filesrc location=<clip> ! <demuxer> ! <same decode chain> ! checksumsink > <table>
+```
+
+For the baseline clip and a live line ending in
+`tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video`:
+
+```sh
+g2g-launch -q filesrc location=/clip/baseline-no-bframes.mp4 ! qtdemux ! h264parse ! avdec_h264 ! checksumsink \
+    > /etc/canary/hashes/baseline.txt
+```
+
+Each line is `<h:mm:ss.nnnnnnnnn> <lowercase hex digest>`, one per frame in
+output order. The canary rejects a table with any other line, an empty table, or
+digests of different lengths, so a `g2g-launch` run without `-q` fails at
+startup instead of reporting every frame as mismatched. The clip must loop with
+`-c copy` so the live frames are the table's frames.
 
 ### Deploy
 
