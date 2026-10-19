@@ -1,0 +1,10 @@
+[Unit]
+Description=daily cargo-mutants run on new g2g commits
+
+[Timer]
+OnCalendar=*-*-* 12:00
+# hercules is off at night, so a missed run starts at the next boot
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -10,7 +10,9 @@ Run a scope with `tools/mutants-g2g.sh <scope> <cargo-mutants args>`. It runs on
 build at a time with two rustc jobs at nice 10 (`MUTANTS_JOBS`,
 `MUTANTS_JOBSERVER_TASKS` and `CARGO_BUILD_JOBS` raise that on a quiet box),
 keeps the tree copy and logs under `~/tmp/calliope-mutants`, and copies the
-lists here.
+lists here (`MUTANTS_RESULTS` names another directory). Manual runs share
+`~/tmp/calliope-mutants.lock` and the scheduled run takes it exclusively, so
+neither starts while the other holds it.
 
 Name test targets with `--cargo-arg` (`--cargo-arg=--lib --cargo-arg=--test=m135_vp9parse`),
 not after `--`. cargo-mutants builds each mutant with `cargo test --no-run` and
@@ -53,3 +55,25 @@ and index arithmetic, plus the `SourceLoop` trait defaults, the ProRes fourcc
 and alpha plane lookups, `SystemSlice::make_shared` on a shared slice and two
 channel flags. `i *= 1` in the `DomainSet::ALL` const block makes rustc loop in
 const evaluation, so that mutant was killed after an hour and counts as unviable.
+
+## Scheduled runs
+
+`deploy/mutants/g2g-mutants.timer` runs `tools/mutants-scheduled.sh` on hercules
+daily at noon, or at the next boot if the box was off. It fetches g2g master over
+https, runs cargo-mutants `--in-diff` on the commits since
+`~/g2g-mutants/last-finished-commit` for g2g-core (the scope's features and tests)
+and g2g-plugins (`--lib` plus the test files naming a changed module), writes
+`~/g2g-mutants/runs/<date>-<from>-<to>/`, and moves the commit file only when
+both runs finish. It waits up to 8 hours for 20 minutes of uptime, no active
+`glass2glass-validation@` unit and a 5 minute load average of at most 4.
+
+```bash
+ssh hercules 'mkdir -p ~/g2g-mutants ~/.config/systemd/user'
+scp tools/mutants-scheduled.sh tools/mutants-g2g.sh hercules:g2g-mutants/
+scp deploy/mutants/g2g-mutants.{service,timer} hercules:.config/systemd/user/
+ssh hercules 'git ls-remote https://github.com/Glass2GlassHQ/glass2glass.git master | cut -f1 > ~/g2g-mutants/last-finished-commit'
+ssh hercules 'systemctl --user daemon-reload && systemctl --user enable --now g2g-mutants.timer'
+```
+
+The timer needs `loginctl enable-linger`. `systemctl --user start --no-block
+g2g-mutants.service` runs it now, `journalctl --user -u g2g-mutants` shows the log.

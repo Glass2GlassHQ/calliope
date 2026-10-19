@@ -23,18 +23,35 @@ then
 fi
 
 CALLIOPE="$(cd "$(dirname "$0")/.." && pwd)"
-RESULTS="$CALLIOPE/mutants/$SCOPE"
+RESULTS="${MUTANTS_RESULTS:-$CALLIOPE/mutants/$SCOPE}"
 # scratch tree copies and logs stay out of the repo and off the tmpfs /tmp
 SCRATCH="${MUTANTS_SCRATCH:-$HOME/tmp/calliope-mutants}"
 OUT="$SCRATCH/out/$SCOPE"
 TIMEOUT_MULTIPLIER="${TIMEOUT_MULTIPLIER:-3}"
 mkdir -p "$SCRATCH/tmp" "$OUT" "$RESULTS"
 
+# manual runs share the lock, mutants-scheduled.sh takes it exclusively
+LOCK="$HOME/tmp/calliope-mutants.lock"
+mkdir -p "$(dirname "$LOCK")"
+exec 9>"$LOCK"
+if [ "${MUTANTS_LOCK_MODE:-shared}" = exclusive ]
+then
+    lock_flag=-x
+else
+    lock_flag=-s
+fi
+if ! flock "$lock_flag" -n 9
+then
+    echo "another mutants run holds $LOCK" >&2
+    exit 1
+fi
+
 # the defaults suit a shared desktop, which crashed under more; a quiet box takes more
 MUTANTS_JOBS="${MUTANTS_JOBS:-1}"
 MUTANTS_JOBSERVER_TASKS="${MUTANTS_JOBSERVER_TASKS:-2}"
+# a mutated loop in a const block keeps rustc evaluating it until the build times out
 MUTANTS_ARGS=(--jobs "$MUTANTS_JOBS" --jobserver-tasks "$MUTANTS_JOBSERVER_TASKS" --cap-lints true
-    --timeout-multiplier "$TIMEOUT_MULTIPLIER" --colors never "$@")
+    --timeout-multiplier "$TIMEOUT_MULTIPLIER" --build-timeout-multiplier 5 --colors never "$@")
 
 start=$(date +%s)
 set +e
@@ -58,3 +75,4 @@ done
     grep -E '^[0-9]+ mutants tested' "$OUT/run.log" | tail -1
 } > "$RESULTS/summary.txt"
 cat "$RESULTS/summary.txt"
+exit "$status"

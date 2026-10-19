@@ -1,0 +1,9 @@
+[Unit]
+Description=cargo-mutants on the g2g commits since the last finished run
+
+[Service]
+Type=oneshot
+ExecStart=%h/g2g-mutants/mutants-scheduled.sh
+# the user manager's PATH has no rustup shims
+Environment=PATH=%h/.cargo/bin:/usr/local/bin:/usr/bin:/bin
+TimeoutStartSec=infinity
