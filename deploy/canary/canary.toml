@@ -75,7 +75,7 @@ launch = "whepsrc location=http://127.0.0.1:18889/vp9-opus/whep media=audio ! op
 [[pipeline]]
 id = "h264-aac-rtsp"
 tier = "self-hosted"
-launch = "rtspsrcn name=s location=rtsp://127.0.0.1:18554/h264-aac s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! aacparse ! avdec_aac ! checksumsink name=audio"
+launch = "uridecodebin uri=rtsp://127.0.0.1:18554/h264-aac name=d d.video_0 ! checksumsink name=video d.audio_0 ! checksumsink name=audio"
 video-sink = "video"
 audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
@@ -83,7 +83,7 @@ expect-hashes = "/etc/canary/hashes/baseline.txt"
 [[pipeline]]
 id = "h264-aac-hls"
 tier = "self-hosted"
-launch = "hlssrc location=http://127.0.0.1:18888/h264-aac/index.m3u8 ! tsdemux name=d d. ! h264parse ! avdec_h264 ! checksumsink name=video d. ! aacparse ! avdec_aac ! checksumsink name=audio"
+launch = "uridecodebin uri=http://127.0.0.1:18888/h264-aac/index.m3u8 name=d d.video_0 ! checksumsink name=video d.audio_0 ! checksumsink name=audio"
 video-sink = "video"
 audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"

@@ -356,9 +356,7 @@ audio-sink = "audio"                           # the checksumsink name= on the a
 expect-hashes = "/etc/canary/hashes/baseline.txt"  # reference table for video-sink
 ```
 
-`expect-hashes` and `audio-sink` need `video-sink`. g2g cannot yet fan a
-network source out to audio and video branches, so `audio-sink` only works on a
-file row for now. Every sample line then has:
+`expect-hashes` and `audio-sink` need `video-sink`. Every sample line then has:
 
 - `content`, with `expect-hashes`: `matched` frames have a digest in the table,
   `mismatched` frames do not, and `skipped` counts the frames missing between
