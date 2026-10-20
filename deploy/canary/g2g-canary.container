@@ -1,7 +1,7 @@
 [Unit]
 Description=g2g canary: g2g pipelines on live streams, uptime and incident log
-Wants=g2g-canary-feeder.service
-After=g2g-canary-feeder.service
+Wants=g2g-canary-feeder.service g2g-canary-livesim2.service
+After=g2g-canary-feeder.service g2g-canary-livesim2.service
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest

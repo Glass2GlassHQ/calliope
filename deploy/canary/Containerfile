@@ -2,10 +2,17 @@
 ARG FEDORA_RELEASE=43
 # the feeder unit runs this image, so the clips built here match the ones it loops
 ARG MEDIAMTX_IMAGE=docker.io/bluenviron/mediamtx:1.21.2-ffmpeg
+ARG LIVESIM2_VERSION=v1.14.0
 
 FROM ${MEDIAMTX_IMAGE} AS mediamtx
 COPY deploy/canary/feeder.sh /feeder.sh
 RUN sh /feeder.sh clips /clips
+
+FROM docker.io/library/golang:1.25-alpine AS livesim2
+ARG LIVESIM2_VERSION
+RUN apk add --no-cache git \
+    && git clone --depth 1 --branch "${LIVESIM2_VERSION}" https://github.com/Dash-Industry-Forum/livesim2 /src \
+    && cd /src && CGO_ENABLED=0 go build -o /livesim2 ./cmd/livesim2
 
 FROM registry.fedoraproject.org/fedora:${FEDORA_RELEASE} AS base
 # fedora's ffmpeg-free decodes h264 only through openh264, rpm fusion ships the native decoder
@@ -16,7 +23,7 @@ FROM base AS build
 RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
         opus-devel libdav1d-devel \
     && dnf clean all
-ARG G2G_FEATURES=std,multi-thread,rtsp,rtsp-server,srt,rist,rtmp,webrtc,http-src,hls,dash,ffmpeg,opus,dav1d,observe
+ARG G2G_FEATURES=std,multi-thread,rtsp,rtsp-server,rtsp-client-sink,srt,rist,rtmp,webrtc,http-src,hls,dash,ffmpeg,opus,dav1d,observe
 ARG CARGO_BUILD_JOBS=4
 ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 COPY --from=g2g . /src/glass2glass
@@ -33,6 +40,8 @@ COPY --from=build /src/glass2glass/target/release/g2g-launch /usr/local/bin/g2g-
 COPY --from=build /src/calliope/target/release/calliope /usr/local/bin/calliope
 COPY --from=mediamtx /mediamtx /usr/local/bin/mediamtx
 COPY --from=mediamtx /clips /usr/share/g2g-canary/clips
+COPY --from=livesim2 /livesim2 /usr/local/bin/livesim2
+COPY --from=livesim2 /src/cmd/livesim2/app/testdata/assets /usr/share/livesim2/vod
 COPY --chmod=0755 deploy/canary/faulted.sh /usr/local/bin/canary-faulted.sh
 COPY deploy/canary/mediamtx-faulted.yml /etc/canary/mediamtx-faulted.yml
 # each table decodes a clip through the same chain as the rows that name it

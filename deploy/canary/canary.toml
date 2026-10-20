@@ -132,6 +132,28 @@ id = "egress-rtsp-play"
 tier = "self-hosted"
 launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp ! h264parse ! avdec_h264 ! fakesink"
 
+[[pipeline]]
+id = "egress-rtsp-publish"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! rtspclientsink location=rtsp://127.0.0.1:18554/egress-rtsp-publish protocols=tcp"
+
+[[pipeline]]
+id = "egress-rtsp-publish-play"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp-publish ! h264parse ! avdec_h264 ! fakesink"
+
+# dash-if livesim2 in g2g-canary-livesim2 loops its testpic_2s asset as live cmaf with 64-bit media times
+[[pipeline]]
+id = "dash-livesim2"
+tier = "self-hosted"
+launch = "dashsrc location=http://127.0.0.1:18900/livesim2/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+
+# a new period every minute
+[[pipeline]]
+id = "dash-livesim2-multiperiod"
+tier = "self-hosted"
+launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+
 # faulted: the baseline clip through g2g-canary-faulted, whose loopback has scheduled netem
 # loss, jitter and reorder and whose mediamtx restarts every 20 minutes
 # tcp repairs every loss, so the rtsp and hls frames still match the table
@@ -175,17 +197,7 @@ launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.strea
 
 # no public srt entry: g2g's srtsrc only listens, a public srt server never calls in
 
-# dash-if livesim2: live cmaf with 64-bit media times, the epoch is its availabilityStartTime
-[[pipeline]]
-id = "livesim2-dash"
-tier = "public"
-launch = "dashsrc location=https://livesim2.dashif.org/livesim2/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
-
-# a new period every minute
-[[pipeline]]
-id = "livesim2-multiperiod"
-tier = "public"
-launch = "dashsrc location=https://livesim2.dashif.org/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+# no public livesim2 row: livesim2.dashif.org allows 10000 requests per ip per 24 hours, a live row spends that in about 3 hours
 
 # ll-hls with fmp4 parts, the stream restarts every 12 hours
 [[pipeline]]

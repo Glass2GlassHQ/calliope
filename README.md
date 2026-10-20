@@ -418,8 +418,14 @@ same mediamtx image and decodes each video clip into a reference table under
 g2g's SRT listener, and sends it with ffmpeg's librist to g2g's RIST listener.
 
 The egress rows encode a 320x240 `videotestsrc` and publish it into mediamtx
-over RTMP, WHIP and SRT, or serve it over RTSP for mediamtx to pull as the
-`egress-rtsp` path. A second row reads each one back over RTSP or WHEP.
+over RTMP, WHIP, SRT and RTSP (`rtspclientsink`), or serve it over RTSP for
+mediamtx to pull as the `egress-rtsp` path. A second row reads each one back over RTSP or WHEP.
+
+The DASH rows read `g2g-canary-livesim2`, DASH-IF's live simulator built from a
+pinned release into the image. It loops its bundled `testpic_2s` asset as a live
+stream on port 18900 of the host loopback, once with a new Period every minute.
+The public livesim2.dashif.org allows 10000 requests per IP address per 24 hours,
+which one live row spends in about 3 hours.
 
 The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
 container with its own network namespace that runs a second mediamtx and
@@ -433,9 +439,10 @@ inside that namespace, so the self-hosted rows never see it.
 ### Deploy
 
 The image bundles `calliope` and a `g2g-launch` built from one g2g commit, which
-it reports in `G2G_COMMIT`. Four podman Quadlet units run under the user's
-systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder`, `g2g-canary-faulted` and
-`g2g-canary`. The last two run `ghcr.io/glass2glasshq/g2g-canary:latest`. A
+it reports in `G2G_COMMIT`. Five podman Quadlet units run under the user's
+systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder`, `g2g-canary-faulted`,
+`g2g-canary-livesim2` and `g2g-canary`. The last three run
+`ghcr.io/glass2glasshq/g2g-canary:latest`. A
 `canary-publish.timer` copies the status page and sends incident alerts every 5
 minutes.
 

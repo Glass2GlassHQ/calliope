@@ -34,6 +34,7 @@ paths:
   egress-rtmp: {}
   egress-whip: {}
   egress-srt: {}
+  egress-rtsp-publish: {}
   # pulled from g2g's rtspserversink, mediamtx retries until the serve row is up
   egress-rtsp:
     source: rtsp://127.0.0.1:18560/egress
