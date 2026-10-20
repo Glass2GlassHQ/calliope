@@ -41,6 +41,8 @@ pub struct Status {
 pub struct PipelineStatus {
     pub id: String,
     pub tier: Tier,
+    // the g2g-launch line this row runs
+    pub launch: String,
     pub up_now: Option<bool>,
     pub uptime_24h: Option<f64>,
     pub uptime_7d: Option<f64>,
@@ -110,6 +112,7 @@ pub fn summarize(
             PipelineStatus {
                 id: pipeline.id.clone(),
                 tier: pipeline.tier,
+                launch: pipeline.launch.clone(),
                 up_now: last_sample.map(Sample::up),
                 uptime_24h: uptime_percent(own(), since(1), window_end),
                 uptime_7d: uptime_percent(own(), since(WEEK_DAYS), window_end),
@@ -252,9 +255,10 @@ fn pipeline_row(pipeline: &PipelineStatus) -> String {
             .map(|ms| format!("{ms:+.1} ms")),
     );
     format!(
-        "<tr><td>{}</td><td>{state}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td>\
+        "<tr><td title=\"{}\">{}</td><td>{state}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td>\
          <td>{fps}</td><td>{latency}</td><td>{rss}</td><td>{growth}</td><td>{content}</td>\
          <td>{timestamps}</td><td>{drift}</td><td>{}</td></tr>",
+        escape_html(&pipeline.launch),
         escape_html(&pipeline.id),
         format_percent(pipeline.uptime_24h),
         format_percent(pipeline.uptime_7d),
@@ -321,6 +325,20 @@ pub fn render_html(status: &Status) -> String {
         }
         html.push_str("</table>\n");
     }
+    html.push_str(
+        "<h2>What each pipeline runs</h2>\n<p>The g2g-launch line of every row above.</p>\n\
+         <table><tr><th>pipeline</th><th>tier</th><th>launch</th></tr>\n",
+    );
+    for pipeline in &status.pipelines {
+        let _ = writeln!(
+            html,
+            "<tr><td>{}</td><td>{}</td><td><code>{}</code></td></tr>",
+            escape_html(&pipeline.id),
+            pipeline.tier.label(),
+            escape_html(&pipeline.launch)
+        );
+    }
+    html.push_str("</table>\n");
     html.push_str("<h2>Incidents</h2>\n");
     if status.incidents.is_empty() {
         html.push_str("<p>None in the last 30 days.</p>\n");
@@ -509,6 +527,21 @@ mod tests {
         assert!(html.contains("ongoing"));
         assert!(html.contains("stall: no frame for 30 s"));
         assert!(html.contains(HEALTHY_COLOUR));
+    }
+
+    #[test]
+    fn each_row_carries_its_launch_line() {
+        let mut config = pipeline("a");
+        config.launch = "rtspsrc location=\"rtsp://x\" ! decodebin ! fakesink".into();
+        let status = summarize(&[config], &[], &[], G2G_COMMIT, TODAY);
+        assert_eq!(
+            status.pipelines[0].launch,
+            "rtspsrc location=\"rtsp://x\" ! decodebin ! fakesink"
+        );
+        let html = render_html(&status);
+        let escaped = "rtspsrc location=&quot;rtsp://x&quot; ! decodebin ! fakesink";
+        assert!(html.contains(&format!("<td title=\"{escaped}\">a</td>")));
+        assert!(html.contains(&format!("<td><code>{escaped}</code></td>")));
     }
 
     #[test]

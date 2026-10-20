@@ -340,7 +340,9 @@ counts toward the self-hosted numbers.
 
 The canary refuses to start unless `G2G_COMMIT` names the g2g commit its
 `g2g-launch` was built from. The commit is `g2g_commit` in `status.json` and is
-shown on the page.
+shown on the page. Each pipeline entry carries its `launch` line: the page lists
+them in a table and shows one on hover over the pipeline name, as the g2g docs
+site does over its status rows.
 
 ### Frame checks
 
