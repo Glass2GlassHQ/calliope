@@ -145,6 +145,9 @@ enum Command {
         /// engines to check (comma-separated); default ffmpeg,gstreamer,g2g
         #[arg(long, value_delimiter = ',')]
         engines: Vec<String>,
+        /// check only vectors whose id starts with one of these (repeatable); default all
+        #[arg(long)]
+        id_prefix: Vec<String>,
         /// cap the number of vectors checked (0 = all)
         #[arg(long, default_value_t = 0)]
         limit: usize,
@@ -243,10 +246,14 @@ fn engine_crashes(
 fn golden_scenarios(
     vectors: &[calliope_core::corpus::Vector],
     engines: &[String],
+    id_prefixes: &[String],
 ) -> Vec<Scenario> {
     vectors
         .iter()
         .filter(|v| v.decoded_md5.is_some() && v.output_format.is_some())
+        .filter(|v| {
+            id_prefixes.is_empty() || id_prefixes.iter().any(|p| v.id.starts_with(p.as_str()))
+        })
         .map(|v| Scenario {
             id: v.id.clone(),
             engines: engines.to_vec(),
@@ -510,6 +517,7 @@ async fn main() -> Result<ExitCode> {
         Command::Conformance {
             corpus,
             engines,
+            id_prefix,
             limit,
             jobs,
             workdir,
@@ -522,10 +530,10 @@ async fn main() -> Result<ExitCode> {
                 engines
             };
             // one golden scenario per vector that carries a conformance hash
-            let mut scenarios = golden_scenarios(&manifest.vector, &engines);
+            let mut scenarios = golden_scenarios(&manifest.vector, &engines, &id_prefix);
             if scenarios.is_empty() {
                 bail!(
-                    "no vectors in {} have both decoded-md5 and output-format (import a Fluster suite first)",
+                    "no vectors in {} match --id-prefix and have both decoded-md5 and output-format (import a Fluster suite first)",
                     corpus.display()
                 );
             }
@@ -1106,12 +1114,31 @@ mod tests {
     fn golden_scenarios_only_for_vectors_with_a_conformance_hash() {
         let vectors = [vector("has-hash", true), vector("no-hash", false)];
         let engines = vec!["ffmpeg".to_string(), "g2g".to_string()];
-        let scenarios = golden_scenarios(&vectors, &engines);
+        let scenarios = golden_scenarios(&vectors, &engines, &[]);
         assert_eq!(scenarios.len(), 1);
         let s = &scenarios[0];
         assert_eq!(s.id, "has-hash");
         assert!(s.is_golden());
         assert_eq!(s.reference, "ffmpeg");
         assert_eq!(s.input.corpus.as_deref(), Some("has-hash"));
+    }
+
+    #[test]
+    fn golden_scenarios_keep_only_vectors_under_an_id_prefix() {
+        let vectors = [
+            vector("fluster/JVT-AVC_V1/a", true),
+            vector("fluster/JCT-VC-HEVC_V1/b", true),
+            vector("fluster/VP9-TEST-VECTORS/c", true),
+        ];
+        let engines = vec!["g2g".to_string()];
+        let prefixes = [
+            "fluster/JVT-AVC_V1/".to_string(),
+            "fluster/JCT-VC-HEVC_V1/".to_string(),
+        ];
+        let ids: Vec<String> = golden_scenarios(&vectors, &engines, &prefixes)
+            .into_iter()
+            .map(|s| s.id)
+            .collect();
+        assert_eq!(ids, ["fluster/JVT-AVC_V1/a", "fluster/JCT-VC-HEVC_V1/b"]);
     }
 }

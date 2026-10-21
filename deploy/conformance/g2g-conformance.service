@@ -1,0 +1,11 @@
+[Unit]
+Description=g2g GPU decoder conformance against the committed baseline
+
+[Service]
+Type=oneshot
+# the script runs from this clone, so it updates before the script starts
+ExecStartPre=/usr/bin/git -C %h/g2g-conformance/calliope pull -q --ff-only
+ExecStart=%h/g2g-conformance/calliope/tools/conformance-nightly.sh
+# the user manager's PATH has no rustup shims
+Environment=PATH=%h/.cargo/bin:/usr/local/bin:/usr/bin:/bin
+TimeoutStartSec=infinity

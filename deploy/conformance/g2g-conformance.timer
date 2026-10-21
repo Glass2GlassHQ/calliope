@@ -1,0 +1,10 @@
+[Unit]
+Description=nightly g2g GPU decoder conformance
+
+[Timer]
+OnCalendar=*-*-* 18:00 America/New_York
+# hercules is sometimes off at 18:00, so a missed run starts at the next boot
+Persistent=true
+
+[Install]
+WantedBy=timers.target

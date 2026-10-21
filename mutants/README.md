@@ -77,7 +77,7 @@ both runs finish. It waits up to 8 hours for 20 minutes of uptime, no active
 
 ```bash
 ssh hercules 'mkdir -p ~/g2g-mutants ~/.config/systemd/user'
-scp tools/mutants-scheduled.sh tools/mutants-g2g.sh hercules:g2g-mutants/
+scp tools/mutants-scheduled.sh tools/mutants-g2g.sh tools/wait-for-quiet-host.sh hercules:g2g-mutants/
 scp deploy/mutants/g2g-mutants.{service,timer} hercules:.config/systemd/user/
 ssh hercules 'git ls-remote https://github.com/Glass2GlassHQ/glass2glass.git master | cut -f1 > ~/g2g-mutants/last-finished-commit'
 ssh hercules 'systemctl --user daemon-reload && systemctl --user enable --now g2g-mutants.timer'
