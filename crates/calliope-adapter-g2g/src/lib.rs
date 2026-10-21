@@ -15,7 +15,6 @@ use calliope_core::produce::{
 use calliope_core::scenario::Scenario;
 use calliope_core::{Error, Result};
 
-const G2G_PLUGIN_FEATURE_RANK_VARIABLE: &str = "G2G_PLUGIN_FEATURE_RANK";
 // produce mode reads an mp4 input, decoded h264 when it re-encodes
 const PRODUCE_DEMUXER: &str = "qtdemux";
 const PRODUCE_INPUT_DECODER: &str = "h264parse ! avdec_h264";
@@ -281,20 +280,11 @@ impl G2g {
         }
         let out = workdir.join("out.yuv");
         // Pin the decoded format with a capsfilter (GStreamer fourcc names) so
-        // ffmpegdec's Auto output resolves to it and the raw dump matches
-        // ffmpeg's framemd5. Planar formats come straight off the decoder;
-        // semi-planar NV12 is not a decoder-native output, so insert a
-        // videoconvert (an identity repack, still bit-exact) to reach it.
+        // the raw dump matches ffmpeg's framemd5. The videoconvert passes the
+        // pin through to the decoder and is an identity when the decoder
+        // already emits it; it repacks a raw track such as v210 that the
+        // demuxer hands straight to decodebin, and a GPU decoder's NV12 / P010.
         let format = scenario.video.map_or("I420", |v| v.format.gst_format());
-        // a pinned GPU decoder emits NV12 / P010 whatever the capsfilter asks for
-        let pinned = std::env::var_os(G2G_PLUGIN_FEATURE_RANK_VARIABLE).is_some();
-        let convert = match scenario.video {
-            Some(v) if !v.format.is_planar_yuv() => "videoconvert ! ",
-            // a self-compare pins I420 whatever the decoder emits, packed RGB included
-            None => "videoconvert ! ",
-            _ if pinned => "videoconvert ! ",
-            _ => "",
-        };
         // deinterlace scenarios insert g2g's yadif; mode=interlaced forces it
         // on every frame like ffmpeg's deint=all, single-rate like fields=top.
         let deint = if scenario.deinterlace {
@@ -307,12 +297,12 @@ impl G2g {
         // mid-stream cross a converter-overlay-converter sandwich; the final
         // capsfilter's convert takes the RGBA back to the dump format.
         let overlay = if scenario.overlay {
-            "videoconvert ! textoverlay ! videoconvert ! "
+            "videoconvert ! textoverlay ! "
         } else {
             ""
         };
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! {deint}{overlay}{convert}video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! filesink location={}",
             input.display(),
             out.display()
         );

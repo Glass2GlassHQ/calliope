@@ -1437,8 +1437,8 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "aic"
-width = 1440
-height = 1080
+width = 1416
+height = 1062
 pix-fmt = "yuv420p"
 
 [vector.media.audio]
@@ -6628,8 +6628,8 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "dvvideo"
-width = 1440
-height = 1080
+width = 1416
+height = 1062
 pix-fmt = "yuv422p"
 
 [[vector]]
@@ -6643,8 +6643,8 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "dvvideo"
-width = 1440
-height = 1080
+width = 1416
+height = 1062
 pix-fmt = "yuv422p"
 
 [[vector]]
@@ -6658,8 +6658,8 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "dvvideo"
-width = 960
-height = 720
+width = 936
+height = 702
 pix-fmt = "yuv422p"
 
 [[vector]]
@@ -14873,8 +14873,8 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "hevc"
-width = 1280
-height = 720
+width = 640
+height = 360
 pix-fmt = "yuv420p"
 
 [[vector]]
@@ -21492,7 +21492,7 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "dvvideo"
-width = 720
+width = 704
 height = 480
 pix-fmt = "yuv411p"
 
@@ -24489,8 +24489,8 @@ container = "mov,mp4,m4a,3gp,3g2,mj2"
 
 [vector.media.video]
 codec = "prores"
-width = 1920
-height = 1080
+width = 1888
+height = 1062
 pix-fmt = "yuva444p12le"
 
 [vector.media.audio]

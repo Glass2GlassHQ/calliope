@@ -13,8 +13,11 @@ use crate::engine::binary;
 use crate::scenario::{PixelFormat, Video};
 use crate::{Error, Result};
 
-const FFPROBE_STREAM_ENTRIES: &str =
-    "format=format_name:stream=codec_type,codec_name,width,height,pix_fmt,sample_rate,channels";
+const FFPROBE_STREAM_ENTRIES: &str = "format=format_name:stream=codec_type,codec_name,width,height,pix_fmt,sample_rate,channels:stream_side_data=side_data_type,crop_top,crop_bottom,crop_left,crop_right";
+// the stream entries a geometry probe reads, cropping side data included
+const FFPROBE_GEOMETRY_ENTRIES: &str = "stream=width,height,pix_fmt:stream_side_data=side_data_type,crop_top,crop_bottom,crop_left,crop_right";
+// ffmpeg crops each decoded picture by this side data, a MOV clean aperture among its sources
+const FRAME_CROPPING_SIDE_DATA: &str = "Frame Cropping";
 
 // probe the container and first video / audio stream; None when ffprobe cannot open it as media
 pub fn probe_media(input: &Path) -> Result<Option<Media>> {
@@ -53,6 +56,39 @@ struct ProbeStream {
     // ffprobe prints the sample rate as a string
     sample_rate: Option<String>,
     channels: Option<u32>,
+    #[serde(default)]
+    side_data_list: Vec<ProbeSideData>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ProbeSideData {
+    side_data_type: String,
+    crop_top: Option<u32>,
+    crop_bottom: Option<u32>,
+    crop_left: Option<u32>,
+    crop_right: Option<u32>,
+}
+
+impl ProbeStream {
+    // the size ffmpeg decodes to: the coded size less any cropping side data
+    fn decoded_size(&self) -> Option<(u32, u32)> {
+        let (width, height) = (self.width?, self.height?);
+        let Some(crop) = self
+            .side_data_list
+            .iter()
+            .find(|data| data.side_data_type == FRAME_CROPPING_SIDE_DATA)
+        else {
+            return Some((width, height));
+        };
+        Some((
+            width
+                .checked_sub(crop.crop_left?)?
+                .checked_sub(crop.crop_right?)?,
+            height
+                .checked_sub(crop.crop_top?)?
+                .checked_sub(crop.crop_bottom?)?,
+        ))
+    }
 }
 
 fn parse_ffprobe_media(json: &str) -> Result<Option<Media>> {
@@ -68,10 +104,11 @@ fn parse_ffprobe_media(json: &str) -> Result<Option<Media>> {
             .find(|s| s.codec_type.as_deref() == Some(kind) && s.codec_name.is_some())
     };
     let video = first_of("video").and_then(|s| {
+        let (width, height) = s.decoded_size()?;
         Some(VideoStream {
             codec: s.codec_name.clone()?,
-            width: s.width?,
-            height: s.height?,
+            width,
+            height,
             pix_fmt: s.pix_fmt.clone(),
         })
     });
@@ -102,9 +139,9 @@ pub fn probe_geometry(input: &Path) -> Result<Video> {
             "-select_streams",
             "v:0",
             "-show_entries",
-            "stream=width,height,pix_fmt",
+            FFPROBE_GEOMETRY_ENTRIES,
             "-of",
-            "csv=p=0",
+            "json",
         ])
         .arg(input)
         .output()
@@ -116,7 +153,37 @@ pub fn probe_geometry(input: &Path) -> Result<Video> {
             String::from_utf8_lossy(&out.stderr).trim()
         )));
     }
-    parse_ffprobe_csv(&String::from_utf8_lossy(&out.stdout))
+    parse_ffprobe_geometry(&String::from_utf8_lossy(&out.stdout))
+}
+
+fn parse_ffprobe_geometry(json: &str) -> Result<Video> {
+    let probe: ProbeOutput =
+        serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
+    let stream = probe
+        .streams
+        .first()
+        .ok_or_else(|| Error::Parse("ffprobe produced no video stream".into()))?;
+    let (width, height) = stream
+        .decoded_size()
+        .ok_or_else(|| Error::Parse(format!("ffprobe reported no usable size: {stream:?}")))?;
+    let pix_fmt = stream
+        .pix_fmt
+        .as_deref()
+        .ok_or_else(|| Error::Parse(format!("ffprobe output missing pix_fmt: {stream:?}")))?;
+    Ok(Video {
+        width,
+        height,
+        format: supported_format(pix_fmt)?,
+    })
+}
+
+fn supported_format(pix_fmt: &str) -> Result<PixelFormat> {
+    PixelFormat::from_pix_fmt(pix_fmt).ok_or_else(|| {
+        Error::Parse(format!(
+            "pix_fmt '{pix_fmt}' is not supported for differential comparison; \
+             add an explicit [video] or use a robustness/soak scenario"
+        ))
+    })
 }
 
 /// Probe every decoded frame's geometry (a resolution-changing stream yields
@@ -237,13 +304,7 @@ fn parse_ffprobe_csv(text: &str) -> Result<Video> {
     let height = next("height")?
         .parse()
         .map_err(|_| Error::Parse(format!("ffprobe height not a number: {line:?}")))?;
-    let pix_fmt = next("pix_fmt")?;
-    let format = PixelFormat::from_pix_fmt(pix_fmt).ok_or_else(|| {
-        Error::Parse(format!(
-            "pix_fmt '{pix_fmt}' is not supported for differential comparison; \
-             add an explicit [video] or use a robustness/soak scenario"
-        ))
-    })?;
+    let format = supported_format(next("pix_fmt")?)?;
     Ok(Video {
         width,
         height,
@@ -276,6 +337,25 @@ mod tests {
         );
         let v = parse_ffprobe_csv("176,144,nv12").unwrap();
         assert_eq!((v.width, v.height, v.format), (176, 144, PixelFormat::Nv12));
+    }
+
+    // ffprobe's report for a DVCPRO HD MOV whose clean aperture ffmpeg 8 crops to
+    const CROPPED_STREAM: &str = r#"{"streams": [
+        {"codec_name": "dvvideo", "codec_type": "video", "width": 960, "height": 720, "pix_fmt": "yuv422p",
+         "side_data_list": [{"side_data_type": "Frame Cropping", "crop_top": 9, "crop_bottom": 9, "crop_left": 12, "crop_right": 12}]}
+    ], "format": {"format_name": "mov,mp4,m4a,3gp,3g2,mj2"}}"#;
+
+    #[test]
+    fn probes_report_the_cropped_size_ffmpeg_decodes_to() {
+        let video = parse_ffprobe_media(CROPPED_STREAM)
+            .unwrap()
+            .unwrap()
+            .video
+            .unwrap();
+        assert_eq!((video.width, video.height), (936, 702));
+        let geometry = parse_ffprobe_geometry(CROPPED_STREAM).unwrap();
+        assert_eq!((geometry.width, geometry.height), (936, 702));
+        assert_eq!(geometry.format, PixelFormat::I422);
     }
 
     #[test]
