@@ -25,7 +25,10 @@ FFMPEG_EXTRA_LAST_FRAME = 'reference quirk: ffmpeg emits one more final frame, g
 
 FFMPEG_DECODES_TRUNCATED_AC3 = 'reference quirk: the last AC-3 packet is truncated and ffmpeg decodes it (1536 samples more), g2g drops it. g2g is bit-exact with ffmpeg over every common sample'
 
-MOV_CLEAN_APERTURE = 'known difference: ffmpeg 8 crops to the MOV clap clean aperture, g2g and gstreamer do not. g2g is bit-exact with ffmpeg -apply_cropping none'
+LOSSY_WEBP_RGBA = 'known difference: g2g decodes lossy WebP to RGBA as gstreamer does, ffmpeg outputs the coded yuv420p. g2g RGBA is bit-exact with libwebp 1.6.0'
+
+def format_change(frames):
+    return f'harness: resolution and pixel format change mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with gstreamer on all {frames} frames in their decoded formats'
 
 def resolution_change(frames):
     return f'harness: resolution changes mid-stream and the raw dump is hashed at one geometry. g2g is bit-exact with ffmpeg -noautoscale on all {frames} frames'
@@ -48,6 +51,8 @@ OVERRIDES = {
     'av1-test-vectors/av1-1-b8-03-sizeup.ivf/video': resolution_change(20),
     'av1/switch_frame.ivf/video': resolution_change(32),
     'h264/reinit-large_420_8-to-small_420_8.h264/video': resolution_change(100),
+    'h264/reinit-small_420_8-to-large_444_10.h264/video': format_change(100),
+    'hevc/paramchange_yuv420p_yuv420p10.hevc/video': format_change(266),
     'mpeg4/resize_down-down.h263/video': resolution_change(150),
     'mpeg4/resize_down-up.h263/video': resolution_change(150),
     'mpeg4/resize_up-down.h263/video': resolution_change(150),
@@ -65,15 +70,9 @@ OVERRIDES = {
     'webp/anim.webp/video': 'reference quirk: neither ffmpeg n8.1 nor gstreamer decodes animated WebP. g2g output unverified',
     'webp/anim_rgb_yuv.webp/video': 'reference quirk: animated WebP, see webp/anim.webp',
     'webp/anim_yuv_rgb.webp/video': 'reference quirk: animated WebP, see webp/anim.webp',
+    'exif/image_small.webp/video': LOSSY_WEBP_RGBA,
+    'webp/rgb_q80.webp/video': LOSSY_WEBP_RGBA,
     # fate-suite no output and unsupported, cases the rules below would get wrong
-    'aic/small_apple_intermediate_codec.mov/video': MOV_CLEAN_APERTURE,
-    'dv/dvcprohd_1080i50.mov/video': MOV_CLEAN_APERTURE,
-    'dv/dvcprohd_1080p25.mov/video': MOV_CLEAN_APERTURE,
-    'dv/dvcprohd_720p50.mov/video': MOV_CLEAN_APERTURE,
-    'spv1/16bpp_555.avi/video': 'g2g bug 63: libavcodec rejects the cut last chunk M1600 keeps, and ffmpegdec failed the stream instead of skipping the packet. Fixed in M1615, bit-exact with ffmpeg',
-    'spv1/32bpp.avi/video': 'g2g bug 63: libavcodec rejects the cut last chunk M1600 keeps, and ffmpegdec failed the stream instead of skipping the packet. Fixed in M1615, bit-exact with ffmpeg',
-    'tscc/2004-12-17-uebung9-partial.avi/video': 'g2g bug 63: libavcodec rejects the cut last chunk M1600 keeps, and ffmpegdec failed the stream instead of skipping the packet. Fixed in M1615, bit-exact with ffmpeg',
-    'jpg/jpg-8930-3.jpg/video': 'open: progressive 4:4:4 JPEG, MjpegDec fails CapsMismatch',
     'probe-format/roundup997/video': 'reference quirk: ffmpeg drops the first B-frame by timestamp in its default constant frame rate mode. g2g is bit-exact with ffmpeg -fps_mode passthrough on all 5 frames',
     'probe-format/roundup997/audio': 'reference quirk: the first PS audio packet opens on a partial MP2 frame and ffmpeg rejects the whole packet, losing the first whole frame, then decodes the truncated last one. g2g decodes the 7 whole frames, bit-exact with ffmpeg on the same frames',
     'pmp/demo.pmp/video': 'unsupported container: typefind finds the MP3 audio, PMP is not demuxed',
@@ -121,10 +120,6 @@ def diagnose(e):
         return ''
     if 'MjpegDec0: CapsMismatch' in note or 'FfmpegVideoDec0: CapsMismatch' in note:
         return 'unsupported pixel format'
-    if 'rejected mid-stream caps video/x-raw' in note:
-        return 'harness: pixel format changes mid-stream and the capsfilter pins one format'
-    if 'WebPDec and CapsFilter' in note:
-        return 'harness: g2g decodes lossy WebP to RGBA, the differential pins I420 without a converter'
     if 'has no video stream to decode' in note:
         return 'unsupported: attached picture' if codec in ('mjpeg', 'png') else 'unsupported codec'
     raise SystemExit(f'no diagnosis for {scenario}: {note}')
@@ -182,7 +177,7 @@ for cls in ORDER:
     out += ['', f'## {TITLES[cls]}', '', '| scenario | codec | result | diagnosis | reproducer |', '| :--- | :--- | :--- | :--- | :--- |']
     natural = lambda text: [int(t) if t.isdigit() else t for t in re.split(r'(\d+)', text)]
     for e in sorted(rows[cls], key=lambda e: (natural(e['diagnosis']), e['report']['scenario'])):
-        note = re.sub(r'runs/\S+/out\.\w+: ', '', e['note']).replace('; ', ', ')
+        note = re.sub(r'\S+/out\.\w+: ', '', e['note']).replace('; ', ', ')
         out.append(f"| `{e['report']['scenario']}` | {e['codec']} | {cell(note)} | {cell(e['diagnosis'])} | `{cell(reproducer(e))}` |")
 if rows['unsupported-codec']:
     out += ['', '## unsupported codec', '',
