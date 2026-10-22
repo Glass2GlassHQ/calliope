@@ -314,6 +314,36 @@ Timing and RSS are recorded per run for within-engine regression tracking;
 they are never compared across engines (different buffering models make that
 meaningless).
 
+### Nightly GPU gate
+
+`tools/conformance-nightly.sh` runs on hercules (RTX 2080 Ti) every evening. It
+builds g2g master and runs the JVT-AVC_V1, JCT-VC-HEVC_V1 and JCT-VC-RExt
+vectors through `nvdec` and `vulkanvideodec`. It then sorts each vector into
+pass, refused, silent (exit 0 with wrong or empty output), crash, timeout or
+device-lost, and compares the result with `conformance/rtx2080ti.json`.
+Vectors whose outcome differs from the baseline are rerun once. A vector that
+still lands on a failing outcome it did not have in the baseline turns the run
+red, and so does a g2g build failure. A red run opens or comments on a GitHub
+issue labelled `conformance`, and the next green run closes it. Runs are kept
+for 14 days in `~/g2g-conformance/runs`.
+
+Install it on the GPU host once:
+
+```sh
+git clone -q https://github.com/Glass2GlassHQ/calliope.git ~/g2g-conformance/calliope
+cp ~/g2g-conformance/calliope/deploy/conformance/g2g-conformance.* ~/.config/systemd/user/
+gh label create conformance -R Glass2GlassHQ/calliope
+systemctl --user daemon-reload
+systemctl --user enable --now g2g-conformance.timer
+```
+
+To accept a change in outcomes, copy the run's table over the baseline and
+commit it:
+
+```sh
+scp hercules:g2g-conformance/latest/table.json conformance/rtx2080ti.json
+```
+
 ## Canary
 
 `calliope canary --config deploy/canary/canary.toml` keeps every `[[pipeline]]`

@@ -41,6 +41,9 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
 - Golden conformance corpus through VulkanVideoDec (RADV + NVIDIA), NVDEC,
   MediaCodec (Pixel), Media Foundation (Windows), results per backend in
   TESTING.md.
+- Publish the nightly conformance gate's per-vector table next to the canary
+  status page.
+- Add VP9 on `nvdec` to the nightly conformance gate.
 
 ## Fluster upstream
 - Contribute a g2g decoder class to fluendo/fluster so g2g appears in the
