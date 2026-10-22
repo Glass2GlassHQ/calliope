@@ -856,15 +856,15 @@
    "outcome": "pass"
   },
   "fluster/JVT-AVC_V1/FM1_BT_B/FM1_BT_B.h264": {
-   "detail": "NvDec: cuvidDecodePicture failed: CUDA_ERROR_INVALID_VALUE (1)",
+   "detail": "NvDec: cannot decode this stream: NVDEC does not support H.264 slice groups (FMO)",
    "outcome": "refused"
   },
   "fluster/JVT-AVC_V1/FM1_FT_E/FM1_FT_E.264": {
-   "detail": "NvDec: cuvidDecodePicture failed: CUDA_ERROR_INVALID_VALUE (1)",
+   "detail": "NvDec: cannot decode this stream: NVDEC does not support H.264 slice groups (FMO)",
    "outcome": "refused"
   },
   "fluster/JVT-AVC_V1/FM2_SVA_C/FM2_SVA_C.264": {
-   "detail": "NvDec: cuvidDecodePicture failed: CUDA_ERROR_INVALID_VALUE (1)",
+   "detail": "NvDec: cannot decode this stream: NVDEC does not support H.264 slice groups (FMO)",
    "outcome": "refused"
   },
   "fluster/JVT-AVC_V1/HCBP1_HHI_A/HCBP1_HHI_A.264": {
@@ -1777,8 +1777,7 @@
    "outcome": "pass"
   },
   "fluster/VP9-TEST-VECTORS/vp90-2-10-show-existing-frame.webm/vp90-2-10-show-existing-frame.webm": {
-   "detail": "NvDec: cuvidDecodePicture failed: CUDA_ERROR_INVALID_VALUE (1)",
-   "outcome": "refused"
+   "outcome": "pass"
   },
   "fluster/VP9-TEST-VECTORS/vp90-2-10-show-existing-frame2.webm/vp90-2-10-show-existing-frame2.webm": {
    "outcome": "pass"
