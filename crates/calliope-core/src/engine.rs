@@ -4,6 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
+use crate::runner::STDOUT_LOG;
 use crate::scenario::Scenario;
 use crate::{Error, Result};
 
@@ -54,6 +55,8 @@ pub enum OutputSpec {
     /// stream (audio frame boundaries differ across decoders, so per-frame md5
     /// is meaningless)
     RawAudioFile(PathBuf),
+    // engine printed one checksumsink `<pts> <digest>` line per frame to this log
+    ChecksumLines(PathBuf),
     /// engine wrote an encoded elementary stream (a roundtrip transcode); the
     /// runner leaves it for ffmpeg to decode + PSNR, not hashed here
     EncodedFile(PathBuf),
@@ -63,6 +66,26 @@ pub enum OutputSpec {
     Published {
         whep: String,
     },
+}
+
+// the gst-launch sink of a decode and what it writes: a raw dump to `dump`, or checksumsink lines on stdout
+pub fn launch_sink(
+    scenario: &Scenario,
+    workdir: &Path,
+    dump: &str,
+    dump_output: fn(PathBuf) -> OutputSpec,
+) -> (String, OutputSpec) {
+    if scenario.timestamps {
+        return (
+            "checksumsink hash=md5".into(),
+            OutputSpec::ChecksumLines(workdir.join(STDOUT_LOG)),
+        );
+    }
+    let path = workdir.join(dump);
+    (
+        format!("filesink location={}", path.display()),
+        dump_output(path),
+    )
 }
 
 /// binary override hook: `env_var` (e.g. CALLIOPE_FFMPEG) wins over `default`

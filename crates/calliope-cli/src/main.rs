@@ -116,6 +116,9 @@ enum Command {
         /// engines to run (comma-separated); default ffmpeg,gstreamer,g2g, ffmpeg is the reference
         #[arg(long, value_delimiter = ',')]
         engines: Vec<String>,
+        /// decode: every engine against ffmpeg; timestamps: g2g pts against ffprobe; chunk-size: g2g at several filesrc block sizes
+        #[arg(long, value_enum, default_value = "decode")]
+        mode: sweep::SweepMode,
         /// cap the number of vectors swept (0 = all)
         #[arg(long, default_value_t = 0)]
         limit: usize,
@@ -207,6 +210,8 @@ fn engine_crashes(
         resolution_change: false,
         deinterlace: false,
         overlay: false,
+        blocksize: None,
+        timestamps: false,
         outcome_diff: false,
         produce: None,
     };
@@ -274,6 +279,8 @@ fn golden_scenarios(
             resolution_change: false,
             deinterlace: false,
             overlay: false,
+            blocksize: None,
+            timestamps: false,
             outcome_diff: false,
             produce: None,
         })
@@ -480,6 +487,7 @@ async fn main() -> Result<ExitCode> {
         Command::Sweep {
             corpus,
             engines,
+            mode,
             limit,
             jobs,
             workdir,
@@ -487,6 +495,9 @@ async fn main() -> Result<ExitCode> {
             triage,
             title,
         } => {
+            if mode != sweep::SweepMode::Decode && !engines.is_empty() {
+                bail!("--engines only applies to the decode mode, the other modes run g2g alone");
+            }
             let engines = if engines.is_empty() {
                 DEFAULT_ENGINES.map(String::from).to_vec()
             } else {
@@ -498,8 +509,8 @@ async fn main() -> Result<ExitCode> {
                     sweep::REFERENCE_ENGINE
                 );
             }
-            let entries = sweep::run(&corpus, &engines, limit, jobs, &workdir).await?;
-            let markdown = sweep::triage_markdown(&title, &entries);
+            let entries = sweep::run(&corpus, &engines, mode, limit, jobs, &workdir).await?;
+            let markdown = sweep::triage_markdown(&title, mode, &entries);
             print!("{markdown}");
             if let Some(path) = report {
                 std::fs::write(&path, serde_json::to_vec_pretty(&entries)?)?;
@@ -682,9 +693,11 @@ async fn run_matrix(
         } else if (scenario.judges_frames() || scenario.is_roundtrip())
             && scenario.video.is_none()
             && !scenario.is_audio()
+            && !scenario.timestamps
         {
             // differential chunks by geometry; roundtrip needs it to size the raw
-            // PSNR compare. Audio has no video geometry, so it skips the probe.
+            // PSNR compare. Audio has no video geometry, so it skips the probe,
+            // and checksumsink hashes whole buffers, so a timestamps run does too.
             scenario.video = Some(
                 calliope_core::probe::probe_geometry(&input)
                     .with_context(|| format!("{}: auto-probing geometry", scenario.id))?,

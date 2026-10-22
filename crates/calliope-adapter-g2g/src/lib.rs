@@ -8,7 +8,9 @@ pub mod validate;
 
 use std::path::Path;
 
-use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, probe_first_line};
+use calliope_core::engine::{
+    Engine, EngineInfo, Invocation, OutputSpec, binary, launch_sink, probe_first_line,
+};
 use calliope_core::produce::{
     Container, FRAGMENT_DURATION, Produce, ProducedAudio, VideoCodec, whep_endpoint, whip_endpoint,
 };
@@ -109,6 +111,15 @@ pub fn reports_unsupported_input(stderr: &str) -> bool {
     UNSUPPORTED_INPUT_ERRORS
         .iter()
         .any(|error| stderr.contains(error))
+}
+
+// the decode pipeline's filesrc, with the scenario's block size when it sets one
+fn file_source(scenario: &Scenario, input: &Path) -> String {
+    let source = format!("filesrc location={}", input.display());
+    match scenario.blocksize {
+        Some(bytes) => format!("{source} blocksize={bytes}"),
+        None => source,
+    }
 }
 
 pub fn g2g_launch_binary() -> String {
@@ -242,19 +253,19 @@ impl G2g {
     /// rounding never matches.
     fn audio_invocation(
         &self,
+        scenario: &Scenario,
         audio: &calliope_core::scenario::Audio,
         input: &Path,
         workdir: &Path,
         flags: &[&str],
     ) -> Invocation {
-        let out = workdir.join("out.pcm");
+        let (sink, output) = launch_sink(scenario, workdir, "out.pcm", OutputSpec::RawAudioFile);
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={} ! filesink location={}",
-            input.display(),
+            "{} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={} ! {sink}",
+            file_source(scenario, input),
             audio.format.gst_format(),
             audio.rate,
             audio.channels,
-            out.display()
         );
         let mut args: Vec<String> = flags.iter().map(|s| s.to_string()).collect();
         args.push("-q".to_string());
@@ -262,7 +273,7 @@ impl G2g {
         Invocation {
             program: g2g_launch_binary(),
             args,
-            output: OutputSpec::RawAudioFile(out),
+            output,
         }
     }
 
@@ -276,9 +287,9 @@ impl G2g {
         flags: &[&str],
     ) -> Invocation {
         if let Some(audio) = &scenario.audio {
-            return self.audio_invocation(audio, input, workdir, flags);
+            return self.audio_invocation(scenario, audio, input, workdir, flags);
         }
-        let out = workdir.join("out.yuv");
+        let (sink, output) = launch_sink(scenario, workdir, "out.yuv", OutputSpec::RawVideoFile);
         // Pin the decoded format with a capsfilter (GStreamer fourcc names) so
         // the raw dump matches ffmpeg's framemd5. The videoconvert passes the
         // pin through to the decoder and is an identity when the decoder
@@ -302,9 +313,8 @@ impl G2g {
             ""
         };
         let pipeline = format!(
-            "filesrc location={} ! decodebin ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! filesink location={}",
-            input.display(),
-            out.display()
+            "{} ! decodebin ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! {sink}",
+            file_source(scenario, input),
         );
         let mut args: Vec<String> = flags.iter().map(|s| s.to_string()).collect();
         args.push("-q".to_string());
@@ -312,7 +322,7 @@ impl G2g {
         Invocation {
             program: g2g_launch_binary(),
             args,
-            output: OutputSpec::RawVideoFile(out),
+            output,
         }
     }
 }

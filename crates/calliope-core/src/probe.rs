@@ -6,12 +6,37 @@
 
 use std::path::Path;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::corpus::{AudioStream, Media, VideoStream};
 use crate::engine::binary;
 use crate::scenario::{PixelFormat, Video};
+use crate::timestamps::{ReferenceFrame, ReferenceTimestamps, TimeBase};
 use crate::{Error, Result};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum StreamKind {
+    Video,
+    Audio,
+}
+
+impl StreamKind {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Video => "video",
+            Self::Audio => "audio",
+        }
+    }
+
+    // ffprobe's -select_streams for the first stream of this kind
+    fn first_stream(self) -> &'static str {
+        match self {
+            Self::Video => "v:0",
+            Self::Audio => "a:0",
+        }
+    }
+}
 
 const FFPROBE_STREAM_ENTRIES: &str = "format=format_name:stream=codec_type,codec_name,width,height,pix_fmt,sample_rate,channels:stream_side_data=side_data_type,crop_top,crop_bottom,crop_left,crop_right";
 // the stream entries a geometry probe reads, cropping side data included
@@ -282,6 +307,78 @@ fn parse_video_frame_count(text: &str) -> Result<VideoFrameCount> {
     })
 }
 
+// every decoded frame's timestamps from the first stream of `kind`, in decoder output order
+// a playlist or manifest input can leave ffprobe waiting on the network, so the probe has a deadline
+pub async fn probe_frame_timestamps(
+    input: &Path,
+    kind: StreamKind,
+    timeout: std::time::Duration,
+) -> Result<ReferenceTimestamps> {
+    let program = binary("CALLIOPE_FFPROBE", "ffprobe");
+    let probe = tokio::process::Command::new(&program)
+        .args(["-v", "error", "-select_streams", kind.first_stream()])
+        .args([
+            "-show_entries",
+            "stream=time_base:frame=pts,best_effort_timestamp",
+        ])
+        .args(["-of", "json"])
+        .arg(input)
+        .kill_on_drop(true)
+        .output();
+    let out = tokio::time::timeout(timeout, probe)
+        .await
+        .map_err(|_| Error::Parse(format!("ffprobe timed out after {} s", timeout.as_secs())))?
+        .map_err(|e| Error::Parse(format!("ffprobe ({program}): {e}")))?;
+    if !out.status.success() {
+        return Err(Error::Parse(format!(
+            "ffprobe failed on {}: {}",
+            input.display(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        )));
+    }
+    parse_frame_timestamps(&String::from_utf8_lossy(&out.stdout))
+}
+
+#[derive(Debug, Deserialize)]
+struct FrameProbe {
+    #[serde(default)]
+    streams: Vec<TimeBaseStream>,
+    #[serde(default)]
+    frames: Vec<ProbeFrame>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TimeBaseStream {
+    time_base: String,
+}
+
+// ffprobe leaves out a field that is N/A
+#[derive(Debug, Deserialize)]
+struct ProbeFrame {
+    pts: Option<i64>,
+    best_effort_timestamp: Option<i64>,
+}
+
+fn parse_frame_timestamps(json: &str) -> Result<ReferenceTimestamps> {
+    let probe: FrameProbe =
+        serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
+    let stream = probe
+        .streams
+        .first()
+        .ok_or_else(|| Error::Parse("ffprobe found no stream of that kind".into()))?;
+    Ok(ReferenceTimestamps {
+        time_base: TimeBase::parse(&stream.time_base)?,
+        frames: probe
+            .frames
+            .into_iter()
+            .map(|frame| ReferenceFrame {
+                pts: frame.pts,
+                best_effort_timestamp: frame.best_effort_timestamp,
+            })
+            .collect(),
+    })
+}
+
 /// parse ffprobe `-of csv=p=0` output for `width,height,pix_fmt` (a single
 /// stream or frame line; any trailing fields, e.g. per-frame side data, ignored)
 fn parse_ffprobe_csv(text: &str) -> Result<Video> {
@@ -400,6 +497,31 @@ mod tests {
         assert!(parse_ffprobe_csv("").is_err());
         assert!(parse_ffprobe_csv("176,,yuv420p").is_err());
         assert!(parse_ffprobe_csv("wide,144,yuv420p").is_err());
+    }
+
+    #[test]
+    fn parses_frame_timestamps_with_missing_fields() {
+        // ffprobe's report for an AVI-style stream: the second frame has no pts of its own
+        let json = r#"{"frames": [
+            {"pts": 0, "best_effort_timestamp": 0},
+            {"best_effort_timestamp": 1},
+            {}
+        ], "streams": [{"time_base": "1/25"}]}"#;
+        let timestamps = parse_frame_timestamps(json).unwrap();
+        assert_eq!(
+            timestamps.time_base,
+            TimeBase {
+                numerator: 1,
+                denominator: 25
+            }
+        );
+        let fields: Vec<(Option<i64>, Option<i64>)> = timestamps
+            .frames
+            .iter()
+            .map(|f| (f.pts, f.best_effort_timestamp))
+            .collect();
+        assert_eq!(fields, [(Some(0), Some(0)), (None, Some(1)), (None, None)]);
+        assert!(parse_frame_timestamps(r#"{"frames": []}"#).is_err());
     }
 
     #[test]

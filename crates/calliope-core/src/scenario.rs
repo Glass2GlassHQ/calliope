@@ -92,6 +92,13 @@ pub struct Scenario {
     pub overlay: bool,
     // each engine encodes and muxes the input, external validators judge the output
     pub produce: Option<Produce>,
+    // only the sweep sets the next two, a scenario file cannot
+    // bytes per filesrc read, None keeps the engine default
+    #[serde(skip)]
+    pub blocksize: Option<u32>,
+    // decode into checksumsink, so each frame's pts and digest land on stdout
+    #[serde(skip)]
+    pub timestamps: bool,
 }
 
 /// Encode-differential config: ffmpeg encodes a lavfi source into an elementary

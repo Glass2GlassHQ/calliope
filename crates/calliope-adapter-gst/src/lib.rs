@@ -11,7 +11,9 @@ pub mod dot;
 
 use std::path::Path;
 
-use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, probe_first_line};
+use calliope_core::engine::{
+    Engine, EngineInfo, Invocation, OutputSpec, binary, launch_sink, probe_first_line,
+};
 use calliope_core::scenario::Scenario;
 use calliope_core::{Error, Result};
 
@@ -42,24 +44,24 @@ impl Engine for GStreamer {
         // dithering=none: audioconvert dithers a bit-depth reduction by default
         // (tpdf), which ffmpeg's plain rounding never matches.
         if let Some(audio) = scenario.audio {
-            let out = workdir.join("out.pcm");
+            let (sink, output) =
+                launch_sink(scenario, workdir, "out.pcm", OutputSpec::RawAudioFile);
             let pipeline = format!(
-                "filesrc location={} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={},layout=interleaved ! filesink location={}",
+                "filesrc location={} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={},layout=interleaved ! {sink}",
                 input.display(),
                 audio.format.gst_format(),
                 audio.rate,
                 audio.channels,
-                out.display()
             );
             let mut args = vec!["-q".to_string()];
             args.extend(pipeline.split(' ').map(str::to_string));
             return Ok(Invocation {
                 program: binary("CALLIOPE_GST_LAUNCH", "gst-launch-1.0"),
                 args,
-                output: OutputSpec::RawAudioFile(out),
+                output,
             });
         }
-        let out = workdir.join("out.yuv");
+        let (sink, output) = launch_sink(scenario, workdir, "out.yuv", OutputSpec::RawVideoFile);
         // convert to the scenario's decoded format so the raw dump matches
         // ffmpeg's native framemd5 layout; a differential run resolves it (from
         // [video] or ffprobe), robustness / soak default to I420. A deinterlace
@@ -80,16 +82,15 @@ impl Engine for GStreamer {
             ""
         };
         let pipeline = format!(
-            "filesrc location={} ! decodebin force-sw-decoders=true ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! filesink location={}",
+            "filesrc location={} ! decodebin force-sw-decoders=true ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! {sink}",
             input.display(),
-            out.display()
         );
         let mut args = vec!["-q".to_string()];
         args.extend(pipeline.split(' ').map(str::to_string));
         Ok(Invocation {
             program: binary("CALLIOPE_GST_LAUNCH", "gst-launch-1.0"),
             args,
-            output: OutputSpec::RawVideoFile(out),
+            output,
         })
     }
 }

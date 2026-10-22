@@ -8,10 +8,15 @@ use anyhow::Result;
 use serde::Serialize;
 
 use calliope_core::corpus::{self, Manifest, Vector};
+use calliope_core::framehash::parse_checksum_lines;
+use calliope_core::probe::{StreamKind, probe_frame_timestamps};
 use calliope_core::report::ScenarioReport;
-use calliope_core::runner::{RunResult, RunStatus};
+use calliope_core::runner::{RunResult, RunStatus, STDOUT_LOG};
 use calliope_core::scenario::{
     Audio, AudioCodec, Determinism, Input, PixelFormat, SampleFormat, Scenario, Video,
+};
+use calliope_core::timestamps::{
+    self, FramePairing, ReferenceTimestamps, TimeBase, TimestampVerdict,
 };
 
 pub const REFERENCE_ENGINE: &str = "ffmpeg";
@@ -27,21 +32,20 @@ const REPRODUCER_DIR: &str = "/tmp/calliope-repro";
 const RUN_LOG_EXTENSION: &str = "log";
 // table placeholder for a video stream ffprobe gave no pixel format
 const NO_PIX_FMT: &str = "none";
+// ffprobe's codec_name prefix for every raw PCM sample format
+const PCM_CODEC_PREFIX: &str = "pcm_";
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum StreamKind {
-    Video,
-    Audio,
-}
+// filesrc block sizes the chunk-size mode decodes at, the first is g2g's default and the baseline
+const CHUNK_SIZES: [u32; 3] = [65536, 4096, 188];
 
-impl StreamKind {
-    fn label(self) -> &'static str {
-        match self {
-            Self::Video => "video",
-            Self::Audio => "audio",
-        }
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+pub enum SweepMode {
+    // every engine decodes each stream, ffmpeg is the reference
+    Decode,
+    // g2g's per-frame pts against ffprobe -show_frames
+    Timestamps,
+    // g2g decodes at each of CHUNK_SIZES and the outputs must be identical
+    ChunkSize,
 }
 
 #[derive(Debug)]
@@ -141,6 +145,8 @@ fn base_scenario(vector: &Vector, kind: StreamKind, engines: Vec<String>) -> Sce
         resolution_change: false,
         deinterlace: false,
         overlay: false,
+        blocksize: None,
+        timestamps: false,
         outcome_diff: false,
     }
 }
@@ -232,10 +238,22 @@ fn first_error_line(log: &str) -> Option<String> {
         .map(|line| line.split_whitespace().collect::<Vec<_>>().join(" "))
 }
 
+// a g2g run that did not decode, as the class and note every mode files it under
+fn g2g_failure(run: &RunResult, g2g_stderr: &str) -> Option<(TriageClass, String)> {
+    let failure_note = || first_error_line(g2g_stderr).unwrap_or_else(|| status_note(run));
+    match outcome(run) {
+        Outcome::Decoded => None,
+        Outcome::Crashed | Outcome::Hung => Some((TriageClass::G2gCrashOrHang, status_note(run))),
+        Outcome::NoOutput if calliope_adapter_g2g::reports_unsupported_input(g2g_stderr) => {
+            Some((TriageClass::UnsupportedCodec, failure_note()))
+        }
+        Outcome::NoOutput => Some((TriageClass::G2gNoOutput, failure_note())),
+        Outcome::Unhashable => Some((TriageClass::G2gDiverges, status_note(run))),
+    }
+}
+
 // classify one scenario against the g2g run's stderr log
 pub fn classify(report: &ScenarioReport, g2g_stderr: &str) -> (TriageClass, String) {
-    let g2g_failure_note =
-        |run: &RunResult| first_error_line(g2g_stderr).unwrap_or_else(|| status_note(run));
     let find = |engine: &str| {
         report
             .runs
@@ -278,14 +296,9 @@ pub fn classify(report: &ScenarioReport, g2g_stderr: &str) -> (TriageClass, Stri
         };
     }
 
-    if let (Some(run), Some(g2g_outcome)) = (g2g, g2g_outcome) {
-        match g2g_outcome {
-            Outcome::NoOutput if calliope_adapter_g2g::reports_unsupported_input(g2g_stderr) => {
-                return (TriageClass::UnsupportedCodec, g2g_failure_note(run));
-            }
-            Outcome::NoOutput => return (TriageClass::G2gNoOutput, g2g_failure_note(run)),
-            Outcome::Unhashable => return (TriageClass::G2gDiverges, status_note(run)),
-            _ => {}
+    if let Some(run) = g2g {
+        if let Some(failure) = g2g_failure(run, g2g_stderr) {
+            return failure;
         }
         if let Some(note) = divergence(report, run) {
             let reference_outlier = report.majority.as_ref().is_some_and(|vote| {
@@ -324,9 +337,255 @@ pub struct SweepEntry {
     pub report: ScenarioReport,
 }
 
+impl SweepMode {
+    // what the mode compares g2g against, for the triage header
+    fn reference(self) -> String {
+        match self {
+            Self::Decode => REFERENCE_ENGINE.into(),
+            Self::Timestamps => "ffprobe -show_frames, gstreamer breaks a tie".into(),
+            Self::ChunkSize => format!("g2g at blocksize {}", CHUNK_SIZES[0]),
+        }
+    }
+}
+
+// the scenarios one case runs as under `mode`
+fn mode_scenarios(mode: SweepMode, scenario: &Scenario) -> Vec<Scenario> {
+    let g2g_alone = || Scenario {
+        engines: vec![G2G_ENGINE.into()],
+        reference: G2G_ENGINE.into(),
+        ..scenario.clone()
+    };
+    match mode {
+        SweepMode::Decode => vec![scenario.clone()],
+        SweepMode::Timestamps => vec![Scenario {
+            engines: vec![GSTREAMER_ENGINE.into(), G2G_ENGINE.into()],
+            determinism: None,
+            timestamps: true,
+            ..g2g_alone()
+        }],
+        // a whole-output hash from one run per size, so any stream can be compared, packed or not
+        SweepMode::ChunkSize => CHUNK_SIZES
+            .iter()
+            .map(|&size| Scenario {
+                id: format!("{}/blocksize-{size}", scenario.id),
+                blocksize: Some(size),
+                determinism: Some(Determinism {
+                    runs: 1,
+                    threads: false,
+                }),
+                ..g2g_alone()
+            })
+            .collect(),
+    }
+}
+
+fn run_stderr(run: &RunResult) -> String {
+    std::fs::read_to_string(run.log_dir.join("stderr.log")).unwrap_or_default()
+}
+
+fn seconds_text(nanoseconds: u64) -> String {
+    const NANOSECONDS_PER_SECOND: u64 = 1_000_000_000;
+    format!(
+        "{}.{:09} s",
+        nanoseconds / NANOSECONDS_PER_SECOND,
+        nanoseconds % NANOSECONDS_PER_SECOND
+    )
+}
+
+fn reference_seconds_text(time_base: TimeBase, ticks: i64) -> String {
+    format!("{:.9} s", time_base.seconds(i128::from(ticks)))
+}
+
+// one engine's checksumsink decode in a timestamps run
+#[derive(Debug)]
+pub struct TimestampRun<'a> {
+    pub run: &'a RunResult,
+    pub stderr: String,
+    pub stdout: String,
+}
+
+impl TimestampRun<'_> {
+    // the pts of every frame, None when the run did not finish with a parsed log
+    fn pts(&self) -> Option<Vec<Option<u64>>> {
+        if outcome(self.run) != Outcome::Decoded {
+            return None;
+        }
+        let lines = parse_checksum_lines(&self.stdout)
+            .expect("the runner parsed a decoded run's log into frame hashes");
+        Some(lines.into_iter().map(|line| line.pts_ns).collect())
+    }
+}
+
+// PCM packets are whatever the demuxer reads at once, other codecs code a fixed frame
+pub fn frame_pairing(kind: StreamKind, codec: &str) -> FramePairing {
+    if kind == StreamKind::Audio && codec.starts_with(PCM_CODEC_PREFIX) {
+        FramePairing::FirstFrame
+    } else {
+        FramePairing::EveryFrame
+    }
+}
+
+// classify g2g's per-frame pts against ffprobe's, gstreamer stamping every frame as g2g does makes it a reference quirk
+pub fn classify_timestamps(
+    g2g: &TimestampRun,
+    gstreamer: Option<&TimestampRun>,
+    reference: calliope_core::Result<ReferenceTimestamps>,
+    pairing: FramePairing,
+) -> (TriageClass, String) {
+    if let Some(failure) = g2g_failure(g2g.run, &g2g.stderr) {
+        return failure;
+    }
+    let reference = match reference {
+        Ok(reference) if !reference.frames.is_empty() => reference,
+        Ok(_) => {
+            return (
+                TriageClass::ReferenceQuirk,
+                "ffprobe decodes no frames".into(),
+            );
+        }
+        Err(e) => return (TriageClass::ReferenceQuirk, e.to_string()),
+    };
+    let g2g_pts = g2g.pts().expect("g2g decoded");
+    let frames = reference.frames.len();
+    let comparison = timestamps::compare(&reference, &g2g_pts, pairing);
+    let offset_seconds = reference.time_base.seconds(comparison.offset_ticks);
+    let has_offset = comparison.offset_ticks != 0;
+    let offset = if has_offset {
+        format!(", after taking off g2g's offset of {offset_seconds:+.9} s")
+    } else {
+        String::new()
+    };
+    let note = match comparison.verdict {
+        TimestampVerdict::Match if !has_offset => return (TriageClass::Agree, String::new()),
+        TimestampVerdict::Match => format!("every frame is offset by {offset_seconds:+.9} s"),
+        TimestampVerdict::NoReferenceTimestamps => {
+            return (
+                TriageClass::Agree,
+                "ffprobe has no timestamps, g2g's increase".into(),
+            );
+        }
+        TimestampVerdict::PtsDiffers {
+            frame,
+            g2g_ns,
+            reference_ticks,
+            reference_guessed,
+        } => {
+            let g2g = g2g_ns.map_or("no pts".into(), seconds_text);
+            let ffprobe = reference_seconds_text(reference.time_base, reference_ticks);
+            let guessed = if reference_guessed {
+                " where ffmpeg guessed the pts"
+            } else {
+                ""
+            };
+            format!(
+                "pts differs at frame {frame} of {frames}{guessed}{offset}: g2g {g2g}, ffprobe {ffprobe}"
+            )
+        }
+        TimestampVerdict::FrameCountDiffers {
+            frames,
+            reference_frames,
+        } => format!(
+            "{frames} frames vs ffprobe {reference_frames}, the common frames agree{offset}"
+        ),
+        TimestampVerdict::NotIncreasing { frame } => {
+            format!(
+                "g2g's pts does not increase at frame {frame} of {}",
+                g2g_pts.len()
+            )
+        }
+    };
+    let gstreamer_agrees = gstreamer
+        .and_then(TimestampRun::pts)
+        .is_some_and(|gstreamer_pts| {
+            timestamps::same_ticks(reference.time_base, &g2g_pts, &gstreamer_pts)
+        });
+    if gstreamer_agrees {
+        return (
+            TriageClass::ReferenceQuirk,
+            format!("gstreamer agrees with g2g, {note}"),
+        );
+    }
+    (TriageClass::G2gDiverges, note)
+}
+
+// what one block size's run produced, for a chunk-size note
+fn chunk_size_result(run: &RunResult, g2g_stderr: &str) -> String {
+    match (outcome(run), run.output_len) {
+        (Outcome::Decoded, Some(bytes)) => format!("{bytes} bytes"),
+        _ => first_error_line(g2g_stderr).unwrap_or_else(|| status_note(run)),
+    }
+}
+
+#[derive(Debug)]
+pub struct ChunkSizeRun<'a> {
+    pub blocksize: u32,
+    pub run: &'a RunResult,
+    pub stderr: String,
+}
+
+#[derive(Debug)]
+pub struct ChunkSizeTriage {
+    pub class: TriageClass,
+    pub note: String,
+    // index of the run the note is about, its pipeline is the reproducer
+    pub run: usize,
+}
+
+// classify one stream's runs at each of CHUNK_SIZES, baseline first
+pub fn classify_chunk_size(runs: &[ChunkSizeRun]) -> ChunkSizeTriage {
+    if let Some(index) = runs
+        .iter()
+        .position(|r| matches!(outcome(r.run), Outcome::Crashed | Outcome::Hung))
+    {
+        return ChunkSizeTriage {
+            class: TriageClass::G2gCrashOrHang,
+            note: format!(
+                "{} at blocksize {}",
+                status_note(runs[index].run),
+                runs[index].blocksize
+            ),
+            run: index,
+        };
+    }
+    let baseline = &runs[0];
+    let differs = |run: &RunResult| {
+        outcome(run) != outcome(baseline.run)
+            || (outcome(run) == Outcome::Decoded && run.output_md5 != baseline.run.output_md5)
+    };
+    if let Some(index) = runs.iter().position(|r| differs(r.run)) {
+        let other = &runs[index];
+        let result = chunk_size_result(other.run, &other.stderr);
+        let baseline_result = chunk_size_result(baseline.run, &baseline.stderr);
+        let note = if result == baseline_result {
+            format!(
+                "blocksize {} and {}: {result} each, different bytes",
+                other.blocksize, baseline.blocksize
+            )
+        } else {
+            format!(
+                "blocksize {}: {result}, blocksize {}: {baseline_result}",
+                other.blocksize, baseline.blocksize
+            )
+        };
+        return ChunkSizeTriage {
+            class: TriageClass::G2gDiverges,
+            note,
+            run: index,
+        };
+    }
+    let (class, note) =
+        g2g_failure(baseline.run, &baseline.stderr).unwrap_or((TriageClass::Agree, String::new()));
+    ChunkSizeTriage {
+        class,
+        note,
+        run: 0,
+    }
+}
+
 pub async fn run(
     manifest_path: &Path,
     engines: &[String],
+    mode: SweepMode,
     limit: usize,
     jobs: usize,
     workdir: &Path,
@@ -342,38 +601,105 @@ pub async fn run(
     }
     let cases = sweep_cases(&vectors, engines);
     println!(
-        "sweep: {} vectors, {} scenarios x {} engines",
+        "sweep: {} vectors, {} streams, mode {mode:?}",
         vectors.len(),
         cases.len(),
-        engines.len()
     );
     let cache = corpus::cache_dir();
     let g2g = crate::engine_by_id(G2G_ENGINE)?;
     let mut entries = Vec::new();
     for batch in cases.chunks(SWEEP_BATCH) {
-        let scenarios: Vec<Scenario> = batch.iter().map(|c| c.scenario.clone()).collect();
-        let report = crate::run_matrix(&scenarios, manifest_path, &[], jobs, workdir).await?;
-        for scenario_report in report.scenarios {
-            let case = batch
-                .iter()
-                .find(|c| c.scenario.id == scenario_report.scenario)
-                .expect("report rows come from this batch");
-            let g2g_run = scenario_report
-                .runs
-                .iter()
-                .find(|r| r.run.engine == G2G_ENGINE);
-            let g2g_stderr = g2g_run
-                .and_then(|r| std::fs::read_to_string(r.run.log_dir.join("stderr.log")).ok())
-                .unwrap_or_default();
-            let (class, note) = classify(&scenario_report, &g2g_stderr);
-            let reproducer = g2g_run
-                .is_some()
-                .then(|| reproducer(g2g.as_ref(), &case.scenario, &cache.join(&case.vector)))
-                .flatten();
-            for run in &scenario_report.runs {
+        let planned: Vec<Vec<Scenario>> = batch
+            .iter()
+            .map(|case| mode_scenarios(mode, &case.scenario))
+            .collect();
+        let scenarios: Vec<Scenario> = planned.iter().flatten().cloned().collect();
+        let mut reports = crate::run_matrix(&scenarios, manifest_path, &[], jobs, workdir)
+            .await?
+            .scenarios;
+        let mut finished = Vec::new();
+        for (case, case_scenarios) in batch.iter().zip(planned) {
+            let case_reports: Vec<(Scenario, ScenarioReport)> = case_scenarios
+                .into_iter()
+                .filter_map(|scenario| {
+                    let index = reports.iter().position(|r| r.scenario == scenario.id)?;
+                    Some((scenario, reports.remove(index)))
+                })
+                .collect();
+            // run_matrix skips a vector it could not fetch
+            if !case_reports.is_empty() {
+                finished.push((case, case_reports));
+            }
+        }
+        let references = match mode {
+            SweepMode::Timestamps => {
+                let probes = finished.iter().map(|(case, _)| {
+                    let input = cache.join(&case.vector);
+                    async move {
+                        let timeout = std::time::Duration::from_secs(SWEEP_TIMEOUT_SECS);
+                        Some(probe_frame_timestamps(&input, case.kind, timeout).await)
+                    }
+                });
+                futures::future::join_all(probes).await
+            }
+            SweepMode::Decode | SweepMode::ChunkSize => finished.iter().map(|_| None).collect(),
+        };
+        for ((case, mut case_reports), reference) in finished.into_iter().zip(references) {
+            let (class, note, reproduced, report) = match mode {
+                SweepMode::Decode => {
+                    let (scenario, report) = case_reports.remove(0);
+                    let g2g_run = report.runs.iter().find(|r| r.run.engine == G2G_ENGINE);
+                    let stderr = g2g_run.map(|r| run_stderr(&r.run)).unwrap_or_default();
+                    let (class, note) = classify(&report, &stderr);
+                    let reproduced = g2g_run.is_some().then_some(scenario);
+                    (class, note, reproduced, report)
+                }
+                SweepMode::Timestamps => {
+                    let (scenario, report) = case_reports.remove(0);
+                    let timestamp_run = |engine: &str| -> Result<Option<TimestampRun>> {
+                        let Some(entry) = report.runs.iter().find(|r| r.run.engine == engine)
+                        else {
+                            return Ok(None);
+                        };
+                        Ok(Some(TimestampRun {
+                            run: &entry.run,
+                            stderr: run_stderr(&entry.run),
+                            stdout: std::fs::read_to_string(entry.run.log_dir.join(STDOUT_LOG))?,
+                        }))
+                    };
+                    let g2g = timestamp_run(G2G_ENGINE)?.expect("timestamps runs g2g");
+                    let gstreamer = timestamp_run(GSTREAMER_ENGINE)?;
+                    let reference = reference.expect("timestamps mode probes every case");
+                    let pairing = frame_pairing(case.kind, &case.codec);
+                    let (class, note) =
+                        classify_timestamps(&g2g, gstreamer.as_ref(), reference, pairing);
+                    (class, note, Some(scenario), report)
+                }
+                SweepMode::ChunkSize => {
+                    let runs: Vec<ChunkSizeRun> = case_reports
+                        .iter()
+                        .map(|(scenario, report)| ChunkSizeRun {
+                            blocksize: scenario.blocksize.expect("chunk-size scenarios set one"),
+                            run: &report.runs[0].run,
+                            stderr: run_stderr(&report.runs[0].run),
+                        })
+                        .collect();
+                    let ChunkSizeTriage { class, note, run } = classify_chunk_size(&runs);
+                    let reproduced = case_reports[run].0.clone();
+                    let mut merged = case_reports.into_iter().map(|(_, report)| report);
+                    let mut report = merged.next().expect("one report per chunk size");
+                    report.runs.extend(merged.flat_map(|other| other.runs));
+                    report.scenario = case.scenario.id.clone();
+                    (class, note, Some(reproduced), report)
+                }
+            };
+            let reproducer = reproduced.and_then(|scenario| {
+                reproducer(g2g.as_ref(), &scenario, &cache.join(&case.vector))
+            });
+            for run in &report.runs {
                 delete_decoded_output(&run.run.log_dir)?;
             }
-            println!("  {:<18} {}", class.title(), scenario_report.scenario);
+            println!("  {:<18} {}", class.title(), report.scenario);
             entries.push(SweepEntry {
                 vector: case.vector.clone(),
                 kind: case.kind,
@@ -381,7 +707,7 @@ pub async fn run(
                 class,
                 note,
                 reproducer,
-                report: scenario_report,
+                report,
             });
         }
     }
@@ -435,7 +761,7 @@ fn table_cell(text: &str) -> String {
 }
 
 // markdown triage table: class counts, then one section per non-agree class
-pub fn triage_markdown(title: &str, entries: &[SweepEntry]) -> String {
+pub fn triage_markdown(title: &str, mode: SweepMode, entries: &[SweepEntry]) -> String {
     let mut by_class: BTreeMap<TriageClass, Vec<&SweepEntry>> = BTreeMap::new();
     for entry in entries {
         by_class.entry(entry.class).or_default().push(entry);
@@ -443,9 +769,10 @@ pub fn triage_markdown(title: &str, entries: &[SweepEntry]) -> String {
     let vectors: std::collections::BTreeSet<&str> =
         entries.iter().map(|e| e.vector.as_str()).collect();
     let mut out = format!(
-        "# {title} sweep triage\n\n{} files, {} scenarios (one per video / audio stream), reference {REFERENCE_ENGINE}.\n\n| class | scenarios |\n| :--- | ---: |\n",
+        "# {title} sweep triage\n\n{} files, {} scenarios (one per video / audio stream), reference {}.\n\n| class | scenarios |\n| :--- | ---: |\n",
         vectors.len(),
-        entries.len()
+        entries.len(),
+        mode.reference()
     );
     for (class, rows) in &by_class {
         let _ = writeln!(out, "| {} | {} |", class.title(), rows.len());
@@ -706,7 +1033,7 @@ mod tests {
                 stderr,
             )
         };
-        const NO_DECODER: &str = "[h264 @ 0x1] error while decoding MB 0 0\nparse error: decodebin: no decoder chain from Audio { format: PcmU8 } to raw";
+        const NO_DECODER: &str = "[h264 @ 0x1] error while decoding MB 0 0\nparse error: decodebin: no decoder chain from audio/x-raw,format=U8 to raw";
         const CAPS_FAILURE: &str = "ERROR caps   no caps overlap between AviDemux and CapsFilter\npipeline error: CapsMismatch";
         let rejected = || run(G2G_ENGINE, RunStatus::ExitFailure { code: 1 }, None);
         let (class, note) = with_g2g(rejected(), NO_DECODER);
@@ -790,7 +1117,7 @@ mod tests {
             entry("b", TriageClass::G2gNoOutput, "no caps at 44100 Hz"),
             entry("c", TriageClass::Agree, ""),
         ];
-        let markdown = triage_markdown("t", &entries);
+        let markdown = triage_markdown("t", SweepMode::Decode, &entries);
         assert!(markdown.contains("| g2g no output | 2 |"), "{markdown}");
         assert!(
             markdown.contains("| no caps at N Hz | 2 | pcm_u8 |"),
@@ -798,5 +1125,243 @@ mod tests {
         );
         // agreeing scenarios are counted, never listed
         assert!(!markdown.contains("## agree"), "{markdown}");
+    }
+
+    #[test]
+    fn timestamp_and_chunk_size_modes_decode_into_their_sinks() {
+        use calliope_core::Engine;
+        use calliope_core::engine::OutputSpec;
+        let case = sweep_cases(
+            &[vector("v", Some(("png", "rgb24")), Some("aac"))],
+            &engines(),
+        );
+        let input = Path::new("/media/v");
+        let workdir = Path::new("/run");
+        let pipeline = |scenario: &Scenario| {
+            calliope_adapter_g2g::G2g
+                .plan(scenario, input, workdir)
+                .unwrap()
+                .args
+                .join(" ")
+        };
+        for case in &case {
+            let timestamps = mode_scenarios(SweepMode::Timestamps, &case.scenario).remove(0);
+            assert_eq!(timestamps.engines, [GSTREAMER_ENGINE, G2G_ENGINE]);
+            assert!(!timestamps.is_determinism());
+            let plan = calliope_adapter_g2g::G2g
+                .plan(&timestamps, input, workdir)
+                .unwrap();
+            assert!(plan.args.join(" ").ends_with("! checksumsink hash=md5"));
+            assert!(
+                matches!(plan.output, OutputSpec::ChecksumLines(path) if path == workdir.join(STDOUT_LOG))
+            );
+
+            let chunked = mode_scenarios(SweepMode::ChunkSize, &case.scenario);
+            let sizes: Vec<Option<u32>> = chunked.iter().map(|s| s.blocksize).collect();
+            assert_eq!(sizes, CHUNK_SIZES.map(Some));
+            for scenario in &chunked {
+                assert!(scenario.is_determinism() && scenario.engines == [G2G_ENGINE]);
+                let size = scenario.blocksize.unwrap();
+                assert_eq!(
+                    scenario.id,
+                    format!("{}/blocksize-{size}", case.scenario.id)
+                );
+                assert!(
+                    pipeline(scenario).contains(&format!("location=/media/v blocksize={size} !")),
+                    "{}",
+                    pipeline(scenario)
+                );
+            }
+        }
+        // the decode mode keeps the default block size
+        let decode = mode_scenarios(SweepMode::Decode, &case[0].scenario).remove(0);
+        assert!(!pipeline(&decode).contains("blocksize"));
+    }
+
+    const TICKS_PER_SECOND: u64 = 90_000;
+    const NANOSECONDS_PER_TICK: u64 = 1_000_000_000 / TICKS_PER_SECOND;
+
+    // ffprobe's frames at 1/90000, one per tick in `ticks`
+    fn reference_timestamps(ticks: &[i64]) -> ReferenceTimestamps {
+        ReferenceTimestamps {
+            time_base: TimeBase::parse(&format!("1/{TICKS_PER_SECOND}")).unwrap(),
+            frames: ticks
+                .iter()
+                .map(|&t| timestamps::ReferenceFrame {
+                    pts: Some(t),
+                    best_effort_timestamp: Some(t),
+                })
+                .collect(),
+        }
+    }
+
+    // g2g-launch's checksumsink lines for frames at `ticks`
+    fn checksum_stdout(ticks: &[u64]) -> String {
+        ticks
+            .iter()
+            .map(|t| {
+                let ns = t * NANOSECONDS_PER_TICK;
+                format!(
+                    "0:00:{:02}.{:09} 00\n",
+                    ns / 1_000_000_000,
+                    ns % 1_000_000_000
+                )
+            })
+            .collect()
+    }
+
+    fn decoded_at(ticks: &[u64]) -> (RunResult, String) {
+        (
+            run(G2G_ENGINE, RunStatus::Ok, Some(GOOD)),
+            checksum_stdout(ticks),
+        )
+    }
+
+    fn timestamp_run((run, stdout): &(RunResult, String)) -> TimestampRun<'_> {
+        TimestampRun {
+            run,
+            stderr: String::new(),
+            stdout: stdout.clone(),
+        }
+    }
+
+    #[test]
+    fn classifies_timestamps_against_ffprobe() {
+        let reference = || Ok(reference_timestamps(&[0, 3000]));
+        let class = |g2g_ticks: &[u64], gstreamer_ticks: &[u64]| {
+            let (g2g, gstreamer) = (decoded_at(g2g_ticks), decoded_at(gstreamer_ticks));
+            classify_timestamps(
+                &timestamp_run(&g2g),
+                Some(&timestamp_run(&gstreamer)),
+                reference(),
+                FramePairing::EveryFrame,
+            )
+        };
+        assert_eq!(class(&[0, 3000], &[0, 3000]).0, TriageClass::Agree);
+        let (late, note) = class(&[0, 3600], &[0, 3000]);
+        assert_eq!(late, TriageClass::G2gDiverges);
+        assert!(note.starts_with("pts differs at frame 1 of 2"), "{note}");
+        let (extra, note) = class(&[0, 3000, 6000], &[0, 3000]);
+        assert_eq!(extra, TriageClass::G2gDiverges);
+        assert_eq!(note, "3 frames vs ffprobe 2, the common frames agree");
+        let (shifted, note) = class(&[900, 3900], &[0, 3000]);
+        assert_eq!(shifted, TriageClass::G2gDiverges);
+        assert_eq!(note, "every frame is offset by +0.010000000 s");
+        let (late_after_shift, note) = class(&[900, 4500], &[0, 3000]);
+        assert_eq!(late_after_shift, TriageClass::G2gDiverges);
+        assert!(
+            note.contains("after taking off g2g's offset of +0.010000000 s"),
+            "{note}"
+        );
+        // ffprobe is the outlier when gstreamer stamps the frames as g2g does
+        let (quirk, note) = class(&[0, 3600], &[0, 3600]);
+        assert_eq!(quirk, TriageClass::ReferenceQuirk);
+        assert!(note.starts_with("gstreamer agrees with g2g"), "{note}");
+
+        let mut guessed = reference_timestamps(&[0, 3000]);
+        guessed.frames[1].pts = None;
+        let g2g = decoded_at(&[0, 3600]);
+        let (_, note) = classify_timestamps(
+            &timestamp_run(&g2g),
+            None,
+            Ok(guessed),
+            FramePairing::EveryFrame,
+        );
+        assert!(note.contains("where ffmpeg guessed the pts"), "{note}");
+
+        // a run g2g could not decode is filed the way the decode sweep files it
+        let rejected = run(G2G_ENGINE, RunStatus::ExitFailure { code: 1 }, None);
+        let rejected = TimestampRun {
+            run: &rejected,
+            stderr: "parse error: decodebin: no decoder for sowt in /media/a.mov".into(),
+            stdout: String::new(),
+        };
+        assert_eq!(
+            classify_timestamps(&rejected, None, reference(), FramePairing::EveryFrame).0,
+            TriageClass::UnsupportedCodec
+        );
+    }
+
+    #[test]
+    fn only_pcm_audio_pairs_the_first_frame_alone() {
+        assert_eq!(
+            frame_pairing(StreamKind::Audio, "pcm_s16le"),
+            FramePairing::FirstFrame
+        );
+        assert_eq!(
+            frame_pairing(StreamKind::Audio, "aac"),
+            FramePairing::EveryFrame
+        );
+        assert_eq!(
+            frame_pairing(StreamKind::Video, "pcm_s16le"),
+            FramePairing::EveryFrame
+        );
+    }
+
+    // one chunk-size run: decoded to `md5` when given, else rejected
+    fn chunk_run(md5: Option<&str>) -> RunResult {
+        let mut result = match md5 {
+            Some(_) => run(G2G_ENGINE, RunStatus::Ok, Some(GOOD)),
+            None => run(G2G_ENGINE, RunStatus::ExitFailure { code: 1 }, None),
+        };
+        result.output_md5 = md5.map(String::from);
+        result.output_len = md5.map(|m| m.len() as u64);
+        result
+    }
+
+    fn chunk_triage(results: &[RunResult]) -> ChunkSizeTriage {
+        let runs: Vec<ChunkSizeRun> = CHUNK_SIZES
+            .iter()
+            .zip(results)
+            .map(|(&blocksize, run)| ChunkSizeRun {
+                blocksize,
+                run,
+                stderr: String::new(),
+            })
+            .collect();
+        classify_chunk_size(&runs)
+    }
+
+    #[test]
+    fn classifies_chunk_size_runs_against_the_default_block_size() {
+        let same = [
+            chunk_run(Some("aa")),
+            chunk_run(Some("aa")),
+            chunk_run(Some("aa")),
+        ];
+        assert_eq!(chunk_triage(&same).class, TriageClass::Agree);
+
+        let smallest_differs = [
+            chunk_run(Some("aa")),
+            chunk_run(Some("aa")),
+            chunk_run(Some("bb")),
+        ];
+        let triage = chunk_triage(&smallest_differs);
+        assert_eq!(triage.class, TriageClass::G2gDiverges);
+        assert_eq!(triage.run, 2);
+        assert_eq!(
+            triage.note,
+            format!(
+                "blocksize {} and {}: 2 bytes each, different bytes",
+                CHUNK_SIZES[2], CHUNK_SIZES[0]
+            )
+        );
+
+        let rejected_when_chunked = [
+            chunk_run(Some("aa")),
+            chunk_run(None),
+            chunk_run(Some("aa")),
+        ];
+        let triage = chunk_triage(&rejected_when_chunked);
+        assert_eq!((triage.class, triage.run), (TriageClass::G2gDiverges, 1));
+
+        let mut crashed = chunk_run(None);
+        crashed.status = RunStatus::Signaled { signal: 11 };
+        let triage = chunk_triage(&[chunk_run(Some("aa")), chunk_run(Some("aa")), crashed]);
+        assert_eq!((triage.class, triage.run), (TriageClass::G2gCrashOrHang, 2));
+
+        // no output at every size is the decode sweep's failure, not a chunk-size one
+        let never = [chunk_run(None), chunk_run(None), chunk_run(None)];
+        assert_eq!(chunk_triage(&never).class, TriageClass::G2gNoOutput);
     }
 }

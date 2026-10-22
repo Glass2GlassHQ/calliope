@@ -15,6 +15,9 @@ use crate::produce::Validation;
 use crate::scenario::Scenario;
 use crate::{Error, Result, framehash};
 
+// the file each run's stdout goes to, in its run dir
+pub const STDOUT_LOG: &str = "stdout.log";
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum RunStatus {
@@ -126,7 +129,7 @@ async fn exec(
         return fail(e.to_string());
     }
 
-    let stdout = match std::fs::File::create(run_dir.join("stdout.log")) {
+    let stdout = match std::fs::File::create(run_dir.join(STDOUT_LOG)) {
         Ok(f) => f,
         Err(e) => return fail(e.to_string()),
     };
@@ -215,6 +218,7 @@ async fn exec(
                 // a roundtrip's encoded stream is validated by ffmpeg (PSNR), not
                 // hashed here
                 OutputSpec::EncodedFile(_)
+                | OutputSpec::ChecksumLines(_)
                 | OutputSpec::Produced(_)
                 | OutputSpec::Published { .. } => (None, None),
             }
@@ -251,6 +255,9 @@ fn produced_output(output: &OutputSpec) -> bool {
         OutputSpec::RawVideoFile(path) | OutputSpec::RawAudioFile(path) => std::fs::metadata(path)
             .map(|m| m.len() > 0)
             .unwrap_or(false),
+        OutputSpec::ChecksumLines(path) => {
+            std::fs::read_to_string(path).is_ok_and(|t| t.lines().any(|l| !l.trim().is_empty()))
+        }
         OutputSpec::EncodedFile(_) | OutputSpec::Produced(_) | OutputSpec::Published { .. } => {
             false
         }
@@ -409,6 +416,12 @@ fn extract_hashes(output: &OutputSpec, scenario: &Scenario) -> Result<Vec<String
             }
             vec![whole_file_md5(path)?]
         }
+        OutputSpec::ChecksumLines(path) => {
+            framehash::parse_checksum_lines(&std::fs::read_to_string(path)?)?
+                .into_iter()
+                .map(|line| line.digest)
+                .collect()
+        }
         // a roundtrip encoded stream is never frame-hashed (only golden/diff are)
         OutputSpec::EncodedFile(_) | OutputSpec::Produced(_) | OutputSpec::Published { .. } => {
             Vec::new()
@@ -533,6 +546,8 @@ mod tests {
             deinterlace: false,
             outcome_diff: false,
             overlay: false,
+            blocksize: None,
+            timestamps: false,
             produce: None,
         }
     }
