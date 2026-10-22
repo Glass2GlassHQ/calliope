@@ -318,16 +318,22 @@ meaningless).
 
 `tools/conformance-nightly.sh` runs on hercules (RTX 2080 Ti) every evening. It
 builds g2g master and runs the JVT-AVC_V1, JCT-VC-HEVC_V1 and JCT-VC-RExt
-vectors through `nvdec` and `vulkanvideodec`. It then sorts each vector into
+vectors through `nvdec` and `vulkanvideodec`, and the VP9 vectors through
+`nvdec`. It then sorts each vector into
 pass, refused, silent (exit 0 with wrong or empty output), crash, timeout or
 device-lost, and compares the result with `conformance/rtx2080ti.json`.
 Vectors whose outcome differs from the baseline are rerun once. A vector that
 still lands on a failing outcome it did not have in the baseline turns the run
 red, and so does a g2g build failure. A red run opens or comments on a GitHub
 issue titled "conformance gate red on hercules", and the next green run closes
-it. Runs are kept for 14 days in `~/g2g-conformance/runs`.
+it. Runs are kept for 14 days in `~/g2g-conformance/runs`. Each run that
+finishes publishes its per-vector page to
+https://g2g-canary-000152811496.s3.us-east-1.amazonaws.com/g2g-conformance/index.html
+as the `g2g-conformance` IAM user, which can only write that prefix.
 
-Install it on the GPU host once:
+Install it on the GPU host once, after putting an access key for the
+`g2g-conformance` IAM user in `~/.aws/credentials` under the `g2g-conformance`
+profile:
 
 ```sh
 git clone -q https://github.com/Glass2GlassHQ/calliope.git ~/g2g-conformance/calliope

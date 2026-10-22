@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # sorts calliope conformance reports into per-vector outcomes and compares them with the committed baseline
+import html
 import json
 import sys
 from pathlib import Path
@@ -7,7 +8,8 @@ from pathlib import Path
 USAGE = """usage:
   conformance-gate.py table <out.json> <backend>=<report.json>...
   conformance-gate.py differing <baseline.json> <table.json>
-  conformance-gate.py verdict <baseline.json> <table.json> <retry.json> <summary.md> <title>"""
+  conformance-gate.py verdict <baseline.json> <table.json> <retry.json> <summary.md> <title>
+  conformance-gate.py page <out.html> <summary.md> [<table.json> <retry.json>]"""
 
 # outcomes that fail the gate when a vector newly lands on them
 FAILING = {"silent", "crash", "timeout", "device-lost", "harness", "missing"}
@@ -110,6 +112,36 @@ def verdict(baseline, current, retry, summary_path, title):
     return 1 if regressions else 0
 
 
+def page(out_path, summary_path, current, retry):
+    rows = []
+    for backend, vectors in sorted(current.items()):
+        for vector in sorted(vectors):
+            result = retry.get(backend, {}).get(vector, vectors[vector])
+            detail = html.escape(result.get("detail", ""), quote=True)
+            rows.append(
+                f"<tr><td>{html.escape(backend)}</td><td>{html.escape(vector)}</td>"
+                f'<td class="{result["outcome"]}" title="{detail}">{result["outcome"]}</td></tr>'
+            )
+    summary = html.escape(Path(summary_path).read_text())
+    Path(out_path).write_text(f"""<!doctype html>
+<meta charset="utf-8">
+<title>g2g GPU decoder conformance</title>
+<style>
+body {{ font-family: sans-serif; margin: 2em; }}
+td {{ padding: 0 1em 0 0; }}
+.pass {{ color: #2e9e44; }}
+.refused {{ color: #888; }}
+.silent, .crash, .timeout, .device-lost, .harness, .missing {{ color: #c62828; font-weight: bold; }}
+</style>
+<h1>g2g GPU decoder conformance</h1>
+<pre>{summary}</pre>
+<table>
+<tr><th>decoder</th><th>vector</th><th>outcome</th></tr>
+{chr(10).join(rows)}
+</table>
+""")
+
+
 def main(args):
     if args[:1] == ["table"] and len(args) >= 3:
         table(args[1], args[2:])
@@ -120,6 +152,12 @@ def main(args):
         return 0
     if args[:1] == ["verdict"] and len(args) == 6:
         return verdict(load(args[1]), load(args[2]), load(args[3]), args[4], args[5])
+    if args[:1] == ["page"] and len(args) == 3:
+        page(args[1], args[2], {}, {})
+        return 0
+    if args[:1] == ["page"] and len(args) == 5:
+        page(args[1], args[2], load(args[3]), load(args[4]))
+        return 0
     raise SystemExit(USAGE)
 
 

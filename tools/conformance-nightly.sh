@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# H.264 / H.265 conformance of g2g's GPU decoders against the committed baseline, started by deploy/conformance/g2g-conformance.timer
+# H.264 / H.265 / VP9 conformance of g2g's GPU decoders against the committed baseline, started by deploy/conformance/g2g-conformance.timer
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -9,11 +9,15 @@ G2G_CLONE="$CONFORMANCE_HOME/glass2glass"
 G2G_URL=https://github.com/Glass2GlassHQ/glass2glass.git
 G2G_FEATURES=std,nvdec,vulkan-video
 BACKENDS=(nvdec vulkanvideodec)
-SUITES=(fluster/JVT-AVC_V1/ fluster/JCT-VC-HEVC_V1/ fluster/JCT-VC-RExt/)
+H26X_SUITES="fluster/JVT-AVC_V1/ fluster/JCT-VC-HEVC_V1/ fluster/JCT-VC-RExt/"
+VP9_SUITES="fluster/VP9-TEST-VECTORS/ fluster/VP9-TEST-VECTORS-HIGH/"
+# g2g's vulkan video decoder has no vp9
+declare -A BACKEND_SUITES=([nvdec]="$H26X_SUITES $VP9_SUITES" [vulkanvideodec]="$H26X_SUITES")
 BASELINE="$CALLIOPE/conformance/rtx2080ti.json"
 ISSUE_REPO=Glass2GlassHQ/calliope
 ISSUE_TITLE="conformance gate red on hercules"
 KEEP_DAYS=14
+: "${CONFORMANCE_PUBLISH_DESTINATION:?set it to the s3 url the page goes to}"
 
 # runs one backend over the given id prefixes, writes the calliope report
 run_conformance() {
@@ -36,6 +40,24 @@ run_conformance() {
     fi
 }
 
+# the page goes up after every run that got far enough to write a summary
+publish() {
+    local page_args=("$run_dir/summary.md")
+    if [ -f "$run_dir/retry.json" ]
+    then
+        page_args+=("$run_dir/table.json" "$run_dir/retry.json")
+    fi
+    "$HERE/conformance-gate.py" page "$run_dir/index.html" "${page_args[@]}"
+    for file in index.html summary.md table.json
+    do
+        if [ -f "$run_dir/$file" ]
+        then
+            aws s3 cp --only-show-errors --cache-control max-age=300 \
+                "$run_dir/$file" "$CONFORMANCE_PUBLISH_DESTINATION/$file"
+        fi
+    done
+}
+
 # the gate's own open issue, found by title since the account that runs it cannot label issues
 open_issue() {
     gh issue list -R "$ISSUE_REPO" --author @me --state open --search "\"$ISSUE_TITLE\" in:title" \
@@ -54,6 +76,7 @@ report_red() {
             -F "$run_dir/summary.md" > /dev/null
     fi
     echo "red, summary in $run_dir/summary.md" >&2
+    publish
     exit 1
 }
 
@@ -65,6 +88,7 @@ report_green() {
         gh issue close -R "$ISSUE_REPO" "$open" -c "green again at g2g $revision" > /dev/null
     fi
     echo "green, summary in $run_dir/summary.md"
+    publish
 }
 
 if ! "$HERE/wait-for-quiet-host.sh"
@@ -106,7 +130,8 @@ fi
 table_args=()
 for backend in "${BACKENDS[@]}"
 do
-    run_conformance "$backend" "$run_dir/report-$backend.json" "${SUITES[@]}" || report_red
+    # the suite list splits into one prefix per word
+    run_conformance "$backend" "$run_dir/report-$backend.json" ${BACKEND_SUITES[$backend]} || report_red
     table_args+=("$backend=$run_dir/report-$backend.json")
 done
 "$HERE/conformance-gate.py" table "$run_dir/table.json" "${table_args[@]}"

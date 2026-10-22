@@ -6,6 +6,8 @@ Type=oneshot
 # the script runs from this clone, so it updates before the script starts
 ExecStartPre=/usr/bin/git -C %h/g2g-conformance/calliope pull -q --ff-only
 ExecStart=%h/g2g-conformance/calliope/tools/conformance-nightly.sh
-# the user manager's PATH has no rustup shims
-Environment=PATH=%h/.cargo/bin:/usr/local/bin:/usr/bin:/bin
+# the user manager's PATH has no rustup shims or user-installed aws cli
+Environment=PATH=%h/.cargo/bin:%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+Environment=AWS_PROFILE=g2g-conformance
+Environment=CONFORMANCE_PUBLISH_DESTINATION=s3://g2g-canary-000152811496/g2g-conformance
 TimeoutStartSec=infinity
