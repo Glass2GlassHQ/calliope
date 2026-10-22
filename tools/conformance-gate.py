@@ -2,6 +2,7 @@
 # sorts calliope conformance reports into per-vector outcomes and compares them with the committed baseline
 import html
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -16,8 +17,17 @@ FAILING = {"silent", "crash", "timeout", "device-lost", "harness", "missing"}
 DETAIL_LIMIT = 200
 
 
-def last_line(path):
+# a g2g log line: level, category, message
+LOG_LINE = re.compile(r"^ERROR\s+(\S+)\s+(.*)$")
+
+
+# the first error an element logged, which names the cause the final `pipeline error:` line drops
+def failure_reason(path):
     lines = [line.strip() for line in path.read_text(errors="replace").splitlines() if line.strip()]
+    for line in lines:
+        logged = LOG_LINE.match(line)
+        if logged and logged.group(1) != "runtime":
+            return f"{logged.group(1)}: {logged.group(2)}"[:DETAIL_LIMIT]
     return lines[-1][:DETAIL_LIMIT] if lines else "no stderr"
 
 
@@ -39,8 +49,8 @@ def outcome(scenario):
         return {"outcome": "harness", "detail": status["error"]["message"][:DETAIL_LIMIT]}
     stderr = Path(run["log_dir"]) / "stderr.log"
     if "DEVICE_LOST" in stderr.read_text(errors="replace"):
-        return {"outcome": "device-lost", "detail": last_line(stderr)}
-    return {"outcome": "refused", "detail": last_line(stderr)}
+        return {"outcome": "device-lost", "detail": failure_reason(stderr)}
+    return {"outcome": "refused", "detail": failure_reason(stderr)}
 
 
 def table(out_path, pairs):
