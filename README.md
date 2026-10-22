@@ -324,15 +324,14 @@ device-lost, and compares the result with `conformance/rtx2080ti.json`.
 Vectors whose outcome differs from the baseline are rerun once. A vector that
 still lands on a failing outcome it did not have in the baseline turns the run
 red, and so does a g2g build failure. A red run opens or comments on a GitHub
-issue labelled `conformance`, and the next green run closes it. Runs are kept
-for 14 days in `~/g2g-conformance/runs`.
+issue titled "conformance gate red on hercules", and the next green run closes
+it. Runs are kept for 14 days in `~/g2g-conformance/runs`.
 
 Install it on the GPU host once:
 
 ```sh
 git clone -q https://github.com/Glass2GlassHQ/calliope.git ~/g2g-conformance/calliope
 cp ~/g2g-conformance/calliope/deploy/conformance/g2g-conformance.* ~/.config/systemd/user/
-gh label create conformance -R Glass2GlassHQ/calliope
 systemctl --user daemon-reload
 systemctl --user enable --now g2g-conformance.timer
 ```

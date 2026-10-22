@@ -12,7 +12,7 @@ BACKENDS=(nvdec vulkanvideodec)
 SUITES=(fluster/JVT-AVC_V1/ fluster/JCT-VC-HEVC_V1/ fluster/JCT-VC-RExt/)
 BASELINE="$CALLIOPE/conformance/rtx2080ti.json"
 ISSUE_REPO=Glass2GlassHQ/calliope
-ISSUE_LABEL=conformance
+ISSUE_TITLE="conformance gate red on hercules"
 KEEP_DAYS=14
 
 # runs one backend over the given id prefixes, writes the calliope report
@@ -36,15 +36,21 @@ run_conformance() {
     fi
 }
 
+# the gate's own open issue, found by title since the account that runs it cannot label issues
+open_issue() {
+    gh issue list -R "$ISSUE_REPO" --author @me --state open --search "\"$ISSUE_TITLE\" in:title" \
+        --json number,title --jq "map(select(.title == \"$ISSUE_TITLE\")) | .[0].number // empty"
+}
+
 # one open issue per red stretch: opened on the first red night, commented on later ones
 report_red() {
     local open
-    open=$(gh issue list -R "$ISSUE_REPO" --label "$ISSUE_LABEL" --state open --json number --jq '.[0].number // empty')
+    open=$(open_issue)
     if [ -n "$open" ]
     then
         gh issue comment -R "$ISSUE_REPO" "$open" -F "$run_dir/summary.md" > /dev/null
     else
-        gh issue create -R "$ISSUE_REPO" --label "$ISSUE_LABEL" --title "conformance gate red on hercules" \
+        gh issue create -R "$ISSUE_REPO" --title "$ISSUE_TITLE" \
             -F "$run_dir/summary.md" > /dev/null
     fi
     echo "red, summary in $run_dir/summary.md" >&2
@@ -53,7 +59,7 @@ report_red() {
 
 report_green() {
     local open
-    open=$(gh issue list -R "$ISSUE_REPO" --label "$ISSUE_LABEL" --state open --json number --jq '.[0].number // empty')
+    open=$(open_issue)
     if [ -n "$open" ]
     then
         gh issue close -R "$ISSUE_REPO" "$open" -c "green again at g2g $revision" > /dev/null
