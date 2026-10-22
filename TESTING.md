@@ -688,7 +688,7 @@ are fixed in g2g with regression tests.
 71. **nvdec decoded a VP9 inter frame bigger than the decoder with no reference frames** (M1801).
 72. **VulkanVideoDec repeated earlier pictures on RADV when an H.264 frame_num gap was not passed to the driver** (M1805).
 73. **nvdec failed a VP9 show_existing_frame of a frame still held downstream** (M1811).
-74. **nvdec handed NVIDIA's parser a VP9 superframe of two hidden frames and a show_existing_frame whole, which it decodes wrong** (M1813).
+74. **nvdec failed a VP9 superframe of two hidden frames and a show_existing_frame, which NVIDIA's parser rejects when handed it whole** (M1813).
 
 ## Not a gap
 
