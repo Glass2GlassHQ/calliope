@@ -47,6 +47,20 @@ AUD_MW_E, BA1_Sony_D, CABA1_Sony_D, CVWP1_TOSHIBA_E, MR1_BT_A. ffmpeg 5/5,
 gstreamer 5/5, g2g 5/5. A fresh canonical re-import showed zero hash drift from
 the committed corpus.
 
+Hardware decoders: NVDEC and VulkanVideoDec on an RTX 2080 Ti run every night
+(the gate in README.md, results in `conformance/rtx2080ti.json`). VulkanVideoDec on
+RADV (Rembrandt integrated GPU, Mesa 25.3.6) was run by hand at g2g a2c0e70d
+(M1805) with `G2G_PLUGIN_FEATURE_RANK=vulkanvideodec:max`. No vector is silent,
+crashes or times out, and every refusal names its reason.
+
+| Suite | RADV pass | RADV refused |
+| :--- | ---: | ---: |
+| JVT-AVC_V1 | 99 | 36 |
+| JCT-VC-HEVC_V1 | 142 | 5 |
+| JCT-VC-RExt (4:2:2, 4:4:4) | 2 | 39 |
+| VP9 and VP9 high (no Vulkan VP9 path) | 0 | 311 |
+| AV1 | 240 | 0 |
+
 ### 3. Robustness fuzzing + minimizer
 Corrupt input (`[fault]`: bit-flip / truncate / byte-drop / nal-payload) and
 require every engine to degrade gracefully (no crash / hang). Shrink any crash
@@ -544,8 +558,9 @@ added 2026-08 (techniques 1 and 13), bugs 7-28 by the corpus sweep at 42c0a809
 bugs 29-32 and 33-36 by its re-sweeps (technique 15), bug 37 by building the
 sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a, bug 58
 by the canary (technique 17), bugs 59-62 by the sweep at 6c675bef, bug 63
-by the sweep at a988298b, bugs 64-67 by the sweep at 6e1fa495 and bugs 68-71
-by golden conformance through nvdec (technique 2, the nightly GPU gate). All
+by the sweep at a988298b, bugs 64-67 by the sweep at 6e1fa495, bugs 68-71 and 73
+by golden conformance through nvdec (technique 2, the nightly GPU gate) and bug 72
+by golden conformance through VulkanVideoDec on RADV. All
 are fixed in g2g with regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
@@ -671,6 +686,8 @@ are fixed in g2g with regression tests.
 69. **nvdec output the pictures waiting at a CRA that follows an end of sequence** (M1799).
 70. **nvdec scaled odd-size pictures to the next even size** (M1801).
 71. **nvdec decoded a VP9 inter frame bigger than the decoder with no reference frames** (M1801).
+72. **VulkanVideoDec repeated earlier pictures on RADV when an H.264 frame_num gap was not passed to the driver** (M1805).
+73. **nvdec failed a VP9 show_existing_frame of a frame still held downstream** (M1811).
 
 ## Not a gap
 
