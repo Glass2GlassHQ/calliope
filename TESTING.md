@@ -544,7 +544,7 @@ added 2026-08 (techniques 1 and 13), bugs 7-28 by the corpus sweep at 42c0a809
 bugs 29-32 and 33-36 by its re-sweeps (technique 15), bug 37 by building the
 sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a, bug 58
 by the canary (technique 17), bugs 59-62 by the sweep at 6c675bef, bug 63
-by the sweep at a988298b, bugs 64-67 by the sweep at 6e1fa495 and bugs 68-69
+by the sweep at a988298b, bugs 64-67 by the sweep at 6e1fa495 and bugs 68-71
 by golden conformance through nvdec (technique 2, the nightly GPU gate). All
 are fixed in g2g with regression tests.
 
@@ -669,6 +669,8 @@ are fixed in g2g with regression tests.
 67. **videocrop failed RGB, P010 and alpha frames under a clean aperture** (M1797).
 68. **nvdec decoded 12-bit, mixed-depth, SP/SI-slice and tiles-with-WPP streams wrong without an error** (M1798).
 69. **nvdec output the pictures waiting at a CRA that follows an end of sequence** (M1799).
+70. **nvdec scaled odd-size pictures to the next even size** (M1801).
+71. **nvdec decoded a VP9 inter frame bigger than the decoder with no reference frames** (M1801).
 
 ## Not a gap
 

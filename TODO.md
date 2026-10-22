@@ -38,9 +38,8 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
   MPEG-TS PCR wrap points so wrap is hit within minutes.
 
 ## Hardware decode matrix
-- Golden conformance corpus through VulkanVideoDec (RADV + NVIDIA), NVDEC,
-  MediaCodec (Pixel), Media Foundation (Windows), results per backend in
-  TESTING.md.
+- Golden conformance corpus through VulkanVideoDec on RADV, MediaCodec (Pixel)
+  and Media Foundation (Windows), results per backend in TESTING.md.
 
 ## Fluster upstream
 - Contribute a g2g decoder class to fluendo/fluster so g2g appears in the
