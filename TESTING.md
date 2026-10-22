@@ -544,8 +544,9 @@ added 2026-08 (techniques 1 and 13), bugs 7-28 by the corpus sweep at 42c0a809
 bugs 29-32 and 33-36 by its re-sweeps (technique 15), bug 37 by building the
 sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a, bug 58
 by the canary (technique 17), bugs 59-62 by the sweep at 6c675bef, bug 63
-by the sweep at a988298b and bugs 64-67 by the sweep at 6e1fa495. All are
-fixed in g2g with regression tests.
+by the sweep at a988298b, bugs 64-67 by the sweep at 6e1fa495 and bugs 68-69
+by golden conformance through nvdec (technique 2, the nightly GPU gate). All
+are fixed in g2g with regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -666,6 +667,8 @@ fixed in g2g with regression tests.
 65. **MjpegDec failed JPEGs zune-jpeg rejects (12-bit, sampling factor 3)** (M1794).
 66. **A tagged codec's 4:2:2 or 4:4:4 output was refused as I420** (M1796).
 67. **videocrop failed RGB, P010 and alpha frames under a clean aperture** (M1797).
+68. **nvdec decoded 12-bit, mixed-depth, SP/SI-slice and tiles-with-WPP streams wrong without an error** (M1798).
+69. **nvdec output the pictures waiting at a CRA that follows an end of sequence** (M1799).
 
 ## Not a gap
 
