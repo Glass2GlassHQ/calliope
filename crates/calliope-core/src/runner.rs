@@ -548,6 +548,9 @@ mod tests {
             overlay: false,
             blocksize: None,
             timestamps: false,
+            stream_index: None,
+            seek: None,
+            remux: None,
             produce: None,
         }
     }

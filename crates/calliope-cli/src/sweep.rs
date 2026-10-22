@@ -1,19 +1,21 @@
 // real-world corpus sweep: one synthesized scenario per decodable stream of every imported sample
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-use calliope_core::corpus::{self, Manifest, Vector};
+use calliope_core::corpus::{self, AudioStream, Manifest, Vector, VideoStream};
+use calliope_core::engine::OutputSpec;
 use calliope_core::framehash::parse_checksum_lines;
-use calliope_core::probe::{StreamKind, probe_frame_timestamps};
+use calliope_core::probe::{StreamKind, probe_frame_timestamps, probe_keyframes, probe_tracks};
 use calliope_core::report::ScenarioReport;
 use calliope_core::runner::{RunResult, RunStatus, STDOUT_LOG};
 use calliope_core::scenario::{
-    Audio, AudioCodec, Determinism, Input, PixelFormat, SampleFormat, Scenario, Video,
+    Audio, AudioCodec, Determinism, Input, PixelFormat, RemuxContainer, SampleFormat, Scenario,
+    Seek, Video,
 };
 use calliope_core::timestamps::{
     self, FramePairing, ReferenceTimestamps, TimeBase, TimestampVerdict,
@@ -28,10 +30,17 @@ const SWEEP_TIMEOUT_SECS: u64 = 60;
 const DETERMINISM_RUNS: usize = 2;
 // scenarios per run_matrix batch, decoded output is deleted after each batch
 const SWEEP_BATCH: usize = 8;
+// ffprobe runs at once while planning the tracks and seek cases
+const PROBE_BATCH: usize = 16;
+const SEEK_TARGETS: usize = 3;
+// frames compared after each seek
+const SEEK_FRAMES: usize = 5;
 const REPRODUCER_DIR: &str = "/tmp/calliope-repro";
 const RUN_LOG_EXTENSION: &str = "log";
 // table placeholder for a video stream ffprobe gave no pixel format
 const NO_PIX_FMT: &str = "none";
+// the sweep decodes audio to S16LE
+const PCM_SAMPLE_BYTES: usize = 2;
 // ffprobe's codec_name prefix for every raw PCM sample format
 const PCM_CODEC_PREFIX: &str = "pcm_";
 
@@ -46,6 +55,12 @@ pub enum SweepMode {
     Timestamps,
     // g2g decodes at each of CHUNK_SIZES and the outputs must be identical
     ChunkSize,
+    // every stream of a file with several of one kind, by index, against ffmpeg -map
+    Tracks,
+    // the frames after a seek to a keyframe, against ffmpeg -ss
+    Seek,
+    // g2g's decode of each stream remuxed into every RemuxContainer against its decode of the original
+    Remux,
 }
 
 #[derive(Debug)]
@@ -60,60 +75,80 @@ pub struct SweepCase {
 // bit-exact video goes differential, everything else self-compares
 pub fn sweep_cases(vectors: &[Vector], engines: &[String]) -> Vec<SweepCase> {
     let mut cases = Vec::new();
-    for vector in vectors {
-        // the gst-launch lines the adapters build split on spaces
-        if vector.id.contains(char::is_whitespace) {
-            continue;
-        }
+    for vector in vectors.iter().filter(|v| launchable(v)) {
         let Some(media) = &vector.media else {
             continue;
         };
         if let Some(video) = &media.video {
-            let pix_fmt = video.pix_fmt.as_deref().unwrap_or(NO_PIX_FMT);
-            let mut scenario = base_scenario(vector, StreamKind::Video, engines.to_vec());
-            match video.pix_fmt.as_deref().and_then(PixelFormat::from_pix_fmt) {
-                Some(format) => {
-                    scenario.video = Some(Video {
-                        width: video.width,
-                        height: video.height,
-                        format,
-                    });
-                }
-                None => scenario.determinism = Some(determinism()),
-            }
-            cases.push(SweepCase {
-                vector: vector.id.clone(),
-                kind: StreamKind::Video,
-                codec: format!("{} {pix_fmt}", video.codec),
-                scenario,
-            });
+            cases.push(video_case(
+                vector,
+                video,
+                engines,
+                StreamKind::Video.label(),
+            ));
         }
         if let Some(audio) = &media.audio {
-            let codec = AudioCodec::from_codec_name(&audio.codec);
-            let engines: Vec<String> = engines
-                .iter()
-                .filter(|e| !(codec.needs_shared_libavcodec() && *e == GSTREAMER_ENGINE))
-                .cloned()
-                .collect();
-            let mut scenario = base_scenario(vector, StreamKind::Audio, engines);
-            scenario.audio = Some(Audio {
-                codec,
-                rate: audio.sample_rate,
-                channels: audio.channels,
-                format: SampleFormat::S16le,
-            });
-            if !codec.differential_eligible() {
-                scenario.determinism = Some(determinism());
-            }
-            cases.push(SweepCase {
-                vector: vector.id.clone(),
-                kind: StreamKind::Audio,
-                codec: audio.codec.clone(),
-                scenario,
-            });
+            cases.push(audio_case(
+                vector,
+                audio,
+                engines,
+                StreamKind::Audio.label(),
+            ));
         }
     }
     cases
+}
+
+// the gst-launch lines the adapters build split on spaces
+fn launchable(vector: &Vector) -> bool {
+    !vector.id.contains(char::is_whitespace)
+}
+
+// `stream` names the case under the vector, `video` for the first stream
+fn video_case(vector: &Vector, video: &VideoStream, engines: &[String], stream: &str) -> SweepCase {
+    let pix_fmt = video.pix_fmt.as_deref().unwrap_or(NO_PIX_FMT);
+    let mut scenario = base_scenario(vector, stream, engines.to_vec());
+    match video.pix_fmt.as_deref().and_then(PixelFormat::from_pix_fmt) {
+        Some(format) => {
+            scenario.video = Some(Video {
+                width: video.width,
+                height: video.height,
+                format,
+            });
+        }
+        None => scenario.determinism = Some(determinism()),
+    }
+    SweepCase {
+        vector: vector.id.clone(),
+        kind: StreamKind::Video,
+        codec: format!("{} {pix_fmt}", video.codec),
+        scenario,
+    }
+}
+
+fn audio_case(vector: &Vector, audio: &AudioStream, engines: &[String], stream: &str) -> SweepCase {
+    let codec = AudioCodec::from_codec_name(&audio.codec);
+    let engines: Vec<String> = engines
+        .iter()
+        .filter(|e| !(codec.needs_shared_libavcodec() && *e == GSTREAMER_ENGINE))
+        .cloned()
+        .collect();
+    let mut scenario = base_scenario(vector, stream, engines);
+    scenario.audio = Some(Audio {
+        codec,
+        rate: audio.sample_rate,
+        channels: audio.channels,
+        format: SampleFormat::S16le,
+    });
+    if !codec.differential_eligible() {
+        scenario.determinism = Some(determinism());
+    }
+    SweepCase {
+        vector: vector.id.clone(),
+        kind: StreamKind::Audio,
+        codec: audio.codec.clone(),
+        scenario,
+    }
 }
 
 fn determinism() -> Determinism {
@@ -123,9 +158,9 @@ fn determinism() -> Determinism {
     }
 }
 
-fn base_scenario(vector: &Vector, kind: StreamKind, engines: Vec<String>) -> Scenario {
+fn base_scenario(vector: &Vector, stream: &str, engines: Vec<String>) -> Scenario {
     Scenario {
-        id: format!("{}/{}", vector.id, kind.label()),
+        id: format!("{}/{stream}", vector.id),
         engines,
         reference: REFERENCE_ENGINE.into(),
         timeout_secs: SWEEP_TIMEOUT_SECS,
@@ -147,11 +182,14 @@ fn base_scenario(vector: &Vector, kind: StreamKind, engines: Vec<String>) -> Sce
         overlay: false,
         blocksize: None,
         timestamps: false,
+        stream_index: None,
+        seek: None,
+        remux: None,
         outcome_diff: false,
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum TriageClass {
     G2gCrashOrHang,
@@ -344,6 +382,9 @@ impl SweepMode {
             Self::Decode => REFERENCE_ENGINE.into(),
             Self::Timestamps => "ffprobe -show_frames, gstreamer breaks a tie".into(),
             Self::ChunkSize => format!("g2g at blocksize {}", CHUNK_SIZES[0]),
+            Self::Tracks => format!("{REFERENCE_ENGINE} -map"),
+            Self::Seek => format!("{REFERENCE_ENGINE} -ss -copyts"),
+            Self::Remux => "g2g's decode of the original file".into(),
         }
     }
 }
@@ -355,8 +396,30 @@ fn mode_scenarios(mode: SweepMode, scenario: &Scenario) -> Vec<Scenario> {
         reference: G2G_ENGINE.into(),
         ..scenario.clone()
     };
+    // one run's whole-output hash, so any stream compares, packed or not
+    let g2g_whole_output = || Scenario {
+        determinism: Some(Determinism {
+            runs: 1,
+            threads: false,
+        }),
+        ..g2g_alone()
+    };
     match mode {
-        SweepMode::Decode => vec![scenario.clone()],
+        // the case planning already narrowed these to one scenario each
+        SweepMode::Decode | SweepMode::Tracks | SweepMode::Seek => vec![scenario.clone()],
+        SweepMode::Remux => {
+            let mut scenarios = vec![Scenario {
+                id: original_id(scenario),
+                ..g2g_whole_output()
+            }];
+            scenarios.extend(RemuxContainer::ALL.map(|container| Scenario {
+                id: remux_id(scenario, container),
+                remux: Some(container),
+                determinism: None,
+                ..g2g_alone()
+            }));
+            scenarios
+        }
         SweepMode::Timestamps => vec![Scenario {
             engines: vec![GSTREAMER_ENGINE.into(), G2G_ENGINE.into()],
             determinism: None,
@@ -369,13 +432,272 @@ fn mode_scenarios(mode: SweepMode, scenario: &Scenario) -> Vec<Scenario> {
             .map(|&size| Scenario {
                 id: format!("{}/blocksize-{size}", scenario.id),
                 blocksize: Some(size),
-                determinism: Some(Determinism {
-                    runs: 1,
-                    threads: false,
-                }),
-                ..g2g_alone()
+                ..g2g_whole_output()
             })
             .collect(),
+    }
+}
+
+fn original_id(scenario: &Scenario) -> String {
+    format!("{}/original", scenario.id)
+}
+
+fn remux_id(scenario: &Scenario, container: RemuxContainer) -> String {
+    format!("{}/{}", scenario.id, container.muxer())
+}
+
+// g2g's whole-output decode of what the remux scenario wrote
+fn remuxed_decode(remux: &Scenario, remuxed: &Path) -> Scenario {
+    Scenario {
+        id: format!("{}/decode", remux.id),
+        input: Input {
+            corpus: None,
+            path: Some(remuxed.to_path_buf()),
+        },
+        remux: None,
+        determinism: Some(Determinism {
+            runs: 1,
+            threads: false,
+        }),
+        ..remux.clone()
+    }
+}
+
+// one case per stream index of each kind a file has more than one of
+async fn track_cases(vectors: &[Vector]) -> Result<Vec<SweepCase>> {
+    let engines = [REFERENCE_ENGINE, G2G_ENGINE].map(String::from);
+    let cache = corpus::cache_dir();
+    let timeout = std::time::Duration::from_secs(SWEEP_TIMEOUT_SECS);
+    let launchable: Vec<&Vector> = vectors.iter().filter(|v| launchable(v)).collect();
+    let mut cases = Vec::new();
+    for batch in launchable.chunks(PROBE_BATCH) {
+        let probes = batch.iter().map(|vector| {
+            let input = cache.join(&vector.id);
+            async move { probe_tracks(&input, timeout).await }
+        });
+        for (vector, tracks) in batch.iter().zip(futures::future::join_all(probes).await) {
+            // a file ffprobe cannot list has no tracks to pick between
+            let Ok(tracks) = tracks else {
+                continue;
+            };
+            if tracks.video.len() > 1 {
+                for (index, video) in tracks.video.iter().enumerate() {
+                    let Some(video) = video else { continue };
+                    let mut case = video_case(vector, video, &engines, &format!("video-{index}"));
+                    case.scenario.stream_index = Some(index);
+                    cases.push(case);
+                }
+            }
+            if tracks.audio.len() > 1 {
+                for (index, audio) in tracks.audio.iter().enumerate() {
+                    let Some(audio) = audio else { continue };
+                    let mut case = audio_case(vector, audio, &engines, &format!("audio-{index}"));
+                    case.scenario.stream_index = Some(index);
+                    cases.push(case);
+                }
+            }
+        }
+    }
+    Ok(cases)
+}
+
+// up to SEEK_TARGETS keyframes after the first, spread evenly over the rest
+fn seek_targets(keyframes_microseconds: &[i64]) -> Vec<i64> {
+    let later: Vec<i64> = keyframes_microseconds
+        .iter()
+        .copied()
+        .filter(|&microseconds| microseconds > 0)
+        .collect();
+    let mut targets: Vec<i64> = (1..=SEEK_TARGETS)
+        .filter_map(|part| later.get(part * later.len() / (SEEK_TARGETS + 1)).copied())
+        .collect();
+    targets.dedup();
+    targets
+}
+
+fn seconds_from_microseconds(microseconds: i64) -> String {
+    const MICROSECONDS_PER_SECOND: i64 = 1_000_000;
+    format!(
+        "{}.{:06}",
+        microseconds / MICROSECONDS_PER_SECOND,
+        microseconds % MICROSECONDS_PER_SECOND
+    )
+}
+
+// one case per seek target of each stream
+async fn seek_cases(streams: Vec<SweepCase>) -> Result<Vec<SweepCase>> {
+    let cache = corpus::cache_dir();
+    let timeout = std::time::Duration::from_secs(SWEEP_TIMEOUT_SECS);
+    let mut cases = Vec::new();
+    for batch in streams.chunks(PROBE_BATCH) {
+        let probes = batch.iter().map(|case| {
+            let input = cache.join(&case.vector);
+            async move { probe_keyframes(&input, timeout).await }
+        });
+        for (case, keyframes) in batch.iter().zip(futures::future::join_all(probes).await) {
+            // a file ffprobe cannot read has no keyframe to seek to
+            let Ok(keyframes) = keyframes else {
+                continue;
+            };
+            for target in seek_targets(&keyframes) {
+                let target = seconds_from_microseconds(target);
+                let mut scenario = case.scenario.clone();
+                scenario.id = format!("{}/seek-{target}", case.scenario.id);
+                scenario.seek = Some(Seek {
+                    target,
+                    frames: SEEK_FRAMES,
+                });
+                cases.push(SweepCase {
+                    scenario,
+                    vector: case.vector.clone(),
+                    kind: case.kind,
+                    codec: case.codec.clone(),
+                });
+            }
+        }
+    }
+    Ok(cases)
+}
+
+// classify the first frames after a seek against ffmpeg's
+pub fn classify_seek(report: &ScenarioReport, g2g_stderr: &str) -> (TriageClass, String) {
+    let find = |engine: &str| {
+        report
+            .runs
+            .iter()
+            .map(|r| &r.run)
+            .find(|r| r.engine == engine)
+    };
+    let (Some(reference), Some(g2g)) = (find(REFERENCE_ENGINE), find(G2G_ENGINE)) else {
+        return (TriageClass::Agree, "an engine did not run".into());
+    };
+    if let Some(failure) = g2g_failure(g2g, g2g_stderr) {
+        return failure;
+    }
+    let (Outcome::Decoded, Some(expected)) = (outcome(reference), &reference.frame_hashes) else {
+        return (
+            TriageClass::ReferenceQuirk,
+            format!("{REFERENCE_ENGINE} {}", status_note(reference)),
+        );
+    };
+    let decoded = g2g
+        .frame_hashes
+        .as_deref()
+        .expect("a decoded differential run has frame hashes");
+    if decoded.len() < expected.len() {
+        return (
+            TriageClass::G2gDiverges,
+            format!(
+                "{} frames after the seek, {REFERENCE_ENGINE} {}",
+                decoded.len(),
+                expected.len()
+            ),
+        );
+    }
+    let comparison = calliope_core::compare::compare(expected, &decoded[..expected.len()]);
+    match comparison.first_divergence {
+        None => (TriageClass::Agree, String::new()),
+        Some(frame) => (
+            TriageClass::G2gDiverges,
+            format!("frame {frame} of {} after the seek differs", expected.len()),
+        ),
+    }
+}
+
+// where `original` sits inside `remuxed`, stepping a whole sample frame at a time
+fn find_samples(remuxed: &[u8], original: &[u8], sample_frame_bytes: usize) -> Option<usize> {
+    if original.len() > remuxed.len() {
+        return None;
+    }
+    (0..=remuxed.len() - original.len())
+        .step_by(sample_frame_bytes)
+        .find(|&offset| &remuxed[offset..offset + original.len()] == original)
+}
+
+// one decode's whole output, read before the batch deletes it
+#[derive(Debug)]
+pub struct DecodedOutput<'a> {
+    pub run: &'a RunResult,
+    pub stderr: String,
+    // the raw PCM, read only for audio
+    pub pcm: Option<Vec<u8>>,
+}
+
+// classify g2g's decode of the remuxed file against its decode of the original
+pub fn classify_remux(
+    original: &DecodedOutput,
+    remux_run: &RunResult,
+    remux_stderr: &str,
+    remuxed: Option<&DecodedOutput>,
+    sample_frame_bytes: Option<usize>,
+) -> (TriageClass, String) {
+    if let Some(failure) = g2g_failure(original.run, &original.stderr) {
+        return failure;
+    }
+    if matches!(outcome(remux_run), Outcome::Crashed | Outcome::Hung) {
+        return (
+            TriageClass::G2gCrashOrHang,
+            format!("remux {}", status_note(remux_run)),
+        );
+    }
+    if calliope_adapter_g2g::reports_muxer_refusal(remux_stderr)
+        || calliope_adapter_g2g::reports_unsupported_input(remux_stderr)
+    {
+        let note = first_error_line(remux_stderr).unwrap_or_default();
+        return (TriageClass::UnsupportedCodec, format!("remux: {note}"));
+    }
+    let Some(remuxed) = remuxed else {
+        let note = first_error_line(remux_stderr).unwrap_or_else(|| status_note(remux_run));
+        return (TriageClass::G2gNoOutput, format!("remux: {note}"));
+    };
+    if let Some((class, note)) = g2g_failure(remuxed.run, &remuxed.stderr) {
+        let class = match class {
+            TriageClass::G2gCrashOrHang => class,
+            _ => TriageClass::G2gDiverges,
+        };
+        return (class, format!("the remuxed file: {note}"));
+    }
+    let length = |output: &DecodedOutput| {
+        output
+            .run
+            .output_len
+            .expect("a decoded whole-output run has a length")
+    };
+    match (sample_frame_bytes, &original.pcm, &remuxed.pcm) {
+        (Some(frame_bytes), Some(original_pcm), Some(remuxed_pcm)) => {
+            match find_samples(remuxed_pcm, original_pcm, frame_bytes) {
+                Some(_) if original_pcm.len() == remuxed_pcm.len() => {
+                    (TriageClass::Agree, String::new())
+                }
+                Some(offset) => (
+                    TriageClass::Agree,
+                    format!(
+                        "the remux adds {} sample frames before and {} after",
+                        offset / frame_bytes,
+                        (remuxed_pcm.len() - offset - original_pcm.len()) / frame_bytes
+                    ),
+                ),
+                None => (
+                    TriageClass::G2gDiverges,
+                    format!(
+                        "the original samples are not in the remuxed decode in order ({} vs {} bytes)",
+                        original_pcm.len(),
+                        remuxed_pcm.len()
+                    ),
+                ),
+            }
+        }
+        _ if original.run.output_md5 == remuxed.run.output_md5 => {
+            (TriageClass::Agree, String::new())
+        }
+        _ => (
+            TriageClass::G2gDiverges,
+            format!(
+                "the remuxed decode differs ({} vs {} bytes)",
+                length(original),
+                length(remuxed)
+            ),
+        ),
     }
 }
 
@@ -582,14 +904,51 @@ pub fn classify_chunk_size(runs: &[ChunkSizeRun]) -> ChunkSizeTriage {
     }
 }
 
+#[derive(Debug)]
+pub struct SweepSettings {
+    pub mode: SweepMode,
+    pub engines: Vec<String>,
+    // cap on the vectors swept, 0 for all
+    pub limit: usize,
+    pub jobs: usize,
+    // the stream ids a decode sweep found in agreement, the seek and remux modes keep only those
+    pub agreeing: Option<HashSet<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReportedEntry {
+    class: TriageClass,
+    report: ReportedScenario,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReportedScenario {
+    scenario: String,
+}
+
+// the streams a decode sweep's json report files as agreeing
+pub fn agreeing_streams(decode_report: &Path) -> Result<HashSet<String>> {
+    let entries: Vec<ReportedEntry> = serde_json::from_slice(&std::fs::read(decode_report)?)?;
+    Ok(entries
+        .into_iter()
+        .filter(|entry| entry.class == TriageClass::Agree)
+        .map(|entry| entry.report.scenario)
+        .collect())
+}
+
 pub async fn run(
     manifest_path: &Path,
-    engines: &[String],
-    mode: SweepMode,
-    limit: usize,
-    jobs: usize,
     workdir: &Path,
+    settings: &SweepSettings,
 ) -> Result<Vec<SweepEntry>> {
+    let SweepSettings {
+        mode,
+        engines,
+        limit,
+        jobs,
+        agreeing,
+    } = settings;
+    let (mode, limit, jobs) = (*mode, *limit, *jobs);
     let manifest = Manifest::load(manifest_path)?;
     let mut vectors: Vec<Vector> = manifest
         .vector
@@ -599,9 +958,32 @@ pub async fn run(
     if limit > 0 {
         vectors.truncate(limit);
     }
-    let cases = sweep_cases(&vectors, engines);
+    let agrees = |case: &SweepCase| {
+        agreeing
+            .as_ref()
+            .is_none_or(|ids| ids.contains(&case.scenario.id))
+    };
+    let cases = match mode {
+        SweepMode::Tracks => track_cases(&vectors).await?,
+        SweepMode::Seek => {
+            let engines = [REFERENCE_ENGINE, G2G_ENGINE].map(String::from);
+            let streams = sweep_cases(&vectors, &engines)
+                .into_iter()
+                .filter(|case| case.kind == StreamKind::Video && case.scenario.judges_frames())
+                .filter(agrees)
+                .collect();
+            seek_cases(streams).await?
+        }
+        SweepMode::Remux => sweep_cases(&vectors, engines)
+            .into_iter()
+            .filter(agrees)
+            .collect(),
+        SweepMode::Decode | SweepMode::Timestamps | SweepMode::ChunkSize => {
+            sweep_cases(&vectors, engines)
+        }
+    };
     println!(
-        "sweep: {} vectors, {} streams, mode {mode:?}",
+        "sweep: {} vectors, {} cases, mode {mode:?}",
         vectors.len(),
         cases.len(),
     );
@@ -642,11 +1024,55 @@ pub async fn run(
                 });
                 futures::future::join_all(probes).await
             }
-            SweepMode::Decode | SweepMode::ChunkSize => finished.iter().map(|_| None).collect(),
+            SweepMode::Decode
+            | SweepMode::ChunkSize
+            | SweepMode::Tracks
+            | SweepMode::Seek
+            | SweepMode::Remux => finished.iter().map(|_| None).collect(),
+        };
+        // the remux mode's second stage: g2g decodes every file a remux wrote
+        let remuxed_scenarios: Vec<Scenario> = match mode {
+            SweepMode::Remux => finished
+                .iter()
+                .flat_map(|(_, case_reports)| case_reports.iter())
+                .filter_map(|(scenario, report)| {
+                    scenario.remux?;
+                    remuxed_file(report).map(|file| remuxed_decode(scenario, &file))
+                })
+                .collect(),
+            _ => Vec::new(),
+        };
+        let mut remuxed_reports = if remuxed_scenarios.is_empty() {
+            Vec::new()
+        } else {
+            crate::run_matrix(&remuxed_scenarios, manifest_path, &[], jobs, workdir)
+                .await?
+                .scenarios
         };
         for ((case, mut case_reports), reference) in finished.into_iter().zip(references) {
+            if mode == SweepMode::Remux {
+                let classified = classify_remux_case(case_reports, &mut remuxed_reports)?;
+                for (class, note, report, remux_scenario) in classified {
+                    let reproducer =
+                        reproducer(g2g.as_ref(), &remux_scenario, &cache.join(&case.vector));
+                    entries.push(finish_entry(case, class, note, reproducer, report)?);
+                }
+                continue;
+            }
             let (class, note, reproduced, report) = match mode {
-                SweepMode::Decode => {
+                SweepMode::Remux => unreachable!("the remux mode is classified above"),
+                SweepMode::Seek => {
+                    let (scenario, report) = case_reports.remove(0);
+                    let stderr = report
+                        .runs
+                        .iter()
+                        .find(|r| r.run.engine == G2G_ENGINE)
+                        .map(|r| run_stderr(&r.run))
+                        .unwrap_or_default();
+                    let (class, note) = classify_seek(&report, &stderr);
+                    (class, note, Some(scenario), report)
+                }
+                SweepMode::Decode | SweepMode::Tracks => {
                     let (scenario, report) = case_reports.remove(0);
                     let g2g_run = report.runs.iter().find(|r| r.run.engine == G2G_ENGINE);
                     let stderr = g2g_run.map(|r| run_stderr(&r.run)).unwrap_or_default();
@@ -696,22 +1122,99 @@ pub async fn run(
             let reproducer = reproduced.and_then(|scenario| {
                 reproducer(g2g.as_ref(), &scenario, &cache.join(&case.vector))
             });
-            for run in &report.runs {
-                delete_decoded_output(&run.run.log_dir)?;
-            }
-            println!("  {:<18} {}", class.title(), report.scenario);
-            entries.push(SweepEntry {
-                vector: case.vector.clone(),
-                kind: case.kind,
-                codec: case.codec.clone(),
-                class,
-                note,
-                reproducer,
-                report,
-            });
+            entries.push(finish_entry(case, class, note, reproducer, report)?);
         }
     }
     Ok(entries)
+}
+
+// drop the decoded output the entry's runs wrote, log the class, and build the entry
+fn finish_entry(
+    case: &SweepCase,
+    class: TriageClass,
+    note: String,
+    reproducer: Option<String>,
+    report: ScenarioReport,
+) -> Result<SweepEntry> {
+    for run in &report.runs {
+        delete_decoded_output(&run.run.log_dir)?;
+    }
+    println!("  {:<18} {}", class.title(), report.scenario);
+    Ok(SweepEntry {
+        vector: case.vector.clone(),
+        kind: case.kind,
+        codec: case.codec.clone(),
+        class,
+        note,
+        reproducer,
+        report,
+    })
+}
+
+// the file a finished remux run wrote, None when it wrote nothing
+fn remuxed_file(report: &ScenarioReport) -> Option<PathBuf> {
+    let run = &report.runs.first()?.run;
+    let Some(OutputSpec::Produced(file)) = &run.output else {
+        return None;
+    };
+    let written = matches!(run.status, RunStatus::Ok)
+        && std::fs::metadata(file).is_ok_and(|metadata| metadata.len() > 0);
+    written.then(|| file.clone())
+}
+
+fn decoded_output(run: &RunResult, audio: bool) -> Result<DecodedOutput<'_>> {
+    let pcm = match (&run.output, audio) {
+        (Some(OutputSpec::RawAudioFile(path)), true) if outcome(run) == Outcome::Decoded => {
+            Some(std::fs::read(path)?)
+        }
+        _ => None,
+    };
+    Ok(DecodedOutput {
+        run,
+        stderr: run_stderr(run),
+        pcm,
+    })
+}
+
+// one entry per container: the original decode, the remux run and the remuxed decode
+fn classify_remux_case(
+    case_reports: Vec<(Scenario, ScenarioReport)>,
+    remuxed_reports: &mut Vec<ScenarioReport>,
+) -> Result<Vec<(TriageClass, String, ScenarioReport, Scenario)>> {
+    let mut reports = case_reports.into_iter();
+    let (original_scenario, original_report) = reports.next().expect("the original decode leads");
+    let audio = original_scenario.audio;
+    let sample_frame_bytes = audio.map(|audio| audio.channels as usize * PCM_SAMPLE_BYTES);
+    let original = decoded_output(&original_report.runs[0].run, audio.is_some())?;
+    let mut classified = Vec::new();
+    for (remux_scenario, mut remux_report) in reports {
+        let decode_id = format!("{}/decode", remux_scenario.id);
+        let remuxed_report = remuxed_reports
+            .iter()
+            .position(|r| r.scenario == decode_id)
+            .map(|index| remuxed_reports.remove(index));
+        let remuxed = remuxed_report
+            .as_ref()
+            .map(|report| decoded_output(&report.runs[0].run, audio.is_some()))
+            .transpose()?;
+        let remux_run = &remux_report.runs[0].run;
+        let (class, note) = classify_remux(
+            &original,
+            remux_run,
+            &run_stderr(remux_run),
+            remuxed.as_ref(),
+            sample_frame_bytes,
+        );
+        drop(remuxed);
+        if let Some(remuxed_report) = remuxed_report {
+            remux_report.runs.extend(remuxed_report.runs);
+        }
+        classified.push((class, note, remux_report, remux_scenario));
+    }
+    for run in &original_report.runs {
+        delete_decoded_output(&run.run.log_dir)?;
+    }
+    Ok(classified)
 }
 
 fn reproducer(
@@ -851,7 +1354,7 @@ pub fn triage_markdown(title: &str, mode: SweepMode, entries: &[SweepEntry]) -> 
 mod tests {
     use super::*;
     use calliope_core::compare::{Comparison, majority_vote};
-    use calliope_core::corpus::{AudioStream, Media, VideoStream};
+    use calliope_core::corpus::Media;
     use calliope_core::report::EngineReport;
 
     fn engines() -> Vec<String> {
@@ -1363,5 +1866,176 @@ mod tests {
         // no output at every size is the decode sweep's failure, not a chunk-size one
         let never = [chunk_run(None), chunk_run(None), chunk_run(None)];
         assert_eq!(chunk_triage(&never).class, TriageClass::G2gNoOutput);
+    }
+
+    #[test]
+    fn tracks_seek_and_remux_reach_both_engines_command_lines() {
+        use calliope_core::Engine;
+        let input = Path::new("/media/v");
+        let workdir = Path::new("/run");
+        let line = |engine: &dyn Engine, scenario: &Scenario| {
+            engine
+                .plan(scenario, input, workdir)
+                .unwrap()
+                .args
+                .join(" ")
+        };
+        let mut video = sweep_cases(&[vector("v", Some(("h264", "yuv420p")), None)], &engines())
+            .remove(0)
+            .scenario;
+        video.stream_index = Some(1);
+        video.seek = Some(Seek {
+            target: "3.003000".into(),
+            frames: SEEK_FRAMES,
+        });
+        let ffmpeg = line(&calliope_adapter_ffmpeg::Ffmpeg, &video);
+        assert!(
+            ffmpeg.starts_with("-nostdin -hide_banner -y -ss 3.003000 -copyts -i /media/v"),
+            "{ffmpeg}"
+        );
+        assert!(
+            ffmpeg.contains(&format!("-map 0:v:1 -frames:v {SEEK_FRAMES}")),
+            "{ffmpeg}"
+        );
+        let g2g = line(&calliope_adapter_g2g::G2g, &video);
+        assert!(g2g.starts_with("--seek 3.003000 -q filesrc"), "{g2g}");
+        assert!(g2g.contains("! decodebin current-video=1 !"), "{g2g}");
+
+        let mut audio = sweep_cases(&[vector("a", None, Some("flac"))], &engines())
+            .remove(0)
+            .scenario;
+        audio.stream_index = Some(2);
+        assert!(line(&calliope_adapter_ffmpeg::Ffmpeg, &audio).contains("-map 0:a:2"));
+        assert!(line(&calliope_adapter_g2g::G2g, &audio).contains("decodebin current-audio=2"));
+
+        let remux = mode_scenarios(SweepMode::Remux, &audio);
+        assert_eq!(remux[0].id, original_id(&audio));
+        assert_eq!(remux.len(), 1 + RemuxContainer::ALL.len());
+        let flv = remux
+            .iter()
+            .find(|s| s.remux == Some(RemuxContainer::Flv))
+            .unwrap();
+        let plan = calliope_adapter_g2g::G2g.plan(flv, input, workdir).unwrap();
+        assert!(
+            plan.args.join(" ").ends_with("parsebin name=p p.audio_0 ! queue ! m. flvmux name=m ! filesink location=/run/remux.flv"),
+            "{:?}",
+            plan.args
+        );
+        assert!(!flv.judges_frames());
+    }
+
+    #[test]
+    fn seek_targets_spread_over_the_later_keyframes() {
+        // a keyframe a second, the eight after the first split in quarters
+        let keyframes: Vec<i64> = (0..9).map(|second| second * 1_000_000).collect();
+        assert_eq!(seek_targets(&keyframes), [3_000_000, 5_000_000, 7_000_000]);
+        // one later keyframe gives one target, none gives none
+        assert_eq!(seek_targets(&[0, 1_500_000]), [1_500_000]);
+        assert!(seek_targets(&[0]).is_empty());
+        assert_eq!(seconds_from_microseconds(3_003_000), "3.003000");
+    }
+
+    #[test]
+    fn classifies_the_frames_after_a_seek() {
+        let class = |ffmpeg: &[&str], g2g: &[&str]| {
+            classify_seek(
+                &differential(vec![
+                    run(REFERENCE_ENGINE, RunStatus::Ok, Some(ffmpeg)),
+                    run(G2G_ENGINE, RunStatus::Ok, Some(g2g)),
+                ]),
+                "",
+            )
+        };
+        // g2g decodes to the end, only ffmpeg's frames are compared
+        assert_eq!(class(&["a", "b"], &["a", "b", "c"]).0, TriageClass::Agree);
+        let (class_late, note) = class(&["a", "b"], &["b", "c", "d"]);
+        assert_eq!(class_late, TriageClass::G2gDiverges);
+        assert_eq!(note, "frame 0 of 2 after the seek differs");
+        assert_eq!(class(&["a", "b"], &["a"]).0, TriageClass::G2gDiverges);
+        let unseekable = classify_seek(
+            &differential(vec![
+                run(REFERENCE_ENGINE, RunStatus::Ok, Some(GOOD)),
+                run(G2G_ENGINE, RunStatus::ExitFailure { code: 1 }, None),
+            ]),
+            "g2g-launch: --seek: nothing in the pipeline can seek: a seek needs an MP4 file source",
+        );
+        assert_eq!(unseekable.0, TriageClass::UnsupportedCodec);
+    }
+
+    fn decoded_pcm<'a>(run: &'a RunResult, pcm: &[u8]) -> DecodedOutput<'a> {
+        DecodedOutput {
+            run,
+            stderr: String::new(),
+            pcm: Some(pcm.to_vec()),
+        }
+    }
+
+    #[test]
+    fn remuxed_audio_keeps_every_original_sample_in_order() {
+        let decoded = run(G2G_ENGINE, RunStatus::Ok, Some(GOOD));
+        let remux = run(G2G_ENGINE, RunStatus::Ok, None);
+        // stereo S16LE, four bytes a sample frame
+        let frame_bytes = 2 * PCM_SAMPLE_BYTES;
+        let original: Vec<u8> = (1..=16).collect();
+        let classify = |remuxed: &[u8]| {
+            classify_remux(
+                &decoded_pcm(&decoded, &original),
+                &remux,
+                "",
+                Some(&decoded_pcm(&decoded, remuxed)),
+                Some(frame_bytes),
+            )
+        };
+        assert_eq!(classify(&original), (TriageClass::Agree, String::new()));
+        let mut primed = vec![0; 2 * frame_bytes];
+        primed.extend(&original);
+        primed.extend(vec![0; frame_bytes]);
+        assert_eq!(
+            classify(&primed),
+            (
+                TriageClass::Agree,
+                "the remux adds 2 sample frames before and 1 after".into()
+            )
+        );
+        // a shift inside a sample frame is not the same samples
+        let mut misaligned = vec![0; 1];
+        misaligned.extend(&original);
+        assert_eq!(classify(&misaligned).0, TriageClass::G2gDiverges);
+        assert_eq!(classify(&original[..12]).0, TriageClass::G2gDiverges);
+        let refused = classify_remux(
+            &decoded_pcm(&decoded, &original),
+            &remux,
+            "ERROR caps               FlvMux -> FileSink: (unconstrained)\npipeline error: CapsMismatch",
+            None,
+            Some(frame_bytes),
+        );
+        assert_eq!(refused.0, TriageClass::UnsupportedCodec);
+    }
+
+    #[test]
+    fn reads_the_agreeing_streams_back_from_a_decode_report() {
+        let entry = |id: &str, class| SweepEntry {
+            vector: "v".into(),
+            kind: StreamKind::Video,
+            codec: "h264 yuv420p".into(),
+            class,
+            note: String::new(),
+            reproducer: None,
+            report: ScenarioReport {
+                scenario: id.into(),
+                ..differential(vec![run(REFERENCE_ENGINE, RunStatus::Ok, Some(GOOD))])
+            },
+        };
+        let entries = [
+            entry("v/video", TriageClass::Agree),
+            entry("w/video", TriageClass::G2gDiverges),
+        ];
+        let dir = std::env::temp_dir().join(format!("calliope-agreeing-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("decode.json");
+        std::fs::write(&path, serde_json::to_vec(&entries).unwrap()).unwrap();
+        let agreeing = agreeing_streams(&path).unwrap();
+        assert_eq!(agreeing, HashSet::from(["v/video".to_string()]));
+        std::fs::remove_dir_all(dir).unwrap();
     }
 }

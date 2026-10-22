@@ -245,6 +245,9 @@ impl Engine for Ffmpeg {
             }
             args.push("-i".into());
             args.push(input.display().to_string());
+            if let Some(index) = scenario.stream_index {
+                args.extend(["-map".into(), format!("0:a:{index}")]);
+            }
             args.extend([
                 "-vn".into(),
                 "-sn".into(),
@@ -263,17 +266,25 @@ impl Engine for Ffmpeg {
                 output: OutputSpec::RawAudioFile(out),
             });
         }
-        let mut args = vec![
-            "-nostdin".into(),
-            "-hide_banner".into(),
-            "-y".into(),
+        let mut args: Vec<String> = vec!["-nostdin".into(), "-hide_banner".into(), "-y".into()];
+        // -copyts keeps the container timestamps, so the frames after the seek are the ones g2g lands on
+        if let Some(seek) = &scenario.seek {
+            args.extend(["-ss".into(), seek.target.clone(), "-copyts".into()]);
+        }
+        args.extend([
             "-i".into(),
             input.display().to_string(),
             "-an".into(),
             // a mapped subtitle / data stream would fail the framemd5 / rawvideo output
             "-sn".into(),
             "-dn".into(),
-        ];
+        ]);
+        if let Some(index) = scenario.stream_index {
+            args.extend(["-map".into(), format!("0:v:{index}")]);
+        }
+        if let Some(seek) = &scenario.seek {
+            args.extend(["-frames:v".into(), seek.frames.to_string()]);
+        }
         // golden: whole decoded output as raw video in the vector's format, so
         // the runner's whole-file MD5 reproduces the conformance `result`
         // (Fluster's `-vf format=<fmt> -f rawvideo`). Otherwise per-frame md5.

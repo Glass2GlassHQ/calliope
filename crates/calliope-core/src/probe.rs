@@ -95,6 +95,24 @@ struct ProbeSideData {
 }
 
 impl ProbeStream {
+    fn video(&self) -> Option<VideoStream> {
+        let (width, height) = self.decoded_size()?;
+        Some(VideoStream {
+            codec: self.codec_name.clone()?,
+            width,
+            height,
+            pix_fmt: self.pix_fmt.clone(),
+        })
+    }
+
+    fn audio(&self) -> Option<AudioStream> {
+        Some(AudioStream {
+            codec: self.codec_name.clone()?,
+            sample_rate: self.sample_rate.as_deref()?.parse().ok()?,
+            channels: self.channels?,
+        })
+    }
+
     // the size ffmpeg decodes to: the coded size less any cropping side data
     fn decoded_size(&self) -> Option<(u32, u32)> {
         let (width, height) = (self.width?, self.height?);
@@ -128,22 +146,8 @@ fn parse_ffprobe_media(json: &str) -> Result<Option<Media>> {
             .iter()
             .find(|s| s.codec_type.as_deref() == Some(kind) && s.codec_name.is_some())
     };
-    let video = first_of("video").and_then(|s| {
-        let (width, height) = s.decoded_size()?;
-        Some(VideoStream {
-            codec: s.codec_name.clone()?,
-            width,
-            height,
-            pix_fmt: s.pix_fmt.clone(),
-        })
-    });
-    let audio = first_of("audio").and_then(|s| {
-        Some(AudioStream {
-            codec: s.codec_name.clone()?,
-            sample_rate: s.sample_rate.as_deref()?.parse().ok()?,
-            channels: s.channels?,
-        })
-    });
+    let video = first_of("video").and_then(ProbeStream::video);
+    let audio = first_of("audio").and_then(ProbeStream::audio);
     if video.is_none() && audio.is_none() {
         return Ok(None);
     }
@@ -314,13 +318,25 @@ pub async fn probe_frame_timestamps(
     kind: StreamKind,
     timeout: std::time::Duration,
 ) -> Result<ReferenceTimestamps> {
+    let entries = [
+        "-select_streams",
+        kind.first_stream(),
+        "-show_entries",
+        "stream=time_base:frame=pts,best_effort_timestamp",
+    ];
+    parse_frame_timestamps(&ffprobe_json(input, &entries, timeout).await?)
+}
+
+// ffprobe's json for `input`, killed at the deadline
+async fn ffprobe_json(
+    input: &Path,
+    entries: &[&str],
+    timeout: std::time::Duration,
+) -> Result<String> {
     let program = binary("CALLIOPE_FFPROBE", "ffprobe");
     let probe = tokio::process::Command::new(&program)
-        .args(["-v", "error", "-select_streams", kind.first_stream()])
-        .args([
-            "-show_entries",
-            "stream=time_base:frame=pts,best_effort_timestamp",
-        ])
+        .args(["-v", "error"])
+        .args(entries)
         .args(["-of", "json"])
         .arg(input)
         .kill_on_drop(true)
@@ -336,7 +352,110 @@ pub async fn probe_frame_timestamps(
             String::from_utf8_lossy(&out.stderr).trim()
         )));
     }
-    parse_frame_timestamps(&String::from_utf8_lossy(&out.stdout))
+    Ok(String::from_utf8_lossy(&out.stdout).into_owned())
+}
+
+// every video and audio stream in ffprobe's order, None where one cannot be decoded to a known shape
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct Tracks {
+    pub video: Vec<Option<VideoStream>>,
+    pub audio: Vec<Option<AudioStream>>,
+}
+
+pub async fn probe_tracks(input: &Path, timeout: std::time::Duration) -> Result<Tracks> {
+    let entries = ["-show_entries", FFPROBE_STREAM_ENTRIES];
+    parse_tracks(&ffprobe_json(input, &entries, timeout).await?)
+}
+
+fn parse_tracks(json: &str) -> Result<Tracks> {
+    let probe: ProbeOutput =
+        serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
+    let of_kind = |kind: &'static str| {
+        probe
+            .streams
+            .iter()
+            .filter(move |s| s.codec_type.as_deref() == Some(kind))
+    };
+    Ok(Tracks {
+        video: of_kind("video").map(ProbeStream::video).collect(),
+        audio: of_kind("audio").map(ProbeStream::audio).collect(),
+    })
+}
+
+const MICROSECONDS_PER_SECOND: i128 = 1_000_000;
+
+// the first video stream's keyframes, in whole microseconds from the file's start time, rounded down
+pub async fn probe_keyframes(input: &Path, timeout: std::time::Duration) -> Result<Vec<i64>> {
+    let entries = [
+        "-select_streams",
+        StreamKind::Video.first_stream(),
+        "-skip_frame",
+        "nokey",
+        "-show_entries",
+        "stream=time_base:format=start_time:frame=key_frame,best_effort_timestamp",
+    ];
+    parse_keyframes(&ffprobe_json(input, &entries, timeout).await?)
+}
+
+#[derive(Debug, Deserialize)]
+struct KeyframeProbe {
+    #[serde(default)]
+    streams: Vec<TimeBaseStream>,
+    #[serde(default)]
+    frames: Vec<KeyframeEntry>,
+    format: Option<StartTime>,
+}
+
+#[derive(Debug, Deserialize)]
+struct KeyframeEntry {
+    key_frame: u8,
+    best_effort_timestamp: Option<i64>,
+}
+
+#[derive(Debug, Deserialize)]
+struct StartTime {
+    start_time: Option<String>,
+}
+
+fn parse_keyframes(json: &str) -> Result<Vec<i64>> {
+    let probe: KeyframeProbe =
+        serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
+    let stream = probe
+        .streams
+        .first()
+        .ok_or_else(|| Error::Parse("ffprobe found no video stream".into()))?;
+    let time_base = TimeBase::parse(&stream.time_base)?;
+    let start = match probe.format.and_then(|format| format.start_time) {
+        Some(text) => microseconds(&text)?,
+        None => 0,
+    };
+    let to_microseconds = |ticks: i64| {
+        (i128::from(ticks) * i128::from(time_base.numerator) * MICROSECONDS_PER_SECOND)
+            .div_euclid(i128::from(time_base.denominator))
+    };
+    probe
+        .frames
+        .iter()
+        .filter(|frame| frame.key_frame == 1)
+        .filter_map(|frame| frame.best_effort_timestamp)
+        .map(|ticks| {
+            i64::try_from(to_microseconds(ticks) - start)
+                .map_err(|_| Error::Parse(format!("keyframe at {ticks} ticks is out of range")))
+        })
+        .collect()
+}
+
+// ffprobe prints a start time as seconds with six decimals, exactly the microseconds ffmpeg keeps
+fn microseconds(seconds: &str) -> Result<i128> {
+    let bad = || Error::Parse(format!("not a start time: {seconds:?}"));
+    let (whole, fraction) = seconds.split_once('.').unwrap_or((seconds, ""));
+    let negative = whole.starts_with('-');
+    let whole: i128 = whole.parse().map_err(|_| bad())?;
+    if fraction.len() > 6 {
+        return Err(bad());
+    }
+    let fraction: i128 = format!("{fraction:0<6}").parse().map_err(|_| bad())?;
+    Ok(whole * MICROSECONDS_PER_SECOND + if negative { -fraction } else { fraction })
 }
 
 #[derive(Debug, Deserialize)]
@@ -522,6 +641,39 @@ mod tests {
             .collect();
         assert_eq!(fields, [(Some(0), Some(0)), (None, Some(1)), (None, None)]);
         assert!(parse_frame_timestamps(r#"{"frames": []}"#).is_err());
+    }
+
+    #[test]
+    fn lists_every_track_in_ffprobe_order() {
+        // ffprobe's report for gst-medias mp4/multi_audio_5tones.mov, cut to two audio tracks, plus a cover picture
+        let json = r#"{"streams": [
+            {"codec_name": "h264", "codec_type": "video", "width": 320, "height": 240, "pix_fmt": "yuv420p"},
+            {"codec_name": "pcm_s16le", "codec_type": "audio", "sample_rate": "44100", "channels": 1},
+            {"codec_type": "video"},
+            {"codec_name": "pcm_s16le", "codec_type": "audio", "sample_rate": "48000", "channels": 2}
+        ], "format": {"format_name": "mov,mp4,m4a,3gp,3g2,mj2"}}"#;
+        let tracks = parse_tracks(json).unwrap();
+        assert_eq!(tracks.video.len(), 2);
+        assert!(tracks.video[1].is_none());
+        let rates: Vec<Option<u32>> = tracks
+            .audio
+            .iter()
+            .map(|a| a.as_ref().map(|a| a.sample_rate))
+            .collect();
+        assert_eq!(rates, [Some(44100), Some(48000)]);
+    }
+
+    #[test]
+    fn keyframes_count_from_the_start_time_in_whole_microseconds() {
+        // ffprobe's report for gst-medias bipbop/gear4/fileSequence3.ts, first two keyframes
+        let json = r#"{"frames": [
+            {"key_frame": 1, "best_effort_timestamp": 3602703},
+            {"key_frame": 1, "best_effort_timestamp": 3692793}
+        ], "streams": [{"time_base": "1/90000"}], "format": {"start_time": "40.030033"}}"#;
+        // 3692793 ticks is 41.031033333 s, one second and 1000 us past the start
+        assert_eq!(parse_keyframes(json).unwrap(), [0, 1_001_000]);
+        assert_eq!(microseconds("-0.5").unwrap(), -500_000);
+        assert!(microseconds("1.1234567").is_err());
     }
 
     #[test]

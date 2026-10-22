@@ -14,7 +14,7 @@ use calliope_core::engine::{
 use calliope_core::produce::{
     Container, FRAGMENT_DURATION, Produce, ProducedAudio, VideoCodec, whep_endpoint, whip_endpoint,
 };
-use calliope_core::scenario::Scenario;
+use calliope_core::scenario::{RemuxContainer, Scenario};
 use calliope_core::{Error, Result};
 
 // produce mode reads an mp4 input, decoded h264 when it re-encodes
@@ -99,18 +99,34 @@ fn mux_and_sink(produce: &Produce, workdir: &Path, engine: &str) -> Result<Strin
     })
 }
 
-// g2g-launch's parse errors for input it has no typefind match, demuxer, or decoder for
-const UNSUPPORTED_INPUT_ERRORS: [&str; 3] = [
+// g2g-launch's errors for input it has no demuxer or decoder for, or cannot seek, index or remux
+const UNSUPPORTED_INPUT_ERRORS: [&str; 9] = [
     "unrecognized content, no media type matches",
     "no decoder chain from",
     "decodebin: no decoder for",
+    "nothing in the pipeline can seek",
+    "so a stream index cannot be counted",
+    "cannot be told from an earlier one",
+    "so it cannot pick one by index",
+    "parsebin: no demuxer chain from",
+    "fans out behind a file of a container g2g demuxes",
 ];
+
+// a muxer refusing the codec fails negotiation on its own output link
+const MUXER_CAPS_FAILURE: &str = "Mux -> FileSink";
 
 // true when a g2g-launch stderr log says the build cannot handle the input at all
 pub fn reports_unsupported_input(stderr: &str) -> bool {
     UNSUPPORTED_INPUT_ERRORS
         .iter()
         .any(|error| stderr.contains(error))
+}
+
+// true when a remux failed because the muxer does not take the stream's codec
+pub fn reports_muxer_refusal(stderr: &str) -> bool {
+    stderr
+        .lines()
+        .any(|line| line.starts_with("ERROR caps") && line.contains(MUXER_CAPS_FAILURE))
 }
 
 // the decode pipeline's filesrc, with the scenario's block size when it sets one
@@ -120,6 +136,30 @@ fn file_source(scenario: &Scenario, input: &Path) -> String {
         Some(bytes) => format!("{source} blocksize={bytes}"),
         None => source,
     }
+}
+
+// decodebin, narrowed to one stream by index when the scenario names one
+fn decodebin(scenario: &Scenario) -> String {
+    let Some(index) = scenario.stream_index else {
+        return "decodebin".into();
+    };
+    let kind = if scenario.is_audio() {
+        "audio"
+    } else {
+        "video"
+    };
+    format!("decodebin current-{kind}={index}")
+}
+
+// g2g-launch's arguments: leading flags, the scenario's seek, then the quiet pipeline
+fn launch_args(scenario: &Scenario, flags: &[&str], pipeline: &str) -> Vec<String> {
+    let mut args: Vec<String> = flags.iter().map(|s| s.to_string()).collect();
+    if let Some(seek) = &scenario.seek {
+        args.extend(["--seek".to_string(), seek.target.clone()]);
+    }
+    args.push("-q".to_string());
+    args.extend(pipeline.split(' ').map(str::to_string));
+    args
 }
 
 pub fn g2g_launch_binary() -> String {
@@ -143,6 +183,9 @@ impl Engine for G2g {
         if let Some(produce) = &scenario.produce {
             return self.produce_invocation(produce, input, workdir);
         }
+        if let Some(container) = scenario.remux {
+            return Ok(remux_invocation(container, scenario, input, workdir));
+        }
         if let Some(rt) = &scenario.roundtrip {
             return Ok(self.transcode_invocation(input, workdir, rt));
         }
@@ -162,6 +205,32 @@ impl Engine for G2g {
             workdir,
             &["--threads"],
         )))
+    }
+}
+
+// parse the scenario's stream out of its container and mux it into another, unchanged
+fn remux_invocation(
+    container: RemuxContainer,
+    scenario: &Scenario,
+    input: &Path,
+    workdir: &Path,
+) -> Invocation {
+    let out = workdir.join(format!("remux.{}", container.extension()));
+    let port = if scenario.is_audio() {
+        "audio_0"
+    } else {
+        "video_0"
+    };
+    let pipeline = format!(
+        "{} ! parsebin name=p p.{port} ! queue ! m. {} name=m ! filesink location={}",
+        file_source(scenario, input),
+        container.muxer(),
+        out.display()
+    );
+    Invocation {
+        program: g2g_launch_binary(),
+        args: launch_args(scenario, &[], &pipeline),
+        output: OutputSpec::Produced(out),
     }
 }
 
@@ -261,18 +330,16 @@ impl G2g {
     ) -> Invocation {
         let (sink, output) = launch_sink(scenario, workdir, "out.pcm", OutputSpec::RawAudioFile);
         let pipeline = format!(
-            "{} ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={} ! {sink}",
+            "{} ! {} ! audioconvert dithering=none ! audioresample ! audio/x-raw,format={},rate={},channels={} ! {sink}",
             file_source(scenario, input),
+            decodebin(scenario),
             audio.format.gst_format(),
             audio.rate,
             audio.channels,
         );
-        let mut args: Vec<String> = flags.iter().map(|s| s.to_string()).collect();
-        args.push("-q".to_string());
-        args.extend(pipeline.split(' ').map(str::to_string));
         Invocation {
             program: g2g_launch_binary(),
-            args,
+            args: launch_args(scenario, flags, &pipeline),
             output,
         }
     }
@@ -313,15 +380,13 @@ impl G2g {
             ""
         };
         let pipeline = format!(
-            "{} ! decodebin ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! {sink}",
+            "{} ! {} ! {deint}{overlay}videoconvert ! video/x-raw,format={format} ! {sink}",
             file_source(scenario, input),
+            decodebin(scenario),
         );
-        let mut args: Vec<String> = flags.iter().map(|s| s.to_string()).collect();
-        args.push("-q".to_string());
-        args.extend(pipeline.split(' ').map(str::to_string));
         Invocation {
             program: g2g_launch_binary(),
-            args,
+            args: launch_args(scenario, flags, &pipeline),
             output,
         }
     }

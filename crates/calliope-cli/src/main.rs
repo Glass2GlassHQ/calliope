@@ -135,6 +135,9 @@ enum Command {
         /// corpus name for the triage title
         #[arg(long, default_value = "corpus")]
         title: String,
+        /// a decode sweep's json report: the seek and remux modes keep only the streams that agree in it
+        #[arg(long)]
+        agreeing: Option<PathBuf>,
     },
     /// keep g2g pipelines decoding live streams, logging uptime and incidents
     Canary {
@@ -212,6 +215,9 @@ fn engine_crashes(
         overlay: false,
         blocksize: None,
         timestamps: false,
+        stream_index: None,
+        seek: None,
+        remux: None,
         outcome_diff: false,
         produce: None,
     };
@@ -281,6 +287,9 @@ fn golden_scenarios(
             overlay: false,
             blocksize: None,
             timestamps: false,
+            stream_index: None,
+            seek: None,
+            remux: None,
             outcome_diff: false,
             produce: None,
         })
@@ -494,9 +503,16 @@ async fn main() -> Result<ExitCode> {
             report,
             triage,
             title,
+            agreeing,
         } => {
             if mode != sweep::SweepMode::Decode && !engines.is_empty() {
-                bail!("--engines only applies to the decode mode, the other modes run g2g alone");
+                bail!(
+                    "--engines only applies to the decode mode, the other modes pick their engines"
+                );
+            }
+            let filters_streams = matches!(mode, sweep::SweepMode::Seek | sweep::SweepMode::Remux);
+            if agreeing.is_some() && !filters_streams {
+                bail!("--agreeing only applies to the seek and remux modes");
             }
             let engines = if engines.is_empty() {
                 DEFAULT_ENGINES.map(String::from).to_vec()
@@ -509,7 +525,17 @@ async fn main() -> Result<ExitCode> {
                     sweep::REFERENCE_ENGINE
                 );
             }
-            let entries = sweep::run(&corpus, &engines, mode, limit, jobs, &workdir).await?;
+            let settings = sweep::SweepSettings {
+                mode,
+                engines,
+                limit,
+                jobs,
+                agreeing: agreeing
+                    .as_deref()
+                    .map(sweep::agreeing_streams)
+                    .transpose()?,
+            };
+            let entries = sweep::run(&corpus, &workdir, &settings).await?;
             let markdown = sweep::triage_markdown(&title, mode, &entries);
             print!("{markdown}");
             if let Some(path) = report {

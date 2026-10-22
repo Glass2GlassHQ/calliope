@@ -92,13 +92,60 @@ pub struct Scenario {
     pub overlay: bool,
     // each engine encodes and muxes the input, external validators judge the output
     pub produce: Option<Produce>,
-    // only the sweep sets the next two, a scenario file cannot
+    // only the sweep sets the fields below, a scenario file cannot
     // bytes per filesrc read, None keeps the engine default
     #[serde(skip)]
     pub blocksize: Option<u32>,
     // decode into checksumsink, so each frame's pts and digest land on stdout
     #[serde(skip)]
     pub timestamps: bool,
+    // decode the stream of this index among the streams of its kind, counted as ffprobe counts
+    #[serde(skip)]
+    pub stream_index: Option<usize>,
+    #[serde(skip)]
+    pub seek: Option<Seek>,
+    // copy the stream into this container instead of decoding it
+    #[serde(skip)]
+    pub remux: Option<RemuxContainer>,
+}
+
+// decode from one seek, comparing the first `frames` frames
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Seek {
+    // seconds from the start of the file, the text both engines receive
+    pub target: String,
+    pub frames: usize,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RemuxContainer {
+    Mp4,
+    Matroska,
+    MpegTs,
+    Flv,
+}
+
+impl RemuxContainer {
+    pub const ALL: [Self; 4] = [Self::Mp4, Self::Matroska, Self::MpegTs, Self::Flv];
+
+    // the gst-launch muxer element
+    pub fn muxer(self) -> &'static str {
+        match self {
+            Self::Mp4 => "mp4mux",
+            Self::Matroska => "matroskamux",
+            Self::MpegTs => "mpegtsmux",
+            Self::Flv => "flvmux",
+        }
+    }
+
+    pub fn extension(self) -> &'static str {
+        match self {
+            Self::Mp4 => "mp4",
+            Self::Matroska => "mkv",
+            Self::MpegTs => "ts",
+            Self::Flv => "flv",
+        }
+    }
 }
 
 /// Encode-differential config: ffmpeg encodes a lavfi source into an elementary
@@ -234,6 +281,7 @@ impl Scenario {
             && self.roundtrip.is_none()
             && !self.resolution_change
             && self.produce.is_none()
+            && self.remux.is_none()
     }
 }
 
