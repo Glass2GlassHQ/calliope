@@ -8,10 +8,8 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
   from the g2g docs site.
 
 ## Corpus differential depth
-- Timestamp differential: compare each frame's PTS and duration with
-  `ffprobe -show_frames` for every corpus scenario.
-- Chunk-size invariance: decode each corpus file at several `filesrc` block
-  sizes (188, 4096, 65536) and require identical output.
+- Timestamp differential: compare each frame's duration too, once a g2g sink
+  prints it.
 - Per-track differential: decode every audio and video track of a
   multi-track file by index and compare with `ffmpeg -map 0:a:N` /
   `-map 0:v:N`.

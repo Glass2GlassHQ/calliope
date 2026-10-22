@@ -550,6 +550,129 @@ and M1531 added tests for 245 of the missed ones, and the other 106 are not gaps
 59 timeouts, 580 unviable) against g2g 439f4e3. h265parse.rs (26%) and
 h264parse.rs (52%) are the weakest. The missed plugin mutants have no tests yet.
 
+### 19. Timestamp differential (fate-suite + gst-medias)
+`calliope sweep --mode timestamps` runs every technique-15 stream through the
+same g2g and GStreamer decode pipelines with `checksumsink hash=md5` in place
+of `filesink`, and through `ffprobe -show_frames` for the first stream of that
+kind. Each checksumsink line is one output buffer with its pts.
+```
+calliope sweep --mode timestamps --corpus corpus/fate-suite.toml --workdir runs/timestamps \
+  --title "fate-suite timestamps" --report runs/fate-suite-timestamps.json
+```
+Method. The reference is ffprobe's `best_effort_timestamp`, the pts ffmpeg
+stamps on each decoded frame. ffprobe lists frames in decoder output order,
+which is the order g2g outputs them, so frames pair by index. `pkt_dts` is in
+decode order and is not used. Where ffmpeg replaced a frame's own pts (the
+packet had none, or the decoder's pts was out of order), g2g may also match
+that pts unchanged. A g2g pts matches when it rounds to the same tick of the
+stream time base, so the tolerance is half a tick. Both sides describe the
+same integer container timestamp and g2g's conversion to nanoseconds
+truncates by under 1 ns, so a larger gap is a different timestamp. The most
+common g2g minus ffprobe difference over the paired frames is taken off
+before comparing, so a stream shifted as a whole reports one offset. Audio
+compares frame by frame too: a decoder outputs one frame per coded packet, as
+ffprobe counts them. PCM is the exception, its frames are whatever chunk the
+demuxer reads, so only the first frame pairs and the rest must increase. When
+ffprobe has no timestamp at all, g2g's pts must increase. When GStreamer
+stamps every frame as g2g does, the row is filed as a reference quirk.
+
+Duration is not compared. g2g frames carry `duration_ns`, but no g2g output
+prints it: checksumsink prints the pts only, as GStreamer's does. Comparing
+it needs GStreamer's per-buffer `last-message` from `fakesink silent=false`
+(or `identity silent=false`) under `g2g-launch -v`, which in gst-launch reads
+`chain ... (N bytes, dts: ..., pts: ..., duration: ...)`.
+
+Volume: fate-suite 2411 streams, gst-medias 284, against g2g master 133b1931
+built as in technique 15. Result: fate-suite 865 streams agree (24 of them
+where ffprobe has no timestamps and g2g's increase), 885 are unsupported and
+27 decode to nothing, as in the decode sweep. Of the other 634, 523 are g2g
+bugs (below), 46 are known differences, 60 are reference quirks, 2 are
+harness limits, 1 is an unsupported container and 2 are open. gst-medias: 214
+agree, 35 unsupported, 8 decode to nothing, 10 g2g bugs, 12 known differences
+and 5 reference quirks.
+
+Known differences: g2g keeps an MP4 edit list as the segment start and
+leaves the buffer pts in media time, as GStreamer does, where ffmpeg shifts
+every pts (45 fate-suite, 7 gst-medias, a constant offset per stream). g2g
+stamps Matroska and FLV audio from the sample count, within the 1 ms tick
+the container rounds to (1 and 5).
+
+Reference quirks: GStreamer stamps the frames as g2g does in 44 (Vorbis in
+Ogg by granule, MACE in MOV, ...). ffmpeg decodes the truncated last audio
+frame (7, technique 15), decodes no frames (4), guesses AVI B-frame times
+from the dts, drops overlapping fragments, and stamps the Vorbis preroll and
+chained Ogg links differently. Harness limits: an MP4 sample holding several
+MP3 frames that ffmpeg splits, and concatenated PNGs with no rate. Open:
+`h264/attachment631-small.mp4` (decode errors, g2g 16.7 ms early where
+GStreamer matches ffmpeg) and `filter/cropdetect.mp4` audio (an edit cutting
+into the first AAC frame).
+
+Open g2g bugs found here:
+- **Frames without a pts carry pts 0.** FileSrc chunks carry pts 0, and every
+  frame of a raw H.264, H.265, MPEG-2 or MPEG-4 elementary stream comes out at
+  0 (431 fate-suite streams, 1 gst-medias). GStreamer interpolates from the
+  VUI frame rate or leaves the pts unset.
+- **WavParse stamps every buffer pts 0** (21 streams, PCM and the tagged
+  codecs in WAV).
+- **The encoder delay is not trimmed.** MP3 LAME headers and AAC iTunSMPB
+  (29 streams): g2g emits the priming samples, ffmpeg and GStreamer drop them.
+- **AviDemux drops empty chunks**, so every frame after a skipped one is
+  stamped early (9 streams).
+- **Opus pts ignore the pre-skip** in Matroska, WebM and Ogg (8 + 4 streams):
+  the second frame is at 20 ms where ffmpeg and GStreamer put it at 13.5 ms.
+- **MPEG-PS/TS frames without their own PES pts take an earlier pts**, so
+  time goes backwards (8 streams, audio and video).
+- **Tagged-codec AVI video comes out at pts 0** (zmbv, kgv1, 4 streams).
+- **WebM Vorbis frames are stamped one block behind** the container (4).
+- **The last ADTS frame after an ID3v2 tag is dropped** (2).
+- **Reordered H.264 in MP4 comes out with pts going backwards**
+  (`h264/late-sei.mp4`, `h264/mixed-nal-coding.mp4`), and so does
+  `mpeg4/packed_bframes.avi`.
+- **qdraw in MOV decodes 2 of 12 frames** (`quickdraw/Airplane.mov`).
+- **`hevc/two_first_slice.mp4` gives one extra frame** repeating a pts.
+- **audioresample at an identity rate emits one more buffer** at end of
+  stream with the last pts (`aac/al_sbr_sr_48_2_fsaac48.mp4`).
+- **g2g-launch prints checksumsink lines at most 64 per 100 ms** (a 64-deep
+  bus drained every 100 ms, and checksumsink waits on a full bus), so a long
+  stream times out: 1 fate-suite and 5 gst-medias streams.
+
+### 20. Chunk-size invariance (fate-suite + gst-medias)
+`calliope sweep --mode chunk-size` decodes every technique-15 stream on g2g
+three times, with `filesrc blocksize=` 65536 (g2g's default and the
+baseline), 4096 and 188, and requires the same outcome and the same MD5 of
+the whole decoded output, raw video or PCM. The whole-output hash covers
+every stream, packed pixel formats and resolution changes included, where
+per-frame hashing at one geometry cannot.
+```
+calliope sweep --mode chunk-size --corpus corpus/fate-suite.toml --workdir runs/chunk-size \
+  --title "fate-suite chunk-size" --report runs/fate-suite-chunk-size.json
+```
+Volume: fate-suite 2411 streams and gst-medias 284, three decodes each,
+against g2g master 133b1931. Result: fate-suite 1495 streams decode
+identically at all three sizes, 885 are unsupported and 27 decode at no size
+(the same streams the decode sweep finds no output for, attached pictures and
+streams ffmpeg rejects too). 4 differ: two are g2g bugs (`aac/id3v1.aac`,
+`xma2/xma2-multistream-tail.xma`, below) and two are decodes that differ run
+to run at one block size (`h264-conformance/FM1_FT_E.264` and
+`mov/empty_edit_5s.mp4`, both full of decode errors that libavcodec's
+threaded concealment resolves differently each run, ffmpeg's own decode
+included). gst-medias: 240 identical, 35 unsupported, 8 no output at any
+size, and 1 g2g bug (`mpegts/GH1_00094_1920x1280.MTS`, below). A first run
+with 10 jobs filled the disk on a 4 GB raw dump, so gst-medias runs with
+`--jobs 4`.
+
+Open g2g bugs found here:
+- **AacParse finds no frame when ADTS sync follows junk across a chunk
+  boundary.** `aac/id3v1.aac` has 253 bytes of junk before the first sync.
+  Below 300-byte chunks g2g decodes nothing (exit 0), from 300 up all 5
+  frames. GStreamer decodes 5 at 188.
+- **WavParse cuts a tagged codec's payload at the input chunk.** XMA2's
+  `block_align` is 6 but its packets are 2048 bytes, so the decoder gets split
+  packets: 512 bytes of PCM at blocksize 188, 18952 at 4096, 30720 at 65536.
+- **TsDemux drops PES packets of a 192-byte M2TS stream fed in 188-byte
+  chunks.** `GH1_00094_1920x1280.MTS` gives 165 video PES at blocksize 65536
+  and 156 at 188. The other 156 are byte-identical.
+
 ## Bugs found
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio

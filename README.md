@@ -299,6 +299,20 @@ vectors. Decoded output is deleted after each batch, only the logs stay.
 adding a diagnosis per row and keeping the hand-written `## g2g bugs` section
 already in that file.
 
+Two more modes sweep the same streams. `--mode timestamps` decodes each stream
+into `checksumsink` on g2g and GStreamer and compares g2g's per-frame pts with
+ffprobe's (TESTING.md technique 19). `--mode chunk-size` decodes each stream on
+g2g with `filesrc blocksize=` 65536, 4096 and 188 and requires the same output
+at every size (technique 20). Give each mode its own `--workdir`, since the run
+directories are named by scenario:
+
+```sh
+calliope sweep --mode timestamps --corpus corpus/fate-suite.toml --workdir runs/timestamps \
+  --title "fate-suite timestamps" --report runs/fate-suite-timestamps.json --triage runs/fate-suite-timestamps.md
+calliope sweep --mode chunk-size --corpus corpus/fate-suite.toml --workdir runs/chunk-size \
+  --title "fate-suite chunk-size" --report runs/fate-suite-chunk-size.json --triage runs/fate-suite-chunk-size.md
+```
+
 g2g picks its decoder through `decodebin`. To check one decoder backend, pin it
 with `G2G_PLUGIN_FEATURE_RANK`, which g2g-launch inherits:
 
