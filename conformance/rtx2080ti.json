@@ -1,0 +1,2076 @@
+{
+ "nvdec": {
+  "fluster/JCT-VC-HEVC_V1/AMP_A_Samsung_7/AMP_A_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_B_Samsung_7/AMP_B_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_D_Hisilicon_3/AMP_D_Hisilicon.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_E_Hisilicon_3/AMP_E_Hisilicon.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_F_Hisilicon_3/AMP_F_Hisilicon_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMVP_A_MTK_4/AMVP_A_MTK_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMVP_B_MTK_4/AMVP_B_MTK_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMVP_C_Samsung_7/AMVP_C_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/BUMPING_A_ericsson_1/BUMPING_A_ericsson_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_A_SHARP_4/CAINIT_A_SHARP_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_B_SHARP_4/CAINIT_B_SHARP_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_C_SHARP_3/CAINIT_C_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_D_SHARP_3/CAINIT_D_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_E_SHARP_3/CAINIT_E_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_F_SHARP_3/CAINIT_F_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_G_SHARP_3/CAINIT_G_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_H_SHARP_3/CAINIT_H_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CIP_A_Panasonic_3/CIP_A_Panasonic_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CIP_C_Panasonic_2/CIP_C_Panasonic_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CONFWIN_A_Sony_1/CONFWIN_A_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_A_MAIN10_VIXS_4/DBLK_A_MAIN10_VIXS_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_A_SONY_3/DBLK_A_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_B_SONY_3/DBLK_B_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_C_SONY_3/DBLK_C_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_D_VIXS_2/DBLK_D_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_E_VIXS_2/DBLK_E_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_F_VIXS_2/DBLK_F_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_G_VIXS_2/DBLK_G_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DELTAQP_A_BRCM_4/DELTAQP_A_BRCM_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DELTAQP_B_SONY_3/DELTAQP_B_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DELTAQP_C_SONY_3/DELTAQP_C_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DSLICE_A_HHI_5/DSLICE_A_HHI_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DSLICE_B_HHI_5/DSLICE_B_HHI_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DSLICE_C_HHI_5/DSLICE_C_HHI_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ENTP_A_QUALCOMM_1/ENTP_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ENTP_B_Qualcomm_1/ENTP_B_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ENTP_C_Qualcomm_1/ENTP_C_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/EXT_A_ericsson_4/EXT_A_ericsson_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/FILLER_A_Sony_1/FILLER_A_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/HRD_A_Fujitsu_3/HRD_A_Fujitsu_3.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/INITQP_A_Sony_1/INITQP_A_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/INITQP_B_Main10_Sony_1/INITQP_B_Main10_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/IPRED_A_docomo_2/IPRED_A_docomo_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/IPRED_B_Nokia_3/IPRED_B_Nokia_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/IPRED_C_Mitsubishi_3/IPRED_C_Mitsubishi_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/LS_A_Orange_2/LS_A_Orange_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/LS_B_Orange_4/LS_B_Orange_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/LTRPSPS_A_Qualcomm_1/LTRPSPS_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MAXBINS_A_TI_5/MAXBINS_A_TI_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MAXBINS_B_TI_5/MAXBINS_B_TI_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MAXBINS_C_TI_5/MAXBINS_C_TI_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_A_TI_3/MERGE_A_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_B_TI_3/MERGE_B_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_C_TI_3/MERGE_C_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_D_TI_3/MERGE_D_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_E_TI_3/MERGE_E_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_F_MTK_4/MERGE_F_MTK_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_G_HHI_4/MERGE_G_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MVCLIP_A_qualcomm_3/MVCLIP_A_qualcomm_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MVDL1ZERO_A_docomo_4/MVDL1ZERO_A_docomo_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MVEDGE_A_qualcomm_3/MVEDGE_A_qualcomm_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/NUT_A_ericsson_5/NUT_A_ericsson_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/NoOutPrior_A_Qualcomm_1/NoOutPrior_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/NoOutPrior_B_Qualcomm_1/NoOutPrior_B_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/OPFLAG_A_Qualcomm_1/OPFLAG_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/OPFLAG_B_Qualcomm_1/OPFLAG_B_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/OPFLAG_C_Qualcomm_1/OPFLAG_C_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_A_Bossen_1/PICSIZE_A_Bossen_1.bin": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_B_Bossen_1/PICSIZE_B_Bossen_1.bin": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_C_Bossen_1/PICSIZE_C_Bossen_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_D_Bossen_1/PICSIZE_D_Bossen_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_A_TI_3/PMERGE_A_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_B_TI_3/PMERGE_B_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_C_TI_3/PMERGE_C_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_D_TI_3/PMERGE_D_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_E_TI_3/PMERGE_E_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/POC_A_Bossen_3/POC_A_Bossen_3.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PPS_A_qualcomm_7/PPS_A_qualcomm_7.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PS_B_VIDYO_3/PS_B_VIDYO_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RAP_A_docomo_6/RAP_A_docomo_6.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RAP_B_Bossen_2/RAP_B_Bossen_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPLM_A_qualcomm_4/RPLM_A_qualcomm_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPLM_B_qualcomm_4/RPLM_B_qualcomm_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_A_docomo_5/RPS_A_docomo_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_B_qualcomm_5/RPS_B_qualcomm_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_C_ericsson_5/RPS_C_ericsson_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_D_ericsson_6/RPS_D_ericsson_6.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_E_qualcomm_5/RPS_E_qualcomm_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_F_docomo_2/RPS_F_docomo_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_A_HHI_4/RQT_A_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_B_HHI_4/RQT_B_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_C_HHI_4/RQT_C_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_D_HHI_4/RQT_D_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_E_HHI_4/RQT_E_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_F_HHI_4/RQT_F_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_G_HHI_4/RQT_G_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAODBLK_A_MainConcept_4/SAODBLK_A_MainConcept_4.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAODBLK_B_MainConcept_4/SAODBLK_B_MainConcept_4.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_A_MediaTek_4/SAO_A_MediaTek_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_B_MediaTek_5/SAO_B_MediaTek_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_C_Samsung_5/SAO_C_Samsung_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_D_Samsung_5/SAO_D_Samsung_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_E_Canon_4/SAO_E_Canon_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_F_Canon_3/SAO_F_Canon_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_G_Canon_3/SAO_G_Canon_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_H_Parabola_1/SAO_H_Parabola_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SDH_A_Orange_4/SDH_A_Orange_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLICES_A_Rovi_3/SLICES_A_Rovi_3.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_A_Sony_5/SLIST_A_Sony_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_B_Sony_9/SLIST_B_Sony_9.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_C_Sony_4/SLIST_C_Sony_4.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_D_Sony_9/str.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLPPLP_A_VIDYO_2/SLPPLP_A_VIDYO_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/STRUCT_A_Samsung_7/STRUCT_A_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/STRUCT_B_Samsung_7/STRUCT_B_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TILES_A_Cisco_2/TILES_A_Cisco_2.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TILES_B_Cisco_1/TILES_B_Cisco_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TMVP_A_MS_3/TMVP_A_MS_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSCL_A_VIDYO_5/TSCL_A_VIDYO_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSCL_B_VIDYO_4/TSCL_B_VIDYO_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSKIP_A_MS_3/TSKIP_A_MS_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSUNEQBD_A_MAIN10_Technicolor_2/TSUNEQBD_A_MAIN10_Technicolor_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/TUSIZE_A_Samsung_1/TUSIZE_A_Samsung_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/VPSID_A_VIDYO_2/VPSID_A_VIDYO_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/VPSSPSPPS_A_MainConcept_1/VPSSPSPPS_A_MainConcept_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_A_ericsson_MAIN10_2/WPP_A_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_A_ericsson_MAIN_2/WPP_A_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_B_ericsson_MAIN10_2/WPP_B_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_B_ericsson_MAIN_2/WPP_B_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_C_ericsson_MAIN10_2/WPP_C_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_C_ericsson_MAIN_2/WPP_C_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_D_ericsson_MAIN10_2/WPP_D_ericsson_MAIN10_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_D_ericsson_MAIN_2/WPP_D_ericsson_MAIN_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_E_ericsson_MAIN10_2/WPP_E_ericsson_MAIN10_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_E_ericsson_MAIN_2/WPP_E_ericsson_MAIN_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_F_ericsson_MAIN10_2/WPP_F_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_F_ericsson_MAIN_2/WPP_F_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_A_MAIN10_Toshiba_3/WP_A_MAIN10_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_A_Toshiba_3/WP_A_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_B_Toshiba_3/WP_B_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_MAIN10_B_Toshiba_3/WP_MAIN10_B_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/cip_B_NEC_3/cip_B_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_A_NEC_3/ipcm_A_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_B_NEC_3/ipcm_B_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_C_NEC_3/ipcm_C_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_D_NEC_3/ipcm_D_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_E_NEC_2/ipcm_E_NEC_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-RExt/ADJUST_IPRED_ANGLE_A_RExt_Mitsubishi_2/ADJUST_IPRED_ANGLE_A_RExt_Mitsubishi_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Bitdepth_A_RExt_Sony_1/Bitdepth_A_RExt_Sony_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Bitdepth_B_RExt_Sony_1/Bitdepth_B_RExt_Sony_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/CCP_10bit_RExt_QCOM_1/CCP_10bit_RExt_QCOM.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/CCP_12bit_RExt_QCOM_1/CCP_12bit_RExt_QCOM.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/CCP_8bit_RExt_QCOM_1/CCP_8bit_RExt_QCOM.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_10BIT_RExt_Sony_1/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_10BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_12BIT_RExt_Sony_1/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_12BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_8BIT_RExt_Sony_1/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_8BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_MAIN_444_16_INTRA_10BIT_RExt_Sony_1/EXTPREC_MAIN_444_16_INTRA_10BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_MAIN_444_16_INTRA_12BIT_RExt_Sony_1/EXTPREC_MAIN_444_16_INTRA_12BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_MAIN_444_16_INTRA_8BIT_RExt_Sony_1/EXTPREC_MAIN_444_16_INTRA_8BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/ExplicitRdpcm_A_BBC_1/ExplicitRdpcm_A_BBC_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/ExplicitRdpcm_B_BBC_2/ExplicitRdpcm_B_BBC_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_10b_420_RExt_Sony_1/GENERAL_10b_420_RExt_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_10b_422_RExt_Sony_1/GENERAL_10b_422_RExt_Sony_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_10b_444_RExt_Sony_2/GENERAL_10b_444_RExt_Sony_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_12b_420_RExt_Sony_1/GENERAL_12b_420_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_12b_422_RExt_Sony_1/GENERAL_12b_422_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_12b_444_RExt_Sony_2/GENERAL_12b_444_RExt_Sony_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_8b_420_RExt_Sony_1/GENERAL_8b_420_RExt_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_8b_444_RExt_Sony_2/GENERAL_8b_444_RExt_Sony_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/IPCM_A_RExt_NEC_2/IPCM_A_RExt_NEC_2.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/IPCM_B_RExt_NEC/IPCM_B_RExt_NEC.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Main_422_10_A_RExt_Sony_2/Main_422_10_A_RExt_Sony_2.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Main_422_10_B_RExt_Sony_2/Main_422_10_B_RExt_Sony_2.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/PERSIST_RPARAM_A_RExt_Sony_3/PERSIST_RPARAM_A_RExt_Sony_3.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/QMATRIX_A_RExt_Sony_1/QMATRIX_A_RExt_Sony_1.bit": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/SAO_A_RExt_MediaTek_1/SAO_A_RExt_MediaTek_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_10bit_I_RExt_SHARP_1/TSCTX_10bit_I_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_10bit_RExt_SHARP_1/TSCTX_10bit_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_12bit_I_RExt_SHARP_1/TSCTX_12bit_I_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_12bit_RExt_SHARP_1/TSCTX_12bit_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_8bit_I_RExt_SHARP_1/TSCTX_8bit_I_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_8bit_RExt_SHARP_1/TSCTX_8bit_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: Hardware(Cuda(801))",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_10Bit422Test_HIGH_TP_444_10BIT_RExt_Apple_2/WPP_AND_TILE_10Bit422Test_HIGH_TP_444_10BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_0_HIGH_TP_444_14BIT_RExt_Apple_2/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_0_HIGH_TP_444_14BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_1_HIGH_TP_444_14BIT_RExt_Apple_2/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_1_HIGH_TP_444_14BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_AND_CABAC_EXT_PREC_1_HIGH_TP_444_14BIT_RExt_Apple_2/WPP_AND_TILE_AND_CABAC_EXT_PREC_1_HIGH_TP_444_14BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_HIGH_TP_444_8BIT_RExt_Apple_2/WPP_AND_TILE_HIGH_TP_444_8BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_HIGH_TP_444_8BIT_RExt_Apple_2/WPP_HIGH_TP_444_8BIT_RExt_Apple_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/AUD_MW_E/AUD_MW_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA1_FT_C/BA1_FT_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA1_Sony_D/BA1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA2_Sony_F/BA2_Sony_F.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA3_SVA_C/BA3_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BAMQ1_JVC_C/BAMQ1_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BAMQ2_JVC_C/BAMQ2_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BANM_MW_D/BANM_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BASQP1_Sony_C/BASQP1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA_MW_D/BA_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA1_SVA_B/CABA1_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA1_Sony_D/CABA1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA2_SVA_B/CABA2_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA2_Sony_E/CABA2_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA3_SVA_B/CABA3_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA3_Sony_C/CABA3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA3_TOSHIBA_E/CABA3_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABACI3_Sony_B/CABACI3_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABAST3_Sony_E/CABAST3_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABASTBR3_Sony_B/CABASTBR3_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABREF3_Sand_D/CABREF3_Sand_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CACQP3_Sony_D/CACQP3_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAFI1_SVA_C/CAFI1_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMA1_Sony_C/CAMA1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMA1_TOSHIBA_B/CAMA1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMA3_Sand_E/CAMA3_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMACI3_Sony_C/CAMACI3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMANL1_TOSHIBA_B/CAMANL1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMANL2_TOSHIBA_B/CAMANL2_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMANL3_Sand_E/CAMANL3_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMASL3_Sony_B/CAMASL3_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMP_MOT_MBAFF_L30/CAMP_MOT_MBAFF_L30.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMP_MOT_MBAFF_L31/CAMP_MOT_MBAFF_L31.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL1_SVA_B/CANL1_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL1_Sony_E/CANL1_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL1_TOSHIBA_G/CANL1_TOSHIBA_G.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL2_SVA_B/CANL2_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL2_Sony_E/CANL2_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL3_SVA_B/CANL3_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL3_Sony_C/CANL3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL4_SVA_B/CANL4_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANLMA2_Sony_C/CANLMA2_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANLMA3_Sony_C/CANLMA3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPA1_TOSHIBA_B/CAPA1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPAMA3_Sand_F/CAPAMA3_Sand_F.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPCM1_Sand_E/CAPCM1_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPCMNL1_Sand_E/CAPCMNL1_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPM3_Sony_D/CAPM3_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAQP1_Sony_B/CAQP1_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAWP1_TOSHIBA_E/CAWP1_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAWP5_TOSHIBA_E/CAWP5_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CI1_FT_B/CI1_FT_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CI_MW_D/CI_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVBS3_Sony_C/CVBS3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVCANLMA2_Sony_C/CVCANLMA2_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFC1_Sony_C/CVFC1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFI1_SVA_C/CVFI1_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFI1_Sony_D/CVFI1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFI2_SVA_C/CVFI2_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFI2_Sony_H/CVFI2_Sony_H.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMA1_Sony_D/CVMA1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMA1_TOSHIBA_B/CVMA1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMANL1_TOSHIBA_B/CVMANL1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMANL2_TOSHIBA_B/CVMANL2_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMAPAQP3_Sony_E/CVMAPAQP3_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMAQP2_Sony_G/CVMAQP2_Sony_G.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMAQP3_Sony_D/CVMAQP3_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMP_MOT_FLD_L30_B/CVMP_MOT_FLD_L30_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMP_MOT_FRM_L31_B/CVMP_MOT_FRM_L31_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVNLFI1_Sony_C/CVNLFI1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVNLFI2_Sony_H/CVNLFI2_Sony_H.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVPA1_TOSHIBA_B/CVPA1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVPCMNL1_SVA_C/CVPCMNL1_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVPCMNL2_SVA_C/CVPCMNL2_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVSE2_Sony_B/CVSE2_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVSE3_Sony_H/CVSE3_Sony_H.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVSEFDFT3_Sony_E/CVSEFDFT3_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP1_TOSHIBA_E/CVWP1_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP2_TOSHIBA_E/CVWP2_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP3_TOSHIBA_E/CVWP3_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP5_TOSHIBA_E/CVWP5_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/FI1_Sony_E/FI1_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/FM1_BT_B/FM1_BT_B.h264": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/FM1_FT_E/FM1_FT_E.264": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/FM2_SVA_C/FM2_SVA_C.264": {
+   "detail": "pipeline error: Hardware(Cuda(1))",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/HCBP1_HHI_A/HCBP1_HHI_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/HCBP2_HHI_A/HCBP2_HHI_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/HCMP1_HHI_A/HCMP1_HHI_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/LS_SVA_D/LS_SVA_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MIDR_MW_D/MIDR_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MPS_MW_A/MPS_MW_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR1_BT_A/MR1_BT_A.h264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR1_MW_A/MR1_MW_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR2_MW_A/MR2_MW_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR2_TANDBERG_E/MR2_TANDBERG_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR3_TANDBERG_B/MR3_TANDBERG_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR4_TANDBERG_C/MR4_TANDBERG_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR5_TANDBERG_C/MR5_TANDBERG_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR6_BT_B/MR6_BT_B.h264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR7_BT_B/MR7_BT_B.h264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR8_BT_B/MR8_BT_B.h264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR9_BT_B/MR9_BT_B.h264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MV1_BRCM_D/src19td.IBP.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NL1_Sony_D/NL1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NL2_Sony_H/NL2_Sony_H.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NL3_SVA_E/NL3_SVA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NLMQ1_JVC_C/NLMQ1_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NLMQ2_JVC_C/NLMQ2_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NRF_MW_E/NRF_MW_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SL1_SVA_B/SL1_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SP1_BT_A/sp1_bt_a.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/SVA_BA1_B/SVA_BA1_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_BA2_D/SVA_BA2_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_Base_B/SVA_Base_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_CL1_E/SVA_CL1_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_FM1_E/SVA_FM1_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_NL1_B/SVA_NL1_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_NL2_E/SVA_NL2_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_Field_1_B/Sharp_MP_Field_1_B.jvt": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_Field_2_B/Sharp_MP_Field_2_B.jvt": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_Field_3_B/Sharp_MP_Field_3_B.jvt": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_PAFF_1r2/Sharp_MP_PAFF_1r2.jvt": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_PAFF_2r/Sharp_MP_PAFF_2.jvt": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_fld0_full/camp_mot_fld0_full.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_frm0_full/camp_mot_frm0_full.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_mbaff0_full/camp_mot_mbaff0_full.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_picaff0_full/camp_mot_picaff0_full.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cama1_vtc_c/cama1_vtc_c.avc": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cama2_vtc_b/cama2_vtc_b.avc": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cama3_vtc_b/cama3_vtc_b.avc": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_fld0_full_B/cvmp_mot_fld0_full_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_frm0_full_B/cvmp_mot_frm0_full_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_mbaff0_full_B/cvmp_mot_mbaff0_full_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_picaff0_full_B/cvmp_mot_picaff0_full_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/sp2_bt_b/sp2_bt_b.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  }
+ },
+ "vulkanvideodec": {
+  "fluster/JCT-VC-HEVC_V1/AMP_A_Samsung_7/AMP_A_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_B_Samsung_7/AMP_B_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_D_Hisilicon_3/AMP_D_Hisilicon.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_E_Hisilicon_3/AMP_E_Hisilicon.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMP_F_Hisilicon_3/AMP_F_Hisilicon_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMVP_A_MTK_4/AMVP_A_MTK_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMVP_B_MTK_4/AMVP_B_MTK_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/AMVP_C_Samsung_7/AMVP_C_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/BUMPING_A_ericsson_1/BUMPING_A_ericsson_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_A_SHARP_4/CAINIT_A_SHARP_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_B_SHARP_4/CAINIT_B_SHARP_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_C_SHARP_3/CAINIT_C_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_D_SHARP_3/CAINIT_D_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_E_SHARP_3/CAINIT_E_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_F_SHARP_3/CAINIT_F_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_G_SHARP_3/CAINIT_G_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CAINIT_H_SHARP_3/CAINIT_H_SHARP_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CIP_A_Panasonic_3/CIP_A_Panasonic_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CIP_C_Panasonic_2/CIP_C_Panasonic_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/CONFWIN_A_Sony_1/CONFWIN_A_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_A_MAIN10_VIXS_4/DBLK_A_MAIN10_VIXS_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_A_SONY_3/DBLK_A_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_B_SONY_3/DBLK_B_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_C_SONY_3/DBLK_C_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_D_VIXS_2/DBLK_D_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_E_VIXS_2/DBLK_E_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_F_VIXS_2/DBLK_F_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DBLK_G_VIXS_2/DBLK_G_VIXS_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DELTAQP_A_BRCM_4/DELTAQP_A_BRCM_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DELTAQP_B_SONY_3/DELTAQP_B_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DELTAQP_C_SONY_3/DELTAQP_C_SONY_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DSLICE_A_HHI_5/DSLICE_A_HHI_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DSLICE_B_HHI_5/DSLICE_B_HHI_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/DSLICE_C_HHI_5/DSLICE_C_HHI_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ENTP_A_QUALCOMM_1/ENTP_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ENTP_B_Qualcomm_1/ENTP_B_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ENTP_C_Qualcomm_1/ENTP_C_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/EXT_A_ericsson_4/EXT_A_ericsson_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/FILLER_A_Sony_1/FILLER_A_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/HRD_A_Fujitsu_3/HRD_A_Fujitsu_3.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/INITQP_A_Sony_1/INITQP_A_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/INITQP_B_Main10_Sony_1/INITQP_B_Main10_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/IPRED_A_docomo_2/IPRED_A_docomo_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/IPRED_B_Nokia_3/IPRED_B_Nokia_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/IPRED_C_Mitsubishi_3/IPRED_C_Mitsubishi_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/LS_A_Orange_2/LS_A_Orange_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/LS_B_Orange_4/LS_B_Orange_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/LTRPSPS_A_Qualcomm_1/LTRPSPS_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MAXBINS_A_TI_5/MAXBINS_A_TI_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MAXBINS_B_TI_5/MAXBINS_B_TI_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MAXBINS_C_TI_5/MAXBINS_C_TI_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_A_TI_3/MERGE_A_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_B_TI_3/MERGE_B_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_C_TI_3/MERGE_C_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_D_TI_3/MERGE_D_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_E_TI_3/MERGE_E_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_F_MTK_4/MERGE_F_MTK_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MERGE_G_HHI_4/MERGE_G_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MVCLIP_A_qualcomm_3/MVCLIP_A_qualcomm_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MVDL1ZERO_A_docomo_4/MVDL1ZERO_A_docomo_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/MVEDGE_A_qualcomm_3/MVEDGE_A_qualcomm_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/NUT_A_ericsson_5/NUT_A_ericsson_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/NoOutPrior_A_Qualcomm_1/NoOutPrior_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/NoOutPrior_B_Qualcomm_1/NoOutPrior_B_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/OPFLAG_A_Qualcomm_1/OPFLAG_A_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/OPFLAG_B_Qualcomm_1/OPFLAG_B_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/OPFLAG_C_Qualcomm_1/OPFLAG_C_Qualcomm_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_A_Bossen_1/PICSIZE_A_Bossen_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_B_Bossen_1/PICSIZE_B_Bossen_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_C_Bossen_1/PICSIZE_C_Bossen_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PICSIZE_D_Bossen_1/PICSIZE_D_Bossen_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_A_TI_3/PMERGE_A_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_B_TI_3/PMERGE_B_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_C_TI_3/PMERGE_C_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_D_TI_3/PMERGE_D_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PMERGE_E_TI_3/PMERGE_E_TI_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/POC_A_Bossen_3/POC_A_Bossen_3.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PPS_A_qualcomm_7/PPS_A_qualcomm_7.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/PS_B_VIDYO_3/PS_B_VIDYO_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RAP_A_docomo_6/RAP_A_docomo_6.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RAP_B_Bossen_2/RAP_B_Bossen_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPLM_A_qualcomm_4/RPLM_A_qualcomm_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPLM_B_qualcomm_4/RPLM_B_qualcomm_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_A_docomo_5/RPS_A_docomo_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_B_qualcomm_5/RPS_B_qualcomm_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_C_ericsson_5/RPS_C_ericsson_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_D_ericsson_6/RPS_D_ericsson_6.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_E_qualcomm_5/RPS_E_qualcomm_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RPS_F_docomo_2/RPS_F_docomo_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_A_HHI_4/RQT_A_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_B_HHI_4/RQT_B_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_C_HHI_4/RQT_C_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_D_HHI_4/RQT_D_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_E_HHI_4/RQT_E_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_F_HHI_4/RQT_F_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/RQT_G_HHI_4/RQT_G_HHI_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAODBLK_A_MainConcept_4/SAODBLK_A_MainConcept_4.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAODBLK_B_MainConcept_4/SAODBLK_B_MainConcept_4.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_A_MediaTek_4/SAO_A_MediaTek_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_B_MediaTek_5/SAO_B_MediaTek_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_C_Samsung_5/SAO_C_Samsung_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_D_Samsung_5/SAO_D_Samsung_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_E_Canon_4/SAO_E_Canon_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_F_Canon_3/SAO_F_Canon_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_G_Canon_3/SAO_G_Canon_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SAO_H_Parabola_1/SAO_H_Parabola_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SDH_A_Orange_4/SDH_A_Orange_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLICES_A_Rovi_3/SLICES_A_Rovi_3.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_A_Sony_5/SLIST_A_Sony_5.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_B_Sony_9/SLIST_B_Sony_9.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_C_Sony_4/SLIST_C_Sony_4.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLIST_D_Sony_9/str.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/SLPPLP_A_VIDYO_2/SLPPLP_A_VIDYO_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/STRUCT_A_Samsung_7/STRUCT_A_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/STRUCT_B_Samsung_7/STRUCT_B_Samsung_7.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TILES_A_Cisco_2/TILES_A_Cisco_2.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TILES_B_Cisco_1/TILES_B_Cisco_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TMVP_A_MS_3/TMVP_A_MS_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSCL_A_VIDYO_5/TSCL_A_VIDYO_5.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSCL_B_VIDYO_4/TSCL_B_VIDYO_4.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSKIP_A_MS_3/TSKIP_A_MS_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/TSUNEQBD_A_MAIN10_Technicolor_2/TSUNEQBD_A_MAIN10_Technicolor_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/TUSIZE_A_Samsung_1/TUSIZE_A_Samsung_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/VPSID_A_VIDYO_2/VPSID_A_VIDYO_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/VPSSPSPPS_A_MainConcept_1/VPSSPSPPS_A_MainConcept_1.bin": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_A_ericsson_MAIN10_2/WPP_A_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_A_ericsson_MAIN_2/WPP_A_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_B_ericsson_MAIN10_2/WPP_B_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_B_ericsson_MAIN_2/WPP_B_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_C_ericsson_MAIN10_2/WPP_C_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_C_ericsson_MAIN_2/WPP_C_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_D_ericsson_MAIN10_2/WPP_D_ericsson_MAIN10_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_D_ericsson_MAIN_2/WPP_D_ericsson_MAIN_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_E_ericsson_MAIN10_2/WPP_E_ericsson_MAIN10_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_E_ericsson_MAIN_2/WPP_E_ericsson_MAIN_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_F_ericsson_MAIN10_2/WPP_F_ericsson_MAIN10_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WPP_F_ericsson_MAIN_2/WPP_F_ericsson_MAIN_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_A_MAIN10_Toshiba_3/WP_A_MAIN10_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_A_Toshiba_3/WP_A_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_B_Toshiba_3/WP_B_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/WP_MAIN10_B_Toshiba_3/WP_MAIN10_B_Toshiba_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/cip_B_NEC_3/cip_B_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_A_NEC_3/ipcm_A_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_B_NEC_3/ipcm_B_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_C_NEC_3/ipcm_C_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_D_NEC_3/ipcm_D_NEC_3.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-HEVC_V1/ipcm_E_NEC_2/ipcm_E_NEC_2.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-RExt/ADJUST_IPRED_ANGLE_A_RExt_Mitsubishi_2/ADJUST_IPRED_ANGLE_A_RExt_Mitsubishi_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Bitdepth_A_RExt_Sony_1/Bitdepth_A_RExt_Sony_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Bitdepth_B_RExt_Sony_1/Bitdepth_B_RExt_Sony_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/CCP_10bit_RExt_QCOM_1/CCP_10bit_RExt_QCOM.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/CCP_12bit_RExt_QCOM_1/CCP_12bit_RExt_QCOM.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/CCP_8bit_RExt_QCOM_1/CCP_8bit_RExt_QCOM.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_10BIT_RExt_Sony_1/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_10BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_12BIT_RExt_Sony_1/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_12BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_8BIT_RExt_Sony_1/EXTPREC_HIGHTHROUGHPUT_444_16_INTRA_8BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_MAIN_444_16_INTRA_10BIT_RExt_Sony_1/EXTPREC_MAIN_444_16_INTRA_10BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_MAIN_444_16_INTRA_12BIT_RExt_Sony_1/EXTPREC_MAIN_444_16_INTRA_12BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/EXTPREC_MAIN_444_16_INTRA_8BIT_RExt_Sony_1/EXTPREC_MAIN_444_16_INTRA_8BIT_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/ExplicitRdpcm_A_BBC_1/ExplicitRdpcm_A_BBC_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/ExplicitRdpcm_B_BBC_2/ExplicitRdpcm_B_BBC_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_10b_420_RExt_Sony_1/GENERAL_10b_420_RExt_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_10b_422_RExt_Sony_1/GENERAL_10b_422_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_10b_444_RExt_Sony_2/GENERAL_10b_444_RExt_Sony_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_12b_420_RExt_Sony_1/GENERAL_12b_420_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_12b_422_RExt_Sony_1/GENERAL_12b_422_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_12b_444_RExt_Sony_2/GENERAL_12b_444_RExt_Sony_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_8b_420_RExt_Sony_1/GENERAL_8b_420_RExt_Sony_1.bit": {
+   "outcome": "pass"
+  },
+  "fluster/JCT-VC-RExt/GENERAL_8b_444_RExt_Sony_2/GENERAL_8b_444_RExt_Sony_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/IPCM_A_RExt_NEC_2/IPCM_A_RExt_NEC_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/IPCM_B_RExt_NEC/IPCM_B_RExt_NEC.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Main_422_10_A_RExt_Sony_2/Main_422_10_A_RExt_Sony_2.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/Main_422_10_B_RExt_Sony_2/Main_422_10_B_RExt_Sony_2.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/PERSIST_RPARAM_A_RExt_Sony_3/PERSIST_RPARAM_A_RExt_Sony_3.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/QMATRIX_A_RExt_Sony_1/QMATRIX_A_RExt_Sony_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/SAO_A_RExt_MediaTek_1/SAO_A_RExt_MediaTek_1.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_10bit_I_RExt_SHARP_1/TSCTX_10bit_I_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_10bit_RExt_SHARP_1/TSCTX_10bit_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_12bit_I_RExt_SHARP_1/TSCTX_12bit_I_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_12bit_RExt_SHARP_1/TSCTX_12bit_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_8bit_I_RExt_SHARP_1/TSCTX_8bit_I_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/TSCTX_8bit_RExt_SHARP_1/TSCTX_8bit_RExt_SHARP_1.bin": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_10Bit422Test_HIGH_TP_444_10BIT_RExt_Apple_2/WPP_AND_TILE_10Bit422Test_HIGH_TP_444_10BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_0_HIGH_TP_444_14BIT_RExt_Apple_2/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_0_HIGH_TP_444_14BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_1_HIGH_TP_444_14BIT_RExt_Apple_2/WPP_AND_TILE_AND_CABAC_BYPASS_ALIGN_1_HIGH_TP_444_14BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_AND_CABAC_EXT_PREC_1_HIGH_TP_444_14BIT_RExt_Apple_2/WPP_AND_TILE_AND_CABAC_EXT_PREC_1_HIGH_TP_444_14BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_AND_TILE_HIGH_TP_444_8BIT_RExt_Apple_2/WPP_AND_TILE_HIGH_TP_444_8BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JCT-VC-RExt/WPP_HIGH_TP_444_8BIT_RExt_Apple_2/WPP_HIGH_TP_444_8BIT_RExt_Apple_2.bit": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/AUD_MW_E/AUD_MW_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA1_FT_C/BA1_FT_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA1_Sony_D/BA1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA2_Sony_F/BA2_Sony_F.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA3_SVA_C/BA3_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BAMQ1_JVC_C/BAMQ1_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BAMQ2_JVC_C/BAMQ2_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BANM_MW_D/BANM_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BASQP1_Sony_C/BASQP1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/BA_MW_D/BA_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA1_SVA_B/CABA1_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA1_Sony_D/CABA1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA2_SVA_B/CABA2_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA2_Sony_E/CABA2_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA3_SVA_B/CABA3_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA3_Sony_C/CABA3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABA3_TOSHIBA_E/CABA3_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABACI3_Sony_B/CABACI3_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABAST3_Sony_E/CABAST3_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABASTBR3_Sony_B/CABASTBR3_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CABREF3_Sand_D/CABREF3_Sand_D.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CACQP3_Sony_D/CACQP3_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAFI1_SVA_C/CAFI1_SVA_C.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CAMA1_Sony_C/CAMA1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMA1_TOSHIBA_B/CAMA1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMA3_Sand_E/CAMA3_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMACI3_Sony_C/CAMACI3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMANL1_TOSHIBA_B/CAMANL1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMANL2_TOSHIBA_B/CAMANL2_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMANL3_Sand_E/CAMANL3_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMASL3_Sony_B/CAMASL3_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMP_MOT_MBAFF_L30/CAMP_MOT_MBAFF_L30.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAMP_MOT_MBAFF_L31/CAMP_MOT_MBAFF_L31.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL1_SVA_B/CANL1_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL1_Sony_E/CANL1_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL1_TOSHIBA_G/CANL1_TOSHIBA_G.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL2_SVA_B/CANL2_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL2_Sony_E/CANL2_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL3_SVA_B/CANL3_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL3_Sony_C/CANL3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANL4_SVA_B/CANL4_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANLMA2_Sony_C/CANLMA2_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CANLMA3_Sony_C/CANLMA3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPA1_TOSHIBA_B/CAPA1_TOSHIBA_B.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CAPAMA3_Sand_F/CAPAMA3_Sand_F.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CAPCM1_Sand_E/CAPCM1_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPCMNL1_Sand_E/CAPCMNL1_Sand_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAPM3_Sony_D/CAPM3_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAQP1_Sony_B/CAQP1_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAWP1_TOSHIBA_E/CAWP1_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CAWP5_TOSHIBA_E/CAWP5_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CI1_FT_B/CI1_FT_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CI_MW_D/CI_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVBS3_Sony_C/CVBS3_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVCANLMA2_Sony_C/CVCANLMA2_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFC1_Sony_C/CVFC1_Sony_C.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVFI1_SVA_C/CVFI1_SVA_C.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVFI1_Sony_D/CVFI1_Sony_D.jsv": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVFI2_SVA_C/CVFI2_SVA_C.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVFI2_Sony_H/CVFI2_Sony_H.jsv": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVMA1_Sony_D/CVMA1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMA1_TOSHIBA_B/CVMA1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMANL1_TOSHIBA_B/CVMANL1_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMANL2_TOSHIBA_B/CVMANL2_TOSHIBA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMAPAQP3_Sony_E/CVMAPAQP3_Sony_E.jsv": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVMAQP2_Sony_G/CVMAQP2_Sony_G.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMAQP3_Sony_D/CVMAQP3_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVMP_MOT_FLD_L30_B/CVMP_MOT_FLD_L30_B.26l": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVMP_MOT_FRM_L31_B/CVMP_MOT_FRM_L31_B.26l": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVNLFI1_Sony_C/CVNLFI1_Sony_C.jsv": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVNLFI2_Sony_H/CVNLFI2_Sony_H.jsv": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVPA1_TOSHIBA_B/CVPA1_TOSHIBA_B.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/CVPCMNL1_SVA_C/CVPCMNL1_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVPCMNL2_SVA_C/CVPCMNL2_SVA_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVSE2_Sony_B/CVSE2_Sony_B.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVSE3_Sony_H/CVSE3_Sony_H.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVSEFDFT3_Sony_E/CVSEFDFT3_Sony_E.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP1_TOSHIBA_E/CVWP1_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP2_TOSHIBA_E/CVWP2_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP3_TOSHIBA_E/CVWP3_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/CVWP5_TOSHIBA_E/CVWP5_TOSHIBA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/FI1_Sony_E/FI1_Sony_E.jsv": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/FM1_BT_B/FM1_BT_B.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/FM1_FT_E/FM1_FT_E.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/FM2_SVA_C/FM2_SVA_C.264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/HCBP1_HHI_A/HCBP1_HHI_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/HCBP2_HHI_A/HCBP2_HHI_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/HCMP1_HHI_A/HCMP1_HHI_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/LS_SVA_D/LS_SVA_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MIDR_MW_D/MIDR_MW_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MPS_MW_A/MPS_MW_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR1_BT_A/MR1_BT_A.h264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR1_MW_A/MR1_MW_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR2_MW_A/MR2_MW_A.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR2_TANDBERG_E/MR2_TANDBERG_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR3_TANDBERG_B/MR3_TANDBERG_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR4_TANDBERG_C/MR4_TANDBERG_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR5_TANDBERG_C/MR5_TANDBERG_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/MR6_BT_B/MR6_BT_B.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/MR7_BT_B/MR7_BT_B.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/MR8_BT_B/MR8_BT_B.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/MR9_BT_B/MR9_BT_B.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/MV1_BRCM_D/src19td.IBP.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NL1_Sony_D/NL1_Sony_D.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NL2_Sony_H/NL2_Sony_H.jsv": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NL3_SVA_E/NL3_SVA_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NLMQ1_JVC_C/NLMQ1_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NLMQ2_JVC_C/NLMQ2_JVC_C.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/NRF_MW_E/NRF_MW_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SL1_SVA_B/SL1_SVA_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SP1_BT_A/sp1_bt_a.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/SVA_BA1_B/SVA_BA1_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_BA2_D/SVA_BA2_D.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_Base_B/SVA_Base_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_CL1_E/SVA_CL1_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_FM1_E/SVA_FM1_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_NL1_B/SVA_NL1_B.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/SVA_NL2_E/SVA_NL2_E.264": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_Field_1_B/Sharp_MP_Field_1_B.jvt": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_Field_2_B/Sharp_MP_Field_2_B.jvt": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_Field_3_B/Sharp_MP_Field_3_B.jvt": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_PAFF_1r2/Sharp_MP_PAFF_1r2.jvt": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/Sharp_MP_PAFF_2r/Sharp_MP_PAFF_2.jvt": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_fld0_full/camp_mot_fld0_full.26l": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_frm0_full/camp_mot_frm0_full.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_mbaff0_full/camp_mot_mbaff0_full.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cabac_mot_picaff0_full/camp_mot_picaff0_full.26l": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cama1_vtc_c/cama1_vtc_c.avc": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cama2_vtc_b/cama2_vtc_b.avc": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cama3_vtc_b/cama3_vtc_b.avc": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_fld0_full_B/cvmp_mot_fld0_full_B.26l": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_frm0_full_B/cvmp_mot_frm0_full_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_mbaff0_full_B/cvmp_mot_mbaff0_full_B.26l": {
+   "outcome": "pass"
+  },
+  "fluster/JVT-AVC_V1/cavlc_mot_picaff0_full_B/cvmp_mot_picaff0_full_B.26l": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  },
+  "fluster/JVT-AVC_V1/sp2_bt_b/sp2_bt_b.h264": {
+   "detail": "pipeline error: CapsMismatch",
+   "outcome": "refused"
+  }
+ }
+}
