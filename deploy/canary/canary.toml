@@ -161,7 +161,7 @@ launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s
 [[pipeline]]
 id = "faulted-rtsp"
 tier = "faulted"
-launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted ! h264parse ! avdec_h264 ! checksumsink name=video"
+launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted reconnect=5 ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
