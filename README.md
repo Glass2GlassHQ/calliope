@@ -299,18 +299,28 @@ vectors. Decoded output is deleted after each batch, only the logs stay.
 adding a diagnosis per row and keeping the hand-written `## g2g bugs` section
 already in that file.
 
-Two more modes sweep the same streams. `--mode timestamps` decodes each stream
+More modes sweep the same corpus. `--mode timestamps` decodes each stream
 into `checksumsink` on g2g and GStreamer and compares g2g's per-frame pts with
 ffprobe's (TESTING.md technique 19). `--mode chunk-size` decodes each stream on
 g2g with `filesrc blocksize=` 65536, 4096 and 188 and requires the same output
-at every size (technique 20). Give each mode its own `--workdir`, since the run
-directories are named by scenario:
+at every size (technique 20). `--mode tracks` decodes every stream of a file
+with more than one video or audio stream by index, `decodebin current-video=N`
+against `ffmpeg -map 0:v:N` (technique 21). `--mode seek` seeks to three
+keyframes per video stream and compares the frames after each with `ffmpeg -ss`
+(technique 22). `--mode remux` copies each stream into mp4, mkv, ts and flv with
+`parsebin` and requires g2g to decode the copy as it decodes the original
+(technique 23). Seek and remux take `--agreeing <decode report>` to keep only
+the streams a decode sweep found in agreement. Give each mode its own
+`--workdir`, since the run directories are named by scenario:
 
 ```sh
 calliope sweep --mode timestamps --corpus corpus/fate-suite.toml --workdir runs/timestamps \
   --title "fate-suite timestamps" --report runs/fate-suite-timestamps.json --triage runs/fate-suite-timestamps.md
 calliope sweep --mode chunk-size --corpus corpus/fate-suite.toml --workdir runs/chunk-size \
   --title "fate-suite chunk-size" --report runs/fate-suite-chunk-size.json --triage runs/fate-suite-chunk-size.md
+calliope sweep --corpus corpus/fate-suite.toml --workdir runs/decode --report runs/fate-suite.json
+calliope sweep --mode seek --agreeing runs/fate-suite.json --corpus corpus/fate-suite.toml --workdir runs/seek \
+  --title "fate-suite seek" --report runs/fate-suite-seek.json
 ```
 
 g2g picks its decoder through `decodebin`. To check one decoder backend, pin it

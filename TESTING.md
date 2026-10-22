@@ -673,6 +673,131 @@ Open g2g bugs found here:
   chunks.** `GH1_00094_1920x1280.MTS` gives 165 video PES at blocksize 65536
   and 156 at 188. The other 156 are byte-identical.
 
+### 21. Per-track differential (fate-suite + gst-medias)
+`calliope sweep --mode tracks` lists every stream of every corpus file with
+ffprobe and, for a file with more than one video or more than one audio
+stream, decodes each of them by index on g2g (`decodebin current-video=N` /
+`current-audio=N`) and on ffmpeg (`-map 0:v:N` / `-map 0:a:N`). Each track then
+gets technique 15's per-frame or whole-stream differential. PCM tracks are
+compared with ffmpeg too, since PCM converts exactly. Tracks of codecs that are
+not bit-exact across decoders (AAC, ADPCM variants, packed pixel formats) are
+only rerun for determinism, so for them the mode checks that each index
+decodes, not which track it picks.
+```
+calliope sweep --mode tracks --corpus corpus/fate-suite.toml --workdir runs/tracks \
+  --title "fate-suite tracks" --report runs/fate-suite-tracks.json
+```
+Volume: fate-suite 124 tracks in 35 files, gst-medias 31 tracks in 8 files,
+against g2g master 027dcf4a. Result: fate-suite 20 tracks agree (6 of them
+determinism only) and 91 are unsupported (MXF, IAMF, WTV, 4XM and HEIF
+image items, which g2g cannot count streams in, and FLV sound format 9). Of
+the other 13: 7 AC-3 and MP2 tracks in TS are a prefix of ffmpeg's
+decode, short by the truncated last frames ffmpeg decodes (technique 15), 2
+are `mov/dovi-p7.mp4` (ffmpeg drops a frame with a repeated timestamp,
+technique 15), 2 are cover pictures ffprobe lists as video streams, and 2 are
+streams ffprobe counts and g2g does not list (the Dolby Vision enhancement
+layer of `mpegts/dovi-p7.ts`, the PIDs a PMT change adds in
+`mpegts/pmtchange.ts`). gst-medias: 10 agree (4 determinism only), 20
+unsupported, and `mpegps/sample_mpeg_program_stream_scr.mpg`, where ffprobe
+counts two MP2 streams and g2g one. Every PCM track of
+`mp4/multi_audio_5tones.mov` is bit-exact with ffmpeg's.
+
+### 22. Seek differential (fate-suite + gst-medias)
+`calliope sweep --mode seek --agreeing <decode report>` takes the planar video
+streams where the decode sweep (technique 15, rerun at the same g2g) found g2g
+decoding as ffmpeg does, reads their keyframes with `ffprobe -skip_frame
+nokey`, and seeks to up to three keyframes after the first, spread evenly. The
+target is the keyframe's time from the file's start time, rounded down to the
+microsecond, so it lands on that keyframe whatever a demuxer's snapping. g2g
+runs `g2g-launch --seek T` into checksumsink, ffmpeg `-ss T -copyts` into
+framemd5, and the first 5 frames must be the same.
+```
+calliope sweep --mode seek --agreeing runs/fate-suite.json --corpus corpus/fate-suite.toml \
+  --workdir runs/seek --title "fate-suite seek" --report runs/fate-suite-seek.json
+```
+Volume: fate-suite 195 targets on 92 streams, gst-medias 114 targets on 44
+streams, against g2g master 027dcf4a. Result: fate-suite 79 agree, 65 are
+inputs g2g cannot seek (AVI, IVF, MPEG-PS and elementary streams), 46 are g2g
+bugs (below), and 5 are reference quirks: `flv/Enigma_Principles_of_Lust-part.flv`
+carries out-of-order pts that ffmpeg trims by, `nellymoser/nellymoser-discont.flv`
+has a timestamp discontinuity so its target time occurs twice, `mpegts/loewe.ts`
+(ffmpeg falls back to the first frames) and `flv/multitrack.flv` (ffmpeg
+decodes no frame after the seek). gst-medias: 92 agree, 3 unsupported (AVI)
+and 19 g2g bugs.
+
+Open g2g bugs found here:
+- **An MP4 seek ignores the edit list.** g2g lands on the frame at the target
+  in media time, ffmpeg in presentation time, so with an edit starting at a
+  B-frame delay g2g lands 1 to 3 frames early (39 fate-suite targets, 1
+  gst-medias). `g2g-launch --seek 0.5 filesrc location=fate-suite/mov/mov-3elist.mov !
+  decodebin ! ...` starts at frame 10, `ffmpeg -ss 0.5` at frame 12.
+- **Matroska and FLV seeks count from pts 0**, ffmpeg from the file's start
+  time, so a file starting late lands early (6 targets, `filter/anim.mkv`
+  starts at 42 ms).
+- **MPEG-TS seeks count from the video's first pts**, ffmpeg from the earliest
+  stream's, so a file whose audio starts first lands a keyframe late or past
+  the end (17 gst-medias targets on bipbop, `ac3/mp3ac325-4864-small.ts`).
+- **No seek finds a frame in `webm/opus_vp9-alpha.webm`**, at any target.
+
+### 23. Remux round-trip (fate-suite + gst-medias)
+`calliope sweep --mode remux --agreeing <decode report>` copies each file whose
+streams the decode sweep agrees on into mp4, mkv, ts and flv with
+`filesrc ! parsebin name=p p.video_0 ! queue ! m. p.audio_0 ! queue ! m. <mux> name=m !
+filesink`, one branch for each of the file's first video and audio streams,
+and decodes the copy with g2g. Each stream's decode of the copy must hold its
+decode of the original in order: every frame digest (checksumsink, so no raw
+video reaches the disk) or every PCM sample frame. Priming samples and
+frames an MP4 edit list cuts come back in a container without one, as with
+`ffmpeg -c copy`, and count as agreeing. A muxer refusing a codec is
+unsupported.
+```
+calliope sweep --mode remux --agreeing runs/fate-suite.json --corpus corpus/fate-suite.toml \
+  --workdir runs/remux --title "fate-suite remux" --report runs/fate-suite-remux.json
+```
+Volume: fate-suite 1452 streams in 1390 files and gst-medias 234 streams in
+184 files, four containers each, against g2g master 027dcf4a. Result
+(stream and container pairs): fate-suite 757 agree (153 with priming or
+edit-cut units back), 2728 are elementary streams parsebin cannot fan out,
+2011 have a codec the muxer does not take, 4 are inputs g2g does not decode,
+8 decode to no frames at all, 4 are `mov/mov-2elist-elist1-ends-bframe.mov`
+(two edits, the copy keeps the media between them), and 296 are g2g bugs.
+gst-medias: 259 agree, 420 elementary streams, 224 refused codecs, 33 g2g
+bugs.
+
+Muxer coverage, unsupported here but taken by the GStreamer muxer of the same
+name: mp4mux with one input takes only H.264 and H.265, so no audio-only file
+remuxes to MP4, and with two refuses MP3, Vorbis, Opus, VP8, VP9 and AV1.
+matroskamux refuses Vorbis, FLAC, PCM, MP3, Theora, MPEG-2, MJPEG and ProRes.
+mpegtsmux refuses MPEG-2 video and MP3. flvmux refuses Opus, MP3 from MPEG-PS
+and VP6. A fan-in muxer refusing a stream fails with a bare `pipeline error:
+CapsMismatch` that names neither the muxer nor the codec.
+
+Open g2g bugs found here:
+- **parsebin cannot fan out files decodebin plays** (280 pairs, 70 streams):
+  WAV, IVF, Ogg Theora and VP8, FLV VP6 and H.264, and AVI with a tagged codec
+  fail with `no caps overlap between FileSrc and demux` or `no free output pad
+  named 'video_0'`.
+- **flvmux writes an AAC sequence header no decoder takes** (13 streams from
+  MP4, `aac/al04_44.mp4`: ffmpeg fails it with `decode_pce: Input buffer
+  exhausted before END element found`, g2g decodes nothing).
+- **mpegtsmux takes USAC and writes a file nothing decodes** (8 streams,
+  `aac/usac/*`).
+- **LATM AAC loses samples** through flvmux and mpegtsmux, and fails the remux
+  of `mpegts/loewe.ts` into mp4mux and matroskamux (6 pairs,
+  `aac/latm_stereo_to_51.ts`: 1179648 bytes of PCM, 507904 through flvmux).
+- **The remux changes samples or frames** (12 pairs): bipbop TS AAC through
+  mp4mux comes back 49 sample frames short at the start,
+  `mpegts/tron_en_ge_aac_h264.ts` AAC comes back the same length with
+  different samples through flvmux, matroskamux and mp4mux,
+  `mp4/fragmented_nonseekable_sink.mp4` loses 3 of 300 frames and
+  `h264/twofields_packet.mp4` 2 of 147 through matroskamux and mpegtsmux,
+  `mkv/test7_cut.mkv` 1 of 72 through mp4mux.
+- **The remux fails mid-run or writes a file that does not decode** (10 pairs):
+  `webm/opus_vp9-alpha.webm` and the HEVC of `mpegts/loewe.ts` into mp4mux and
+  matroskamux, Opus in TS into matroskamux and mpegtsmux,
+  `hevc/two_first_slice.mp4` into matroskamux, `aac/al04sf_48.mp4` into
+  mpegtsmux.
+
 ## Bugs found
 
 Bugs 1-3 were found by coverage-guided fuzzing (technique 8), bug 4 by the audio

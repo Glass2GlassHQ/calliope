@@ -135,7 +135,7 @@ enum Command {
         /// corpus name for the triage title
         #[arg(long, default_value = "corpus")]
         title: String,
-        /// a decode sweep's json report: the seek and remux modes keep only the streams that agree in it
+        /// a decode sweep's json report: the seek and remux modes keep only the streams where g2g matched ffmpeg in it
         #[arg(long)]
         agreeing: Option<PathBuf>,
     },

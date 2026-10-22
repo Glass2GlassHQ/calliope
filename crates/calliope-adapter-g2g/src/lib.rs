@@ -14,7 +14,7 @@ use calliope_core::engine::{
 use calliope_core::produce::{
     Container, FRAGMENT_DURATION, Produce, ProducedAudio, VideoCodec, whep_endpoint, whip_endpoint,
 };
-use calliope_core::scenario::{RemuxContainer, Scenario};
+use calliope_core::scenario::{Remux, Scenario};
 use calliope_core::{Error, Result};
 
 // produce mode reads an mp4 input, decoded h264 when it re-encodes
@@ -112,8 +112,10 @@ const UNSUPPORTED_INPUT_ERRORS: [&str; 9] = [
     "fans out behind a file of a container g2g demuxes",
 ];
 
-// a muxer refusing the codec fails negotiation on its own output link
+// a single-input muxer refusing the codec fails negotiation on its own output link
 const MUXER_CAPS_FAILURE: &str = "Mux -> FileSink";
+// a fan-in muxer refusing one of its streams reports this line and nothing else
+const FAN_IN_CAPS_FAILURE: &str = "pipeline error: CapsMismatch";
 
 // true when a g2g-launch stderr log says the build cannot handle the input at all
 pub fn reports_unsupported_input(stderr: &str) -> bool {
@@ -122,11 +124,17 @@ pub fn reports_unsupported_input(stderr: &str) -> bool {
         .any(|error| stderr.contains(error))
 }
 
-// true when a remux failed because the muxer does not take the stream's codec
+// true when a remux failed because the muxer does not take a stream's codec
 pub fn reports_muxer_refusal(stderr: &str) -> bool {
-    stderr
+    let g2g_lines: Vec<&str> = stderr
         .lines()
-        .any(|line| line.starts_with("ERROR caps") && line.contains(MUXER_CAPS_FAILURE))
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('['))
+        .collect();
+    g2g_lines == [FAN_IN_CAPS_FAILURE]
+        || g2g_lines
+            .iter()
+            .any(|line| line.starts_with("ERROR caps") && line.contains(MUXER_CAPS_FAILURE))
 }
 
 // the decode pipeline's filesrc, with the scenario's block size when it sets one
@@ -183,8 +191,8 @@ impl Engine for G2g {
         if let Some(produce) = &scenario.produce {
             return self.produce_invocation(produce, input, workdir);
         }
-        if let Some(container) = scenario.remux {
-            return Ok(remux_invocation(container, scenario, input, workdir));
+        if let Some(remux) = scenario.remux {
+            return Ok(remux_invocation(remux, scenario, input, workdir));
         }
         if let Some(rt) = &scenario.roundtrip {
             return Ok(self.transcode_invocation(input, workdir, rt));
@@ -208,23 +216,18 @@ impl Engine for G2g {
     }
 }
 
-// parse the scenario's stream out of its container and mux it into another, unchanged
-fn remux_invocation(
-    container: RemuxContainer,
-    scenario: &Scenario,
-    input: &Path,
-    workdir: &Path,
-) -> Invocation {
-    let out = workdir.join(format!("remux.{}", container.extension()));
-    let port = if scenario.is_audio() {
-        "audio_0"
-    } else {
-        "video_0"
-    };
+// parse the file's streams out of its container and mux them into another, unchanged
+fn remux_invocation(remux: Remux, scenario: &Scenario, input: &Path, workdir: &Path) -> Invocation {
+    let out = workdir.join(format!("remux.{}", remux.container.extension()));
+    let branches: String = [(remux.video, "video_0"), (remux.audio, "audio_0")]
+        .iter()
+        .filter(|(present, _)| *present)
+        .map(|(_, port)| format!("p.{port} ! queue ! m. "))
+        .collect();
     let pipeline = format!(
-        "{} ! parsebin name=p p.{port} ! queue ! m. {} name=m ! filesink location={}",
+        "{} ! parsebin name=p {branches}{} name=m ! filesink location={}",
         file_source(scenario, input),
-        container.muxer(),
+        remux.container.muxer(),
         out.display()
     );
     Invocation {

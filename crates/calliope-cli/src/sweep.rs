@@ -1,21 +1,21 @@
 // real-world corpus sweep: one synthesized scenario per decodable stream of every imported sample
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use calliope_core::corpus::{self, AudioStream, Manifest, Vector, VideoStream};
+use calliope_core::corpus::{self, AudioStream, Manifest, Media, Vector, VideoStream};
 use calliope_core::engine::OutputSpec;
 use calliope_core::framehash::parse_checksum_lines;
 use calliope_core::probe::{StreamKind, probe_frame_timestamps, probe_keyframes, probe_tracks};
 use calliope_core::report::ScenarioReport;
 use calliope_core::runner::{RunResult, RunStatus, STDOUT_LOG};
 use calliope_core::scenario::{
-    Audio, AudioCodec, Determinism, Input, PixelFormat, RemuxContainer, SampleFormat, Scenario,
-    Seek, Video,
+    Audio, AudioCodec, Determinism, Input, PixelFormat, Remux, RemuxContainer, SampleFormat,
+    Scenario, Seek, Video,
 };
 use calliope_core::timestamps::{
     self, FramePairing, ReferenceTimestamps, TimeBase, TimestampVerdict,
@@ -390,7 +390,8 @@ impl SweepMode {
 }
 
 // the scenarios one case runs as under `mode`
-fn mode_scenarios(mode: SweepMode, scenario: &Scenario) -> Vec<Scenario> {
+// `media` is the case's file, the remux mode copies all of its first streams together
+fn mode_scenarios(mode: SweepMode, scenario: &Scenario, media: Option<&Media>) -> Vec<Scenario> {
     let g2g_alone = || Scenario {
         engines: vec![G2G_ENGINE.into()],
         reference: G2G_ENGINE.into(),
@@ -410,11 +411,16 @@ fn mode_scenarios(mode: SweepMode, scenario: &Scenario) -> Vec<Scenario> {
         SweepMode::Remux => {
             let mut scenarios = vec![Scenario {
                 id: original_id(scenario),
-                ..g2g_whole_output()
+                ..remux_compared_decode(&g2g_alone())
             }];
+            let media = media.expect("a remux case comes from a probed vector");
             scenarios.extend(RemuxContainer::ALL.map(|container| Scenario {
                 id: remux_id(scenario, container),
-                remux: Some(container),
+                remux: Some(Remux {
+                    container,
+                    video: media.video.is_some(),
+                    audio: media.audio.is_some(),
+                }),
                 determinism: None,
                 ..g2g_alone()
             }));
@@ -446,7 +452,21 @@ fn remux_id(scenario: &Scenario, container: RemuxContainer) -> String {
     format!("{}/{}", scenario.id, container.muxer())
 }
 
-// g2g's whole-output decode of what the remux scenario wrote
+// the decode a remux is judged by: video frame digests on stdout, so no raw video reaches the disk, audio's whole PCM
+fn remux_compared_decode(scenario: &Scenario) -> Scenario {
+    let video = !scenario.is_audio();
+    Scenario {
+        remux: None,
+        timestamps: video,
+        determinism: (!video).then_some(Determinism {
+            runs: 1,
+            threads: false,
+        }),
+        ..scenario.clone()
+    }
+}
+
+// g2g's decode of what the remux scenario wrote
 fn remuxed_decode(remux: &Scenario, remuxed: &Path) -> Scenario {
     Scenario {
         id: format!("{}/decode", remux.id),
@@ -454,12 +474,7 @@ fn remuxed_decode(remux: &Scenario, remuxed: &Path) -> Scenario {
             corpus: None,
             path: Some(remuxed.to_path_buf()),
         },
-        remux: None,
-        determinism: Some(Determinism {
-            runs: 1,
-            threads: false,
-        }),
-        ..remux.clone()
+        ..remux_compared_decode(remux)
     }
 }
 
@@ -493,6 +508,10 @@ async fn track_cases(vectors: &[Vector]) -> Result<Vec<SweepCase>> {
                     let Some(audio) = audio else { continue };
                     let mut case = audio_case(vector, audio, &engines, &format!("audio-{index}"));
                     case.scenario.stream_index = Some(index);
+                    // PCM converts exactly, so each track is checked against ffmpeg's rather than only rerun
+                    if audio.codec.starts_with(PCM_CODEC_PREFIX) {
+                        case.scenario.determinism = None;
+                    }
                     cases.push(case);
                 }
             }
@@ -547,6 +566,8 @@ async fn seek_cases(streams: Vec<SweepCase>) -> Result<Vec<SweepCase>> {
                     target,
                     frames: SEEK_FRAMES,
                 });
+                // g2g decodes on to the end, so its frames go to checksumsink rather than the disk
+                scenario.timestamps = true;
                 cases.push(SweepCase {
                     scenario,
                     vector: case.vector.clone(),
@@ -571,15 +592,22 @@ pub fn classify_seek(report: &ScenarioReport, g2g_stderr: &str) -> (TriageClass,
     let (Some(reference), Some(g2g)) = (find(REFERENCE_ENGINE), find(G2G_ENGINE)) else {
         return (TriageClass::Agree, "an engine did not run".into());
     };
+    if matches!(outcome(g2g), Outcome::Crashed | Outcome::Hung) {
+        return (TriageClass::G2gCrashOrHang, status_note(g2g));
+    }
+    let (Outcome::Decoded, Some(expected)) = (outcome(reference), &reference.frame_hashes) else {
+        let reference_note = format!("{REFERENCE_ENGINE} {}", status_note(reference));
+        if outcome(g2g) == Outcome::Decoded {
+            return (TriageClass::ReferenceQuirk, reference_note);
+        }
+        return (
+            TriageClass::Agree,
+            format!("no frame follows the seek on either engine, {reference_note}"),
+        );
+    };
     if let Some(failure) = g2g_failure(g2g, g2g_stderr) {
         return failure;
     }
-    let (Outcome::Decoded, Some(expected)) = (outcome(reference), &reference.frame_hashes) else {
-        return (
-            TriageClass::ReferenceQuirk,
-            format!("{REFERENCE_ENGINE} {}", status_note(reference)),
-        );
-    };
     let decoded = g2g
         .frame_hashes
         .as_deref()
@@ -604,14 +632,21 @@ pub fn classify_seek(report: &ScenarioReport, g2g_stderr: &str) -> (TriageClass,
     }
 }
 
-// where `original` sits inside `remuxed`, stepping a whole sample frame at a time
-fn find_samples(remuxed: &[u8], original: &[u8], sample_frame_bytes: usize) -> Option<usize> {
+// where `original` sits inside `remuxed`, trying every `step`-th offset
+fn find_run<T: PartialEq>(remuxed: &[T], original: &[T], step: usize) -> Option<usize> {
     if original.len() > remuxed.len() {
         return None;
     }
     (0..=remuxed.len() - original.len())
-        .step_by(sample_frame_bytes)
-        .find(|&offset| &remuxed[offset..offset + original.len()] == original)
+        .step_by(step)
+        .find(|&offset| remuxed[offset..offset + original.len()] == *original)
+}
+
+// what a decode is compared by: its PCM, or its frame hashes when the video has a known geometry
+#[derive(Debug)]
+pub enum DecodedUnits {
+    Pcm(Vec<u8>),
+    FrameHashes(Vec<String>),
 }
 
 // one decode's whole output, read before the batch deletes it
@@ -619,8 +654,8 @@ fn find_samples(remuxed: &[u8], original: &[u8], sample_frame_bytes: usize) -> O
 pub struct DecodedOutput<'a> {
     pub run: &'a RunResult,
     pub stderr: String,
-    // the raw PCM, read only for audio
-    pub pcm: Option<Vec<u8>>,
+    // None for a packed video format, compared by its whole-output hash
+    pub units: Option<DecodedUnits>,
 }
 
 // classify g2g's decode of the remuxed file against its decode of the original
@@ -663,39 +698,54 @@ pub fn classify_remux(
             .output_len
             .expect("a decoded whole-output run has a length")
     };
-    match (sample_frame_bytes, &original.pcm, &remuxed.pcm) {
-        (Some(frame_bytes), Some(original_pcm), Some(remuxed_pcm)) => {
-            match find_samples(remuxed_pcm, original_pcm, frame_bytes) {
-                Some(_) if original_pcm.len() == remuxed_pcm.len() => {
-                    (TriageClass::Agree, String::new())
-                }
-                Some(offset) => (
-                    TriageClass::Agree,
-                    format!(
-                        "the remux adds {} sample frames before and {} after",
-                        offset / frame_bytes,
-                        (remuxed_pcm.len() - offset - original_pcm.len()) / frame_bytes
-                    ),
-                ),
-                None => (
+    // an edit list's priming samples and leading frames come back in a container without one
+    let found = match (&original.units, &remuxed.units) {
+        (Some(DecodedUnits::Pcm(original)), Some(DecodedUnits::Pcm(remuxed))) => {
+            let step = sample_frame_bytes.expect("PCM comes from an audio scenario");
+            find_run(remuxed, original, step)
+                .map(|offset| {
+                    (
+                        offset / step,
+                        (remuxed.len() - offset - original.len()) / step,
+                    )
+                })
+                .ok_or((original.len(), remuxed.len(), "bytes"))
+        }
+        (Some(DecodedUnits::FrameHashes(original)), Some(DecodedUnits::FrameHashes(remuxed))) => {
+            find_run(remuxed, original, 1)
+                .map(|offset| (offset, remuxed.len() - offset - original.len()))
+                .ok_or((original.len(), remuxed.len(), "frames"))
+        }
+        _ => {
+            return if original.run.output_md5 == remuxed.run.output_md5 {
+                (TriageClass::Agree, String::new())
+            } else {
+                (
                     TriageClass::G2gDiverges,
                     format!(
-                        "the original samples are not in the remuxed decode in order ({} vs {} bytes)",
-                        original_pcm.len(),
-                        remuxed_pcm.len()
+                        "the remuxed decode differs ({} vs {} bytes)",
+                        length(original),
+                        length(remuxed)
                     ),
-                ),
-            }
+                )
+            };
         }
-        _ if original.run.output_md5 == remuxed.run.output_md5 => {
-            (TriageClass::Agree, String::new())
-        }
-        _ => (
+    };
+    let unit = if sample_frame_bytes.is_some() {
+        "sample frames"
+    } else {
+        "frames"
+    };
+    match found {
+        Ok((0, 0)) => (TriageClass::Agree, String::new()),
+        Ok((before, after)) => (
+            TriageClass::Agree,
+            format!("the remux adds {before} {unit} before and {after} after"),
+        ),
+        Err((original, remuxed, counted)) => (
             TriageClass::G2gDiverges,
             format!(
-                "the remuxed decode differs ({} vs {} bytes)",
-                length(original),
-                length(remuxed)
+                "the original {unit} are not in the remuxed decode in order ({original} vs {remuxed} {counted})"
             ),
         ),
     }
@@ -918,6 +968,7 @@ pub struct SweepSettings {
 #[derive(Debug, Deserialize)]
 struct ReportedEntry {
     class: TriageClass,
+    note: String,
     report: ReportedScenario,
 }
 
@@ -926,12 +977,17 @@ struct ReportedScenario {
     scenario: String,
 }
 
-// the streams a decode sweep's json report files as agreeing
+// the streams where a decode sweep found g2g decoding as ffmpeg does, gstreamer's verdict aside
 pub fn agreeing_streams(decode_report: &Path) -> Result<HashSet<String>> {
     let entries: Vec<ReportedEntry> = serde_json::from_slice(&std::fs::read(decode_report)?)?;
     Ok(entries
         .into_iter()
-        .filter(|entry| entry.class == TriageClass::Agree)
+        // an agreeing entry with a note is one every engine rejected
+        .filter(|entry| match entry.class {
+            TriageClass::Agree => entry.note.is_empty(),
+            TriageClass::GstreamerDiverges => true,
+            _ => false,
+        })
         .map(|entry| entry.report.scenario)
         .collect())
 }
@@ -987,13 +1043,23 @@ pub async fn run(
         vectors.len(),
         cases.len(),
     );
+    let media_of: HashMap<&str, &Media> = vectors
+        .iter()
+        .filter_map(|vector| Some((vector.id.as_str(), vector.media.as_ref()?)))
+        .collect();
     let cache = corpus::cache_dir();
     let g2g = crate::engine_by_id(G2G_ENGINE)?;
     let mut entries = Vec::new();
     for batch in cases.chunks(SWEEP_BATCH) {
         let planned: Vec<Vec<Scenario>> = batch
             .iter()
-            .map(|case| mode_scenarios(mode, &case.scenario))
+            .map(|case| {
+                mode_scenarios(
+                    mode,
+                    &case.scenario,
+                    media_of.get(case.vector.as_str()).copied(),
+                )
+            })
             .collect();
         let scenarios: Vec<Scenario> = planned.iter().flatten().cloned().collect();
         let mut reports = crate::run_matrix(&scenarios, manifest_path, &[], jobs, workdir)
@@ -1162,17 +1228,19 @@ fn remuxed_file(report: &ScenarioReport) -> Option<PathBuf> {
     written.then(|| file.clone())
 }
 
-fn decoded_output(run: &RunResult, audio: bool) -> Result<DecodedOutput<'_>> {
-    let pcm = match (&run.output, audio) {
-        (Some(OutputSpec::RawAudioFile(path)), true) if outcome(run) == Outcome::Decoded => {
-            Some(std::fs::read(path)?)
+fn decoded_output(run: &RunResult) -> Result<DecodedOutput<'_>> {
+    let units = match &run.output {
+        _ if outcome(run) != Outcome::Decoded => None,
+        Some(OutputSpec::RawAudioFile(path)) => Some(DecodedUnits::Pcm(std::fs::read(path)?)),
+        Some(OutputSpec::ChecksumLines(_)) => {
+            run.frame_hashes.clone().map(DecodedUnits::FrameHashes)
         }
         _ => None,
     };
     Ok(DecodedOutput {
         run,
         stderr: run_stderr(run),
-        pcm,
+        units,
     })
 }
 
@@ -1185,7 +1253,7 @@ fn classify_remux_case(
     let (original_scenario, original_report) = reports.next().expect("the original decode leads");
     let audio = original_scenario.audio;
     let sample_frame_bytes = audio.map(|audio| audio.channels as usize * PCM_SAMPLE_BYTES);
-    let original = decoded_output(&original_report.runs[0].run, audio.is_some())?;
+    let original = decoded_output(&original_report.runs[0].run)?;
     let mut classified = Vec::new();
     for (remux_scenario, mut remux_report) in reports {
         let decode_id = format!("{}/decode", remux_scenario.id);
@@ -1195,7 +1263,7 @@ fn classify_remux_case(
             .map(|index| remuxed_reports.remove(index));
         let remuxed = remuxed_report
             .as_ref()
-            .map(|report| decoded_output(&report.runs[0].run, audio.is_some()))
+            .map(|report| decoded_output(&report.runs[0].run))
             .transpose()?;
         let remux_run = &remux_report.runs[0].run;
         let (class, note) = classify_remux(
@@ -1354,7 +1422,6 @@ pub fn triage_markdown(title: &str, mode: SweepMode, entries: &[SweepEntry]) -> 
 mod tests {
     use super::*;
     use calliope_core::compare::{Comparison, majority_vote};
-    use calliope_core::corpus::Media;
     use calliope_core::report::EngineReport;
 
     fn engines() -> Vec<String> {
@@ -1648,7 +1715,7 @@ mod tests {
                 .join(" ")
         };
         for case in &case {
-            let timestamps = mode_scenarios(SweepMode::Timestamps, &case.scenario).remove(0);
+            let timestamps = mode_scenarios(SweepMode::Timestamps, &case.scenario, None).remove(0);
             assert_eq!(timestamps.engines, [GSTREAMER_ENGINE, G2G_ENGINE]);
             assert!(!timestamps.is_determinism());
             let plan = calliope_adapter_g2g::G2g
@@ -1659,7 +1726,7 @@ mod tests {
                 matches!(plan.output, OutputSpec::ChecksumLines(path) if path == workdir.join(STDOUT_LOG))
             );
 
-            let chunked = mode_scenarios(SweepMode::ChunkSize, &case.scenario);
+            let chunked = mode_scenarios(SweepMode::ChunkSize, &case.scenario, None);
             let sizes: Vec<Option<u32>> = chunked.iter().map(|s| s.blocksize).collect();
             assert_eq!(sizes, CHUNK_SIZES.map(Some));
             for scenario in &chunked {
@@ -1677,7 +1744,7 @@ mod tests {
             }
         }
         // the decode mode keeps the default block size
-        let decode = mode_scenarios(SweepMode::Decode, &case[0].scenario).remove(0);
+        let decode = mode_scenarios(SweepMode::Decode, &case[0].scenario, None).remove(0);
         assert!(!pipeline(&decode).contains("blocksize"));
     }
 
@@ -1908,16 +1975,17 @@ mod tests {
         assert!(line(&calliope_adapter_ffmpeg::Ffmpeg, &audio).contains("-map 0:a:2"));
         assert!(line(&calliope_adapter_g2g::G2g, &audio).contains("decodebin current-audio=2"));
 
-        let remux = mode_scenarios(SweepMode::Remux, &audio);
+        let both = vector("a", Some(("h264", "yuv420p")), Some("flac"));
+        let remux = mode_scenarios(SweepMode::Remux, &audio, both.media.as_ref());
         assert_eq!(remux[0].id, original_id(&audio));
         assert_eq!(remux.len(), 1 + RemuxContainer::ALL.len());
         let flv = remux
             .iter()
-            .find(|s| s.remux == Some(RemuxContainer::Flv))
+            .find(|s| s.remux.is_some_and(|r| r.container == RemuxContainer::Flv))
             .unwrap();
         let plan = calliope_adapter_g2g::G2g.plan(flv, input, workdir).unwrap();
         assert!(
-            plan.args.join(" ").ends_with("parsebin name=p p.audio_0 ! queue ! m. flvmux name=m ! filesink location=/run/remux.flv"),
+            plan.args.join(" ").ends_with("parsebin name=p p.video_0 ! queue ! m. p.audio_0 ! queue ! m. flvmux name=m ! filesink location=/run/remux.flv"),
             "{:?}",
             plan.args
         );
@@ -1960,13 +2028,22 @@ mod tests {
             "g2g-launch: --seek: nothing in the pipeline can seek: a seek needs an MP4 file source",
         );
         assert_eq!(unseekable.0, TriageClass::UnsupportedCodec);
+        // a target past the last frame either engine decodes is no disagreement
+        let past_the_end = classify_seek(
+            &differential(vec![
+                run(REFERENCE_ENGINE, RunStatus::Ok, None),
+                run(G2G_ENGINE, RunStatus::ExitFailure { code: 1 }, None),
+            ]),
+            "pipeline error: no frame followed --seek 1.796499, the target is past the end of the stream",
+        );
+        assert_eq!(past_the_end.0, TriageClass::Agree);
     }
 
     fn decoded_pcm<'a>(run: &'a RunResult, pcm: &[u8]) -> DecodedOutput<'a> {
         DecodedOutput {
             run,
             stderr: String::new(),
-            pcm: Some(pcm.to_vec()),
+            units: Some(DecodedUnits::Pcm(pcm.to_vec())),
         }
     }
 
@@ -2010,6 +2087,49 @@ mod tests {
             Some(frame_bytes),
         );
         assert_eq!(refused.0, TriageClass::UnsupportedCodec);
+        let fan_in_refused = classify_remux(
+            &decoded_pcm(&decoded, &original),
+            &remux,
+            "pipeline error: CapsMismatch\n",
+            None,
+            Some(frame_bytes),
+        );
+        assert_eq!(fan_in_refused.0, TriageClass::UnsupportedCodec);
+        // a muxer failing mid-run names itself, that is no refusal
+        let failed_mid_run = classify_remux(
+            &decoded_pcm(&decoded, &original),
+            &remux,
+            "ERROR runtime          pipeline error in m: CapsMismatch\npipeline error: CapsMismatch\n",
+            None,
+            Some(frame_bytes),
+        );
+        assert_eq!(failed_mid_run.0, TriageClass::G2gNoOutput);
+    }
+
+    #[test]
+    fn remuxed_video_keeps_every_original_frame_in_order() {
+        let decoded = run(G2G_ENGINE, RunStatus::Ok, Some(GOOD));
+        let remux = run(G2G_ENGINE, RunStatus::Ok, None);
+        let frames = |hashes: &[&str]| DecodedOutput {
+            run: &decoded,
+            stderr: String::new(),
+            units: Some(DecodedUnits::FrameHashes(
+                hashes.iter().map(|h| h.to_string()).collect(),
+            )),
+        };
+        let original = frames(&["b", "c"]);
+        let classify =
+            |remuxed: &[&str]| classify_remux(&original, &remux, "", Some(&frames(remuxed)), None);
+        assert_eq!(classify(&["b", "c"]).0, TriageClass::Agree);
+        // the frames an edit list cut come back ahead of the original's
+        assert_eq!(
+            classify(&["a", "b", "c"]),
+            (
+                TriageClass::Agree,
+                "the remux adds 1 frames before and 0 after".into()
+            )
+        );
+        assert_eq!(classify(&["b", "x"]).0, TriageClass::G2gDiverges);
     }
 
     #[test]
@@ -2028,6 +2148,11 @@ mod tests {
         };
         let entries = [
             entry("v/video", TriageClass::Agree),
+            entry("u/video", TriageClass::GstreamerDiverges),
+            SweepEntry {
+                note: "all rejected, ffmpeg exit 1".into(),
+                ..entry("x/video", TriageClass::Agree)
+            },
             entry("w/video", TriageClass::G2gDiverges),
         ];
         let dir = std::env::temp_dir().join(format!("calliope-agreeing-{}", std::process::id()));
@@ -2035,7 +2160,10 @@ mod tests {
         let path = dir.join("decode.json");
         std::fs::write(&path, serde_json::to_vec(&entries).unwrap()).unwrap();
         let agreeing = agreeing_streams(&path).unwrap();
-        assert_eq!(agreeing, HashSet::from(["v/video".to_string()]));
+        assert_eq!(
+            agreeing,
+            HashSet::from(["v/video", "u/video"].map(String::from))
+        );
         std::fs::remove_dir_all(dir).unwrap();
     }
 }

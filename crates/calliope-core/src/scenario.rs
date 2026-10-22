@@ -104,9 +104,9 @@ pub struct Scenario {
     pub stream_index: Option<usize>,
     #[serde(skip)]
     pub seek: Option<Seek>,
-    // copy the stream into this container instead of decoding it
+    // copy the file's streams into another container instead of decoding them
     #[serde(skip)]
-    pub remux: Option<RemuxContainer>,
+    pub remux: Option<Remux>,
 }
 
 // decode from one seek, comparing the first `frames` frames
@@ -115,6 +115,14 @@ pub struct Seek {
     // seconds from the start of the file, the text both engines receive
     pub target: String,
     pub frames: usize,
+}
+
+// which of the file's first video and audio streams go into the container, both through the fan-in muxer
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Remux {
+    pub container: RemuxContainer,
+    pub video: bool,
+    pub audio: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

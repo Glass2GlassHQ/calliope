@@ -10,13 +10,8 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
 ## Corpus differential depth
 - Timestamp differential: compare each frame's duration too, once a g2g sink
   prints it.
-- Per-track differential: decode every audio and video track of a
-  multi-track file by index and compare with `ffmpeg -map 0:a:N` /
-  `-map 0:v:N`.
-- Seek differential: seek to several positions per file and compare the
-  first frame after the seek with an accurate `ffmpeg -ss` decode.
-- Remux round-trip: remux the agreeing files through the g2g mp4, mkv, ts and
-  flv muxers and require the remuxed file to decode the same.
+- Per-track differential for AAC tracks, which are only rerun for
+  determinism because no two AAC decoders are bit-exact.
 
 ## Mutation testing
 - Add g2g-plugins tests for the missed parser mutants that mark real gaps,
