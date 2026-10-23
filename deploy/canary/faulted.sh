@@ -4,10 +4,14 @@ set -u
 
 clip=/usr/share/g2g-canary/clips/baseline.mp4
 config=/etc/canary/mediamtx-faulted.yml
+schedule=/etc/canary/fault-schedule.txt
 # reader-facing ports: mediamtx rtsp and hls, and the g2g srt and rist listeners the feeder calls
 faulted_ports="19554 19888 18892 18896 18897"
-restart_every_secs=1200
 retry_secs=1
+restart_every_secs=
+while read -r kind secs _; do
+    [ "$kind" = restart ] && restart_every_secs=$secs
+done <"$schedule"
 
 # every packet goes to band 1, the filters move faulted-port packets to band 4, which carries the netem qdisc
 setup_netem() {
@@ -24,27 +28,14 @@ fault() {
     tc qdisc change dev lo parent 1:4 handle 40: netem "$@"
 }
 
-# a 10 minute cycle: each fault window is followed by a clean one so the readers recover in between
+# netem gets a window line up to its colon, the rest names the fault on the status page
 schedule_faults() {
     while true; do
-        fault delay 0ms
-        sleep 120
-        fault loss 3%
-        sleep 60
-        fault delay 0ms
-        sleep 60
-        fault delay 80ms 40ms distribution normal
-        sleep 60
-        fault delay 0ms
-        sleep 60
-        fault delay 20ms reorder 25% 50%
-        sleep 60
-        fault delay 0ms
-        sleep 60
-        fault loss 20% 25%
-        sleep 30
-        fault delay 0ms
-        sleep 90
+        while read -r kind secs netem; do
+            [ "$kind" = window ] || continue
+            fault ${netem%%:*}
+            sleep "$secs"
+        done <"$schedule"
     done
 }
 
@@ -75,6 +66,7 @@ looped_clip() {
     ffmpeg -hide_banner -loglevel warning -re -stream_loop -1 -i "$clip" -c copy "$@"
 }
 
+[ -n "$restart_every_secs" ] || { echo "no restart line in $schedule" >&2; exit 1; }
 setup_netem || exit 1
 trap "kill 0" TERM INT
 schedule_faults &

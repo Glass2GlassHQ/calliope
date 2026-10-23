@@ -44,6 +44,7 @@ COPY --from=livesim2 /livesim2 /usr/local/bin/livesim2
 COPY --from=livesim2 /src/cmd/livesim2/app/testdata/assets /usr/share/livesim2/vod
 COPY --chmod=0755 deploy/canary/faulted.sh /usr/local/bin/canary-faulted.sh
 COPY deploy/canary/mediamtx-faulted.yml /etc/canary/mediamtx-faulted.yml
+COPY deploy/canary/fault-schedule.txt /etc/canary/fault-schedule.txt
 # each table decodes a clip through the same chain as the rows that name it
 RUN mkdir -p /etc/canary/hashes && cd /usr/share/g2g-canary/clips \
     && g2g-launch -q filesrc location=baseline.mp4 ! qtdemux ! h264parse ! avdec_h264 ! checksumsink \

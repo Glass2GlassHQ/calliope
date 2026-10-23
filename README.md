@@ -488,9 +488,9 @@ which one live row spends in about 3 hours.
 
 The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
 container with its own network namespace that runs a second mediamtx and
-feeder. Netem on its loopback runs a 10 minute cycle of loss, jitter, reorder
-and burst loss on the reader-facing ports only, and its mediamtx restarts every
-20 minutes. Rootless podman allows this: the container has `CAP_NET_ADMIN` in
+feeder. Netem on its loopback runs the cycle of loss, jitter, reorder and burst
+loss in `deploy/canary/fault-schedule.txt` on the reader-facing ports only, and
+its mediamtx restarts at the interval that file sets. Rootless podman allows this: the container has `CAP_NET_ADMIN` in
 its own namespace, and pasta publishes its RTSP and HLS ports on the host
 loopback and forwards its SRT and RIST sends to the host. Netem runs only
 inside that namespace, so the self-hosted rows never see it.

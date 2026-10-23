@@ -328,7 +328,6 @@ mod tests {
     use crate::canary::config::Tier;
     use crate::canary::record::{INCIDENTS_PREFIX, OpenIncidents, read_days};
     use futures::SinkExt;
-    use std::os::unix::fs::PermissionsExt;
     use std::path::Path;
     use tokio_tungstenite::tungstenite::Message;
 
@@ -346,10 +345,20 @@ mod tests {
         dir
     }
 
+    // a child shell writes it, exec fails with ETXTBSY while a sibling test's fork holds our write handle
     fn fake_launch(dir: &Path, body: &str) -> PathBuf {
         let path = dir.join("fake-g2g-launch");
-        std::fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();
-        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let written = std::process::Command::new("sh")
+            .args([
+                "-c",
+                r#"printf '#!/bin/sh\n%s\n' "$1" > "$2" && chmod 755 "$2""#,
+                "sh",
+            ])
+            .arg(body)
+            .arg(&path)
+            .status()
+            .unwrap();
+        assert!(written.success(), "writing {} failed", path.display());
         path
     }
 
@@ -395,19 +404,17 @@ mod tests {
         assert!(ended.is_err(), "supervisor returned early: {ended:?}");
     }
 
-    fn unused_port() -> u16 {
-        std::net::TcpListener::bind("127.0.0.1:0")
-            .unwrap()
-            .local_addr()
-            .unwrap()
-            .port()
+    // bound for the whole test so no telemetry server gets its port, and never accepts
+    fn silent_observe_listener() -> std::net::TcpListener {
+        std::net::TcpListener::bind("127.0.0.1:0").unwrap()
     }
 
     #[tokio::test]
     async fn kills_a_stalled_run_and_keeps_its_stderr() {
         let dir = scratch("stall");
         let program = fake_launch(&dir, "echo 'fake: waiting for stream' >&2\nexec sleep 60");
-        let config = config(&dir, &program, unused_port());
+        let silent = silent_observe_listener();
+        let config = config(&dir, &program, silent.local_addr().unwrap().port());
         let state = SharedState::default();
         supervise_for(&config, &state).await;
 
@@ -427,7 +434,9 @@ mod tests {
         let dir = scratch("grace");
         let program = fake_launch(&dir, "echo 'pipeline error: not published yet' >&2\nexit 1");
         let grace_secs = OBSERVE_FOR.as_secs() + 1;
-        let config = config_with_grace(&dir, &program, unused_port(), grace_secs);
+        let silent = silent_observe_listener();
+        let port = silent.local_addr().unwrap().port();
+        let config = config_with_grace(&dir, &program, port, grace_secs);
         let state = SharedState::default();
         supervise_for(&config, &state).await;
 
@@ -461,7 +470,8 @@ mod tests {
     async fn repeated_exits_stay_one_incident() {
         let dir = scratch("exit");
         let program = fake_launch(&dir, "echo 'pipeline error: boom' >&2\nexit 3");
-        let config = config(&dir, &program, unused_port());
+        let silent = silent_observe_listener();
+        let config = config(&dir, &program, silent.local_addr().unwrap().port());
         let state = SharedState::default();
         supervise_for(&config, &state).await;
 
@@ -549,7 +559,8 @@ mod tests {
     async fn a_stream_still_down_after_a_restart_extends_the_same_incident() {
         let dir = scratch("still-down");
         let program = fake_launch(&dir, "exit 1");
-        let config = config(&dir, &program, unused_port());
+        let silent = silent_observe_listener();
+        let config = config(&dir, &program, silent.local_addr().unwrap().port());
         leave_open(&dir, earlier_incident());
         let state = SharedState::default();
         supervise_for(&config, &state).await;

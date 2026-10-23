@@ -12,7 +12,7 @@ use super::config::{PipelineConfig, Tier};
 
 pub const SECS_PER_DAY: u64 = 86_400;
 pub const SECS_PER_HOUR: u64 = 3_600;
-const SECS_PER_MINUTE: u64 = 60;
+pub const SECS_PER_MINUTE: u64 = 60;
 pub const SAMPLES_PREFIX: &str = "samples";
 pub const INCIDENTS_PREFIX: &str = "incidents";
 pub const STDERR_DIR: &str = "stderr";

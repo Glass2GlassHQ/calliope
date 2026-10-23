@@ -6,7 +6,9 @@ use serde::Serialize;
 
 use super::checks::{MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, MEMORY_WINDOW_SECS, PTS_FORWARD_JUMP_NS};
 use super::config::{CanaryConfig, Tier};
-use super::record::{Incident, SECS_PER_DAY, SECS_PER_HOUR, Sample, utc_date, utc_datetime};
+use super::record::{
+    Incident, SECS_PER_DAY, SECS_PER_HOUR, SECS_PER_MINUTE, Sample, utc_date, utc_datetime,
+};
 
 pub const HISTORY_DAYS: u64 = 30;
 const WEEK_DAYS: u64 = 7;
@@ -192,7 +194,7 @@ fn sparkline(daily: &[DailyUptime]) -> String {
     svg
 }
 
-fn tier_description(tier: Tier) -> &'static str {
+fn tier_description(tier: Tier) -> String {
     match tier {
         Tier::SelfHosted => {
             "Streams served on the same machine, so nothing outside it is involved and a \
@@ -201,23 +203,103 @@ fn tier_description(tier: Tier) -> &'static str {
              server plays live DASH. The egress rows test g2g as the sender: in each \
              -publish or -serve row g2g encodes a test pattern and sends it over that \
              protocol, and the matching -play row reads it back."
+                .to_string()
         }
         Tier::Public => {
             "Test streams on the internet from Apple, Mux, Unified Streaming and a public \
              webcam. Nobody promises they stay up, so a down row here is usually the stream's \
              own outage. Their pictures are unknown, so they have no content check."
+                .to_string()
         }
-        Tier::Faulted => {
-            "The same looped clip as the self-hosted rows, served by a second mediamtx whose \
-             network is broken on purpose. Every 10 minutes it goes through 3% packet loss, \
-             80 ms delay with 40 ms jitter, 25% of packets reordered and 30 seconds of 20% \
-             loss, with a clean minute after each, and the server restarts every 20 minutes. \
-             These rows check that g2g recovers: a row that stalls during a fault and comes \
-             back afterwards is working, and each server restart shows as an incident. RTSP \
-             and HLS run over TCP, which resends lost packets, so their frames must still \
-             match the clip. The faults would lower the self-hosted uptime, so these rows \
-             are listed apart."
+        Tier::Faulted => faulted_description(&fault_schedule()),
+    }
+}
+
+const FAULT_SCHEDULE: &str = include_str!("../../../../deploy/canary/fault-schedule.txt");
+
+#[derive(Debug)]
+struct FaultSchedule {
+    restart_secs: u64,
+    windows: Vec<FaultWindow>,
+}
+
+#[derive(Debug)]
+struct FaultWindow {
+    secs: u64,
+    // none for a clean window
+    fault: Option<&'static str>,
+}
+
+fn fault_schedule() -> FaultSchedule {
+    let mut restart_secs = None;
+    let mut windows = Vec::new();
+    for line in FAULT_SCHEDULE.lines() {
+        if let Some(secs) = line.strip_prefix("restart ") {
+            restart_secs = Some(secs.parse().expect("restart seconds"));
+        } else if let Some(window) = line.strip_prefix("window ") {
+            let (secs, netem) = window.split_once(' ').expect("window netem arguments");
+            windows.push(FaultWindow {
+                secs: secs.parse().expect("window seconds"),
+                fault: netem.split_once(':').map(|(_, fault)| fault.trim()),
+            });
+        } else {
+            assert!(line.starts_with('#'), "unknown fault schedule line: {line}");
         }
+    }
+    FaultSchedule {
+        restart_secs: restart_secs.expect("fault schedule restart line"),
+        windows,
+    }
+}
+
+fn faulted_description(schedule: &FaultSchedule) -> String {
+    let cycle_secs = schedule.windows.iter().map(|window| window.secs).sum();
+    let faults: Vec<String> = schedule
+        .windows
+        .iter()
+        .filter_map(|window| {
+            let fault = window.fault?;
+            Some(format!("{fault} for {}", duration_words(window.secs)))
+        })
+        .collect();
+    let shortest_clean_secs = schedule
+        .windows
+        .iter()
+        .filter(|window| window.fault.is_none())
+        .map(|window| window.secs)
+        .min()
+        .expect("fault schedule clean window");
+    let (last_fault, other_faults) = faults.split_last().expect("fault schedule fault window");
+    let fault_list = if other_faults.is_empty() {
+        last_fault.clone()
+    } else {
+        format!("{} and {last_fault}", other_faults.join(", "))
+    };
+    format!(
+        "The same looped clip as the self-hosted rows, served by a second mediamtx whose \
+         network is broken on purpose. Every {} it goes through {}, with at least {} of clean \
+         network after each, and the server restarts every {}. These rows check that g2g \
+         recovers: a row that stalls during a fault and comes back afterwards is working, and \
+         each server restart shows as an incident. RTSP and HLS run over TCP, which resends \
+         lost packets, so their frames must still match the clip. The faults would lower the \
+         self-hosted uptime, so these rows are listed apart.",
+        duration_words(cycle_secs),
+        fault_list,
+        duration_words(shortest_clean_secs),
+        duration_words(schedule.restart_secs),
+    )
+}
+
+fn duration_words(secs: u64) -> String {
+    let (count, unit) = if secs.is_multiple_of(SECS_PER_MINUTE) {
+        (secs / SECS_PER_MINUTE, "minute")
+    } else {
+        (secs, "second")
+    };
+    if count == 1 {
+        format!("1 {unit}")
+    } else {
+        format!("{count} {unit}s")
     }
 }
 
@@ -630,6 +712,28 @@ mod tests {
         let escaped = "rtspsrc location=&quot;rtsp://x&quot; ! decodebin ! fakesink";
         assert!(html.contains(&format!("<td title=\"{escaped}\">a</td>")));
         assert!(html.contains(&format!("<td><code>{escaped}</code></td>")));
+    }
+
+    #[test]
+    fn the_faulted_description_names_each_window_of_the_schedule() {
+        let schedule = fault_schedule();
+        let description = tier_description(Tier::Faulted);
+        let faults: Vec<&FaultWindow> = schedule
+            .windows
+            .iter()
+            .filter(|window| window.fault.is_some())
+            .collect();
+        assert!(!faults.is_empty());
+        for window in faults {
+            let named = format!(
+                "{} for {}",
+                window.fault.unwrap(),
+                duration_words(window.secs)
+            );
+            assert!(description.contains(&named), "{named} in {description}");
+        }
+        let restart = format!("restarts every {}", duration_words(schedule.restart_secs));
+        assert!(description.contains(&restart), "{description}");
     }
 
     #[test]
