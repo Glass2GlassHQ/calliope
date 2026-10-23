@@ -4,15 +4,17 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Serialize;
 
-use super::checks::MEMORY_GROWTH_LIMIT_KIB_PER_HOUR;
-use super::config::{PipelineConfig, Tier};
-use super::record::{Incident, SECS_PER_DAY, Sample, utc_date, utc_datetime};
+use super::checks::{MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, MEMORY_WINDOW_SECS, PTS_FORWARD_JUMP_NS};
+use super::config::{CanaryConfig, Tier};
+use super::record::{Incident, SECS_PER_DAY, SECS_PER_HOUR, Sample, utc_date, utc_datetime};
 
 pub const HISTORY_DAYS: u64 = 30;
 const WEEK_DAYS: u64 = 7;
 const INCIDENTS_SHOWN: usize = 50;
 const STATUS_JSON: &str = "status.json";
 const STATUS_HTML: &str = "index.html";
+const G2G_REPO: &str = "https://github.com/Glass2GlassHQ/glass2glass";
+const NANOS_PER_SEC: i128 = 1_000_000_000;
 const PERCENT: f64 = 100.0;
 // sparkline bar colours by daily uptime percent
 const HEALTHY_PERCENT: f64 = 99.9;
@@ -32,6 +34,8 @@ pub struct Status {
     pub generated: u64,
     // the g2g commit g2g-launch was built from
     pub g2g_commit: String,
+    pub sample_secs: u64,
+    pub stall_secs: u64,
     pub pipelines: Vec<PipelineStatus>,
     // newest first, open incidents have no end
     pub incidents: Vec<Incident>,
@@ -78,7 +82,7 @@ fn overlaps(incident: &Incident, from: u64) -> bool {
 }
 
 pub fn summarize(
-    pipelines: &[PipelineConfig],
+    config: &CanaryConfig,
     samples: &[Sample],
     incidents: &[Incident],
     g2g_commit: &str,
@@ -88,7 +92,8 @@ pub fn summarize(
     let day_ago = now.saturating_sub(SECS_PER_DAY);
     let first_day = (now / SECS_PER_DAY + 1).saturating_sub(HISTORY_DAYS);
     let history_start = first_day * SECS_PER_DAY;
-    let pipeline_statuses = pipelines
+    let pipeline_statuses = config
+        .pipelines
         .iter()
         .map(|pipeline| {
             let own = || {
@@ -138,6 +143,8 @@ pub fn summarize(
     Status {
         generated: now,
         g2g_commit: g2g_commit.to_string(),
+        sample_secs: config.sample_secs,
+        stall_secs: config.stall_secs,
         pipelines: pipeline_statuses,
         incidents: shown,
     }
@@ -188,12 +195,28 @@ fn sparkline(daily: &[DailyUptime]) -> String {
 fn tier_description(tier: Tier) -> &'static str {
     match tier {
         Tier::SelfHosted => {
-            "A mediamtx server on the same host serves a looped clip, so a failure here is g2g's."
+            "Streams served on the same machine, so nothing outside it is involved and a \
+             failure here is g2g's. A mediamtx server loops short test clips in H.264, HEVC, \
+             AV1, VP9, AAC and Opus over RTSP, HLS, SRT, RIST and WebRTC, and a livesim2 \
+             server plays live DASH. The egress rows test g2g as the sender: in each \
+             -publish or -serve row g2g encodes a test pattern and sends it over that \
+             protocol, and the matching -play row reads it back."
         }
-        Tier::Public => "Third-party streams with no uptime promise.",
+        Tier::Public => {
+            "Test streams on the internet from Apple, Mux, Unified Streaming and a public \
+             webcam. Nobody promises they stay up, so a down row here is usually the stream's \
+             own outage. Their pictures are unknown, so they have no content check."
+        }
         Tier::Faulted => {
-            "Self-hosted streams pushed through injected network faults, kept apart so the \
-             faults do not count against the self-hosted numbers."
+            "The same looped clip as the self-hosted rows, served by a second mediamtx whose \
+             network is broken on purpose. Every 10 minutes it goes through 3% packet loss, \
+             80 ms delay with 40 ms jitter, 25% of packets reordered and 30 seconds of 20% \
+             loss, with a clean minute after each, and the server restarts every 20 minutes. \
+             These rows check that g2g recovers: a row that stalls during a fault and comes \
+             back afterwards is working, and each server restart shows as an incident. RTSP \
+             and HLS run over TCP, which resends lost packets, so their frames must still \
+             match the clip. The faults would lower the self-hosted uptime, so these rows \
+             are listed apart."
         }
     }
 }
@@ -279,6 +302,7 @@ pub fn render_html(status: &Status) -> String {
             "th,td{{text-align:left;padding:.35rem .6rem;border-bottom:1px solid #ddd;vertical-align:top}}",
             "th{{font-weight:600}}.up{{color:{healthy}}}.down{{color:{failing}}}",
             "code{{font-size:.85em;word-break:break-all}}",
+            "dt{{font-weight:600}}dd{{margin:0 0 .6rem 1.2rem}}",
             "</style></head><body>\n<h1>g2g canary</h1>\n",
         ),
         healthy = HEALTHY_COLOUR,
@@ -286,19 +310,55 @@ pub fn render_html(status: &Status) -> String {
     );
     let _ = writeln!(
         html,
-        "<p>g2g pipelines decoding live streams around the clock. A sample interval counts as up \
-         when the pipeline decoded at least one frame in it. Generated {} from g2g commit \
-         <code>{}</code>.</p>",
+        "<p><a href=\"{G2G_REPO}\">g2g</a> is a media pipeline framework written in Rust. This \
+         page tracks g2g pipelines that receive, decode and send live video and audio around \
+         the clock on one cloud server. Each row is one pipeline run by <code>g2g-launch</code>, \
+         which takes the same pipeline syntax as <code>gst-launch-1.0</code>. A supervisor \
+         restarts a pipeline that exits or produces no frame for {} seconds, and samples every \
+         pipeline every {} seconds.</p>\n<p>Generated {} from g2g commit \
+         <a href=\"{G2G_REPO}/commit/{commit}\"><code>{commit}</code></a>, which every pipeline \
+         on this page runs.</p>",
+        status.stall_secs,
+        status.sample_secs,
         utc_datetime(status.generated),
-        escape_html(&status.g2g_commit)
+        commit = escape_html(&status.g2g_commit)
     );
-    html.push_str(
-        "<p>The other columns are from the last one minute sample. Content compares each video \
-         frame's digest with the decode of the looped clip: wrong frames are not in it, skipped \
-         frames are missing between two that are. Timestamps counts output pts that went \
-         backwards or jumped more than a second past the wall clock. A/V drift is how much later \
-         audio arrives than video, relative to their pts. RSS growth is the slope over the last \
-         day of one run.</p>\n",
+    let _ = writeln!(
+        html,
+        "<h2>Reading a row</h2>\n<dl>\n\
+         <dt>pipeline</dt><dd>Hover over the name to see the pipeline, or find it under \
+         \"What each pipeline runs\" below.</dd>\n\
+         <dt>now</dt><dd>Up when the pipeline produced at least one frame in the last \
+         sample.</dd>\n\
+         <dt>24h, 7d, 30d</dt><dd>The share of samples in which the pipeline produced at least \
+         one frame. A restart that takes a few seconds does not lose a sample.</dd>\n\
+         <dt>incidents 24h</dt><dd>Problems in the last day, each listed under Incidents at \
+         the bottom. A short one does not lower the uptime.</dd>\n\
+         <dt>fps</dt><dd>Frames per second in the last sample. A row with audio and video adds \
+         audio buffers and video frames together.</dd>\n\
+         <dt>decode p50</dt><dd>The median time the decoder took per frame in the last sample, \
+         the slowest decoder on a row with several. Rows that only send show n/a.</dd>\n\
+         <dt>rss</dt><dd>The memory the g2g process uses.</dd>\n\
+         <dt>rss growth</dt><dd>How fast that memory grew over the last {memory_hours} hours of \
+         one uninterrupted run, shown red above {memory_limit} KiB per hour, which suggests a \
+         leak. It shows n/a until a run has lasted that long.</dd>\n\
+         <dt>content</dt><dd>Whether the decoded video is the right picture. Each frame's \
+         digest is looked up in a table of the looped clip's frames: ok frames are in it, \
+         wrong frames are not, and skipped frames are missing between two ok ones. Rows whose \
+         source is not the clip show n/a.</dd>\n\
+         <dt>timestamps</dt><dd>Output timestamps that went backwards, or jumped more than \
+         {jump_secs} s ahead of the real time that passed.</dd>\n\
+         <dt>a/v drift</dt><dd>On a row with audio and video, how much later audio arrives \
+         than the video frame with the same timestamp. Negative means audio arrives \
+         first.</dd>\n\
+         <dt>last 30 days</dt><dd>One bar per day, as tall as that day's uptime: \
+         <span style=\"color:{HEALTHY_COLOUR}\">green</span> at {HEALTHY_PERCENT}% or more, \
+         <span style=\"color:{DEGRADED_COLOUR}\">amber</span> at {DEGRADED_PERCENT}% or more, \
+         <span style=\"color:{FAILING_COLOUR}\">red</span> below that and \
+         <span style=\"color:{NO_DATA_COLOUR}\">grey</span> with no samples.</dd>\n</dl>",
+        memory_hours = MEMORY_WINDOW_SECS / SECS_PER_HOUR,
+        memory_limit = MEMORY_GROWTH_LIMIT_KIB_PER_HOUR,
+        jump_secs = PTS_FORWARD_JUMP_NS / NANOS_PER_SEC,
     );
     for tier in Tier::ALL {
         let rows: Vec<String> = status
@@ -326,7 +386,9 @@ pub fn render_html(status: &Status) -> String {
         html.push_str("</table>\n");
     }
     html.push_str(
-        "<h2>What each pipeline runs</h2>\n<p>The g2g-launch line of every row above.</p>\n\
+        "<h2>What each pipeline runs</h2>\n<p>The <code>g2g-launch</code> pipeline of every row \
+         above. <code>checksumsink</code> digests each decoded frame for the content check, and \
+         <code>fakesink</code> drops frames on rows without one.</p>\n\
          <table><tr><th>pipeline</th><th>tier</th><th>launch</th></tr>\n",
     );
     for pipeline in &status.pipelines {
@@ -339,9 +401,17 @@ pub fn render_html(status: &Status) -> String {
         );
     }
     html.push_str("</table>\n");
-    html.push_str("<h2>Incidents</h2>\n");
+    let _ = writeln!(
+        html,
+        "<h2>Incidents</h2>\n<p>The newest {INCIDENTS_SHOWN} problems of the last {HISTORY_DAYS} \
+         days. A down incident means the pipeline exited, was killed or produced no frame for \
+         {} seconds, and the supervisor restarted it. A content, timestamps or memory-growth \
+         incident means the check of that name above failed. Restarts counts the restarts \
+         during the incident, and last error is the last error g2g printed before it.</p>",
+        status.stall_secs
+    );
     if status.incidents.is_empty() {
-        html.push_str("<p>None in the last 30 days.</p>\n");
+        html.push_str("<p>None.</p>\n");
     } else {
         html.push_str(
             "<table><tr><th>pipeline</th><th>tier</th><th>kind</th><th>start</th><th>end</th>\
@@ -387,13 +457,31 @@ pub fn write_status(dir: &Path, status: &Status) -> Result<()> {
 mod tests {
     use super::*;
     use crate::canary::checks::{ContentCounts, TimestampCounts};
+    use crate::canary::config::PipelineConfig;
     use crate::canary::record::Cause;
 
     const G2G_COMMIT: &str = "a988298b";
     const SAMPLE_SECS: u64 = 60;
+    const STALL_SECS: u64 = 30;
     const SAMPLES_PER_DAY: u64 = SECS_PER_DAY / SAMPLE_SECS;
     // 2026-10-17 00:00:00 UTC
     const TODAY: u64 = 1_792_195_200;
+
+    fn canary(pipelines: Vec<PipelineConfig>) -> CanaryConfig {
+        CanaryConfig {
+            log_dir: "log".into(),
+            status_dir: "status".into(),
+            g2g_launch: None,
+            sample_secs: SAMPLE_SECS,
+            stall_secs: STALL_SECS,
+            observe_base_port: 0,
+            backoff_min_secs: 1,
+            backoff_max_secs: 1,
+            healthy_run_secs: 1,
+            startup_grace_secs: 0,
+            pipelines,
+        }
+    }
 
     fn pipeline(id: &str) -> PipelineConfig {
         PipelineConfig {
@@ -459,7 +547,7 @@ mod tests {
         samples.extend(day_of_samples("a", TODAY, 0));
         let now = TODAY + SECS_PER_DAY - 1;
         let status = summarize(
-            &[pipeline("a"), pipeline("silent")],
+            &canary(vec![pipeline("a"), pipeline("silent")]),
             &samples,
             &[],
             G2G_COMMIT,
@@ -501,7 +589,7 @@ mod tests {
         let ongoing = incident("a", TODAY + 600, None);
         let now = TODAY + 3_600;
         let status = summarize(
-            &[pipeline("a")],
+            &canary(vec![pipeline("a")]),
             &[],
             &[yesterday.clone(), old, ongoing.clone()],
             G2G_COMMIT,
@@ -515,7 +603,7 @@ mod tests {
     fn html_escapes_stream_text_and_marks_open_incidents() {
         let samples = day_of_samples("a", TODAY, 0);
         let status = summarize(
-            &[pipeline("a")],
+            &canary(vec![pipeline("a")]),
             &samples,
             &[incident("a", TODAY + 60, None)],
             G2G_COMMIT,
@@ -533,7 +621,7 @@ mod tests {
     fn each_row_carries_its_launch_line() {
         let mut config = pipeline("a");
         config.launch = "rtspsrc location=\"rtsp://x\" ! decodebin ! fakesink".into();
-        let status = summarize(&[config], &[], &[], G2G_COMMIT, TODAY);
+        let status = summarize(&canary(vec![config]), &[], &[], G2G_COMMIT, TODAY);
         assert_eq!(
             status.pipelines[0].launch,
             "rtspsrc location=\"rtsp://x\" ! decodebin ! fakesink"
@@ -569,7 +657,7 @@ mod tests {
             ..incident("lossy-rtsp", TODAY, None)
         };
         let status = summarize(
-            &[pipeline("a"), faulted],
+            &canary(vec![pipeline("a"), faulted]),
             &[sample("a", TODAY, 1800), checked],
             &[memory],
             G2G_COMMIT,

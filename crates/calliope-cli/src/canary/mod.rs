@@ -220,13 +220,7 @@ impl<'a> Sampler<'a> {
                 .expect("open incidents lock")
                 .all(),
         );
-        let summary = status::summarize(
-            &self.config.pipelines,
-            &samples,
-            &incidents,
-            &self.g2g_commit,
-            now,
-        );
+        let summary = status::summarize(self.config, &samples, &incidents, &self.g2g_commit, now);
         status::write_status(&self.config.status_dir, &summary)
     }
 }
