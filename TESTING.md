@@ -765,12 +765,13 @@ gst-medias: 259 agree, 420 elementary streams, 224 refused codecs, 33 g2g
 bugs.
 
 Muxer coverage, unsupported here but taken by the GStreamer muxer of the same
-name: mp4mux with one input takes only H.264 and H.265, so no audio-only file
-remuxes to MP4, and with two refuses MP3, Vorbis, Opus, VP8, VP9 and AV1.
-matroskamux refuses Vorbis, FLAC, PCM, MP3, Theora, MPEG-2, MJPEG and ProRes.
-mpegtsmux refuses MPEG-2 video and MP3. flvmux refuses Opus, MP3 from MPEG-PS
-and VP6. A fan-in muxer refusing a stream fails with a bare `pipeline error:
-CapsMismatch` that names neither the muxer nor the codec.
+name: mp4mux and matroskamux take the same codecs at any pad count (H.264,
+H.265, VP8, VP9, AV1, AAC, Opus and text). mp4mux refuses MP3, AC-3, ALAC and
+MPEG-4 Part 2 video. matroskamux refuses Vorbis, FLAC, PCM, MP3, Theora,
+MPEG-2, MJPEG and ProRes. mpegtsmux refuses MPEG-2 video and MP3. flvmux
+refuses Opus, MP3 from MPEG-PS and VP6. mp4mux, matroskamux or mpegtsmux
+refusing a stream fails with a bare `pipeline error: CapsMismatch` that names
+neither the muxer nor the codec.
 
 Open g2g bugs found here:
 - **parsebin cannot fan out files decodebin plays** (280 pairs, 70 streams):
@@ -785,17 +786,16 @@ Open g2g bugs found here:
 - **LATM AAC loses samples** through flvmux and mpegtsmux, and fails the remux
   of `mpegts/loewe.ts` into mp4mux and matroskamux (6 pairs,
   `aac/latm_stereo_to_51.ts`: 1179648 bytes of PCM, 507904 through flvmux).
-- **The remux changes samples or frames** (12 pairs): bipbop TS AAC through
+- **The remux changes samples or frames** (14 pairs): bipbop TS AAC through
   mp4mux comes back 49 sample frames short at the start,
   `mpegts/tron_en_ge_aac_h264.ts` AAC comes back the same length with
   different samples through flvmux, matroskamux and mp4mux,
   `mp4/fragmented_nonseekable_sink.mp4` loses 3 of 300 frames and
   `h264/twofields_packet.mp4` 2 of 147 through matroskamux and mpegtsmux,
-  `mkv/test7_cut.mkv` 1 of 72 through mp4mux.
-- **The remux fails mid-run or writes a file that does not decode** (10 pairs):
-  `webm/opus_vp9-alpha.webm` and the HEVC of `mpegts/loewe.ts` into mp4mux and
-  matroskamux, Opus in TS into matroskamux and mpegtsmux,
-  `hevc/two_first_slice.mp4` into matroskamux, `aac/al04sf_48.mp4` into
+  `mkv/test7_cut.mkv` 1 of 72 through mp4mux, `webm/opus_vp9-alpha.webm` Opus
+  comes back 8 stereo samples longer through mp4mux and matroskamux.
+- **The remux fails mid-run or writes a file that does not decode** (5 pairs):
+  Opus in TS into matroskamux and mpegtsmux, `aac/al04sf_48.mp4` into
   mpegtsmux.
 
 ## Bugs found
