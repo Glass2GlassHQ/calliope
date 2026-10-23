@@ -1984,11 +1984,11 @@ mod tests {
             .find(|s| s.remux.is_some_and(|r| r.container == RemuxContainer::Flv))
             .unwrap();
         let plan = calliope_adapter_g2g::G2g.plan(flv, input, workdir).unwrap();
-        assert!(
-            plan.args.join(" ").ends_with("parsebin name=p p.video_0 ! queue ! m. p.audio_0 ! queue ! m. flvmux name=m ! filesink location=/run/remux.flv"),
-            "{:?}",
-            plan.args
+        let tail = format!(
+            "parsebin name=p p.video_0 ! queue ! m. p.audio_0 ! queue ! m. flvmux name=m ! filesink location={}",
+            workdir.join("remux.flv").display()
         );
+        assert!(plan.args.join(" ").ends_with(&tail), "{:?}", plan.args);
         assert!(!flv.judges_frames());
     }
 
