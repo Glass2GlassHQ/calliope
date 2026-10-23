@@ -278,17 +278,38 @@ async fn read_stderr(
     state: SharedState,
 ) {
     let mut lines = BufReader::new(stderr).lines();
+    let mut cause = None;
     while let Ok(Some(line)) = lines.next_line().await {
         if line.trim().is_empty() {
             continue;
         }
-        state.lock().expect("pipeline state lock").last_error = Some(line.clone());
+        state.lock().expect("pipeline state lock").last_error =
+            Some(shown_error(&line, &mut cause));
         let mut tail = tail.lock().expect("stderr tail lock");
         if tail.len() == STDERR_TAIL_LINES {
             tail.pop_front();
         }
         tail.push_back(line);
     }
+}
+
+// the stderr line an incident shows, with the last element error appended to the bare `pipeline error:` line
+fn shown_error(line: &str, cause: &mut Option<String>) -> String {
+    if let Some(error) = element_error(line) {
+        *cause = Some(error);
+    }
+    match cause {
+        Some(cause) if line.starts_with("pipeline error:") => format!("{line} ({cause})"),
+        _ => line.to_string(),
+    }
+}
+
+// the category and message of a g2g ERROR log line, except the runtime's restatement of the pipeline error
+fn element_error(line: &str) -> Option<String> {
+    let rest = line.strip_prefix("ERROR ")?;
+    let (category, message) = rest.trim_start().split_once(char::is_whitespace)?;
+    let message = message.trim_start();
+    (!message.starts_with("pipeline error in ")).then(|| format!("{category}: {message}"))
 }
 
 fn exit_cause(status: ExitStatus) -> Cause {
@@ -413,6 +434,27 @@ mod tests {
         assert!(state.lock().unwrap().restarts >= 2);
         assert!(reloaded_open_incidents(&dir).is_empty());
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn the_pipeline_error_names_the_element_error_before_it() {
+        let cause = "rtsp://camera/stream: forbidden sequence 00 00 00 in NAL";
+        let stderr = [
+            format!("ERROR rtspsrc          {cause}"),
+            "conn: 172.31.18.201:59558(me)->195.3.171.158:1935".to_string(),
+            "ERROR runtime          pipeline error in RtspSrc0: Hardware(Other)".to_string(),
+            "pipeline error: Hardware(Other)".to_string(),
+        ];
+        let mut seen = None;
+        let shown: Vec<String> = stderr
+            .iter()
+            .map(|line| shown_error(line, &mut seen))
+            .collect();
+        assert_eq!(
+            shown.last().unwrap(),
+            &format!("pipeline error: Hardware(Other) (rtspsrc: {cause})")
+        );
+        assert_eq!(shown[1], stderr[1], "other lines show as they are");
     }
 
     #[tokio::test]
