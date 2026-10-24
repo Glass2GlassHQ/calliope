@@ -570,7 +570,7 @@ mod tests {
             id: id.into(),
             tier: Tier::SelfHosted,
             launch: "videotestsrc ! fakesink".into(),
-            vod: false,
+            ends: false,
             video_sink: None,
             audio_sink: None,
             expect_hashes: None,

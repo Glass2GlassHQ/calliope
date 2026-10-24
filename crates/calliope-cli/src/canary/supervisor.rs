@@ -102,9 +102,9 @@ impl Supervisor {
             if end.ran_for >= self.healthy_run {
                 backoff = self.backoff_min;
             }
-            let finished_vod =
-                self.pipeline.vod && end.decoded && end.cause == Cause::Exit { code: 0 };
-            if finished_vod {
+            let ended_cleanly =
+                self.pipeline.ends && end.decoded && end.cause == Cause::Exit { code: 0 };
+            if ended_cleanly {
                 continue;
             }
             self.record_failure(end)?;

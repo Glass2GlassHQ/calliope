@@ -199,10 +199,11 @@ launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.strea
 
 # no public livesim2 row: livesim2.dashif.org allows 10000 requests per ip per 24 hours, a live row spends that in about 3 hours
 
-# ll-hls with fmp4 parts, the stream restarts every 12 hours
+# ll-hls with fmp4 parts, the stream ends and restarts every 12 hours
 [[pipeline]]
 id = "mux-llhls"
 tier = "public"
+ends = true
 launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8 max-bandwidth=1000000 ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
 
 # no public moq row: moq.dev's relay negotiates the ietf draft, but its broadcasts use the hang catalog and containers moqtsrc does not read
@@ -211,18 +212,18 @@ launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E
 [[pipeline]]
 id = "mux-vod-hls"
 tier = "public"
-vod = true
+ends = true
 launch = "hlssrc location=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
 
 [[pipeline]]
 id = "apple-vod-hls"
 tier = "public"
-vod = true
+ends = true
 launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
 
 # the same bipbop content as fmp4 segments
 [[pipeline]]
 id = "apple-fmp4-vod-hls"
 tier = "public"
-vod = true
+ends = true
 launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8 max-bandwidth=1000000 ! fmp4demux ! clocksync ! h264parse ! avdec_h264 ! fakesink"

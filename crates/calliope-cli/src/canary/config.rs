@@ -48,9 +48,9 @@ pub struct PipelineConfig {
     pub tier: Tier,
     // the g2g-launch pipeline description
     pub launch: String,
-    // a clean exit at the end of a finite stream restarts it without an incident
+    // a clean exit after decoding is the end the stream has by design and opens no incident
     #[serde(default)]
-    pub vod: bool,
+    pub ends: bool,
     // the `name=` of the checksumsink ending the video branch
     pub video_sink: Option<String>,
     // the `name=` of the checksumsink ending the audio branch, for a/v drift
@@ -187,7 +187,7 @@ mod tests {
         id = "mux-vod"
         tier = "public"
         launch = "hlssrc location=https://example.invalid/x.m3u8 ! decodebin ! fakesink"
-        vod = true
+        ends = true
     "#;
 
     #[test]
@@ -196,15 +196,15 @@ mod tests {
         assert_eq!(config.stall_secs, 20);
         assert_eq!(config.sample_secs, DEFAULT_SAMPLE_SECS);
         assert_eq!(config.pipelines[0].tier, Tier::SelfHosted);
-        assert!(config.pipelines[1].vod);
+        assert!(config.pipelines[1].ends);
         assert_eq!(config.observe_port(1), DEFAULT_OBSERVE_BASE_PORT + 1);
     }
 
     #[test]
     fn parses_frame_checks_and_the_faulted_tier() {
         let checked = TWO_PIPELINES.replace("tier = \"public\"", "tier = \"faulted\"").replace(
-            "vod = true",
-            "vod = true\nvideo-sink = \"video\"\naudio-sink = \"audio\"\nexpect-hashes = \"/etc/canary/hashes/mux.txt\"",
+            "ends = true",
+            "ends = true\nvideo-sink = \"video\"\naudio-sink = \"audio\"\nexpect-hashes = \"/etc/canary/hashes/mux.txt\"",
         );
         let config = parse(&checked).unwrap();
         let pipeline = &config.pipelines[1];

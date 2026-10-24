@@ -474,7 +474,7 @@ mod tests {
             id: "baseline-rtsp".into(),
             tier: Tier::SelfHosted,
             launch: "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! decodebin ! checksumsink name=video".into(),
-            vod: false,
+            ends: false,
             video_sink: Some("video".into()),
             audio_sink: None,
             expect_hashes: None,
