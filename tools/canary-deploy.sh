@@ -53,8 +53,11 @@ on_host "mkdir -p $install_dir/data $quadlet_dir $unit_dir"
 copy_to "$install_dir" "$deploy_dir"/{mediamtx.yml,feeder.sh,canary.toml} "$calliope_dir"/tools/canary-{publish,alert}.sh
 copy_to "$quadlet_dir" "$deploy_dir"/*.container
 copy_to "$unit_dir" "$deploy_dir"/canary-publish.{service,timer}
+# the canary stops first, or it logs its readers' servers going down as incidents
 on_host "systemctl --user daemon-reload \
-    && systemctl --user restart g2g-canary-mediamtx.service g2g-canary-feeder.service g2g-canary-faulted.service g2g-canary-livesim2.service g2g-canary.service \
+    && systemctl --user stop g2g-canary.service \
+    && systemctl --user restart g2g-canary-mediamtx.service g2g-canary-feeder.service g2g-canary-faulted.service g2g-canary-livesim2.service \
+    && systemctl --user start g2g-canary.service \
     && systemctl --user enable --now podman-auto-update.timer \
     && if [ -f $install_dir/publish.env ]; then systemctl --user enable --now canary-publish.timer; fi \
     && systemctl --user --no-pager status g2g-canary.service | head -5"
