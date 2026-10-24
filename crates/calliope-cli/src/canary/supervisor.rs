@@ -315,8 +315,11 @@ async fn read_stderr(
         if line.trim().is_empty() {
             continue;
         }
-        state.lock().expect("pipeline state lock").last_error =
-            Some(shown_error(&line, &mut cause));
+        // a warning printed after the failure must not hide it
+        if !line.starts_with("WARN ") {
+            state.lock().expect("pipeline state lock").last_error =
+                Some(shown_error(&line, &mut cause));
+        }
         let mut tail = tail.lock().expect("stderr tail lock");
         if tail.len() == STDERR_TAIL_LINES {
             tail.pop_front();
@@ -550,7 +553,10 @@ mod tests {
     #[tokio::test]
     async fn repeated_exits_stay_one_incident() {
         let dir = scratch("exit");
-        let program = fake_launch(&dir, "echo 'pipeline error: boom' >&2\nexit 3");
+        let program = fake_launch(
+            &dir,
+            "echo 'pipeline error: boom' >&2\necho 'WARN  Registry late warning' >&2\nexit 3",
+        );
         let silent = silent_observe_listener();
         let config = config(&dir, &program, silent.local_addr().unwrap().port());
         let state = SharedState::default();
