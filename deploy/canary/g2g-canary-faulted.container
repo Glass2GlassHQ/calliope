@@ -1,5 +1,5 @@
 [Unit]
-Description=g2g canary: a second mediamtx and feeder behind scheduled netem loss, jitter and reorder
+Description=g2g canary: a second mediamtx, a gst-rtsp-server relay and a feeder behind scheduled netem faults
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest
@@ -11,6 +11,7 @@ AddCapability=NET_ADMIN
 # -T reaches the clean mediamtx on the host, -U the g2g srt and rist listeners
 Network=pasta:-T,18554,-U,18892,-U,18896-18897
 PublishPort=127.0.0.1:19554:19554
+PublishPort=127.0.0.1:19555:19555
 PublishPort=127.0.0.1:19888:19888
 RunInit=true
 

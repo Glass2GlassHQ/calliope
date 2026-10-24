@@ -16,6 +16,8 @@ pub const MEMORY_WINDOW_SECS: u64 = 24 * 3_600;
 pub const MEMORY_GROWTH_LIMIT_KIB_PER_HOUR: f64 = 512.0;
 const SECS_PER_HOUR: f64 = 3_600.0;
 const NANOS_PER_MILLI: f64 = 1_000_000.0;
+// hls delivers a segment at a time, so a recovered row can go this long without a frame
+pub const RECOVERY_TAIL_SECS: f64 = 5.0;
 
 // the digests of a looped clip, by frame index
 #[derive(Debug)]
@@ -105,11 +107,21 @@ impl ContentCounts {
     // the bad frames that open an incident on a row of this tier
     pub fn faults(&self, tier: Tier) -> u64 {
         match tier {
-            // the faulted server restarts on a schedule, and the frames published while it is down never reach a reader
-            Tier::Faulted => self.mismatched,
+            // faults break frames on purpose, the recovery check judges these rows instead
+            Tier::Faulted => 0,
             Tier::SelfHosted | Tier::Public => self.bad(),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FrameVerdict {
+    // not in the table
+    Wrong,
+    // in the table, with frames missing before it
+    AfterSkip,
+    // the frame after the previous one
+    Next,
 }
 
 #[derive(Debug)]
@@ -120,23 +132,27 @@ struct ContentCheck {
 }
 
 impl ContentCheck {
-    fn observe(&mut self, digest: &str) {
+    fn observe(&mut self, digest: &str) -> FrameVerdict {
         let frames = self.table.frames;
         let expected = self.previous.map(|previous| (previous + 1) % frames);
         let Some(indices) = self.table.indices.get(digest) else {
             self.counts.mismatched += 1;
             // a corrupt frame still takes its slot, so the next good frame is no skip
             self.previous = expected;
-            return;
+            return FrameVerdict::Wrong;
         };
         self.counts.matched += 1;
         let index = expected
             .filter(|expected| indices.contains(expected))
             .unwrap_or(indices[0]);
-        if let Some(expected) = expected {
-            self.counts.skipped += ((index + frames - expected) % frames) as u64;
-        }
+        let skipped = expected.map_or(0, |expected| ((index + frames - expected) % frames) as u64);
+        self.counts.skipped += skipped;
         self.previous = Some(index);
+        if skipped == 0 {
+            FrameVerdict::Next
+        } else {
+            FrameVerdict::AfterSkip
+        }
     }
 }
 
@@ -161,6 +177,11 @@ struct OffsetMean {
 }
 
 impl OffsetMean {
+    fn add(&mut self, offset_ns: i128) {
+        self.sum_ns += offset_ns;
+        self.frames += 1;
+    }
+
     fn take_mean_ns(&mut self) -> Option<f64> {
         let mean = (self.frames > 0).then(|| self.sum_ns as f64 / self.frames as f64);
         *self = OffsetMean::default();
@@ -174,6 +195,26 @@ struct AvSinks {
     // arrival minus pts, per branch over the sample interval
     video_offset: OffsetMean,
     audio_offset: OffsetMean,
+}
+
+// the current unbroken run of good video frames
+#[derive(Debug, Default)]
+struct CleanRun {
+    // unix seconds the run's first frame arrived, none while frames are bad
+    start: Option<f64>,
+    last: f64,
+    // arrival minus pts over the run
+    video_offset: OffsetMean,
+    audio_offset: OffsetMean,
+}
+
+// how a row came back from a fault
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WindowRecovery {
+    // from the fault's end to the first frame of the run that lasted the clean window, none without such a run
+    pub recovery_secs: Option<f64>,
+    // over that run, on a row with audio
+    pub av_drift_ms: Option<f64>,
 }
 
 // what a sample interval's checksum lines showed
@@ -193,6 +234,7 @@ pub struct FrameChecks {
     // each sink's previous (pts, arrival) in the current run
     previous_frame: HashMap<String, (u64, i128)>,
     timestamps: TimestampCounts,
+    clean_run: CleanRun,
 }
 
 impl FrameChecks {
@@ -221,13 +263,14 @@ impl FrameChecks {
     // a new run joins the stream anywhere and starts its timestamps afresh
     pub fn restart(&mut self) {
         self.previous_frame.clear();
+        self.clean_run = CleanRun::default();
         if let Some(content) = &mut self.content {
             content.previous = None;
         }
     }
 
-    // arrival_ns is the canary's monotonic clock when the line arrived
-    pub fn observe(&mut self, reading: &ChecksumReading, arrival_ns: i128) {
+    // arrival_ns is the canary's monotonic clock when the line arrived, arrival_unix the wall clock
+    pub fn observe(&mut self, reading: &ChecksumReading, arrival_ns: i128, arrival_unix: f64) {
         let pts_ns = i128::from(reading.pts_ns);
         self.timestamps.frames += 1;
         if let Some((previous_pts, previous_arrival)) = self
@@ -242,22 +285,54 @@ impl FrameChecks {
                 self.timestamps.forward_jumps += 1;
             }
         }
+        let offset_ns = arrival_ns - pts_ns;
         let from_video = self.video_sink.as_deref() == Some(reading.element.as_str());
         if from_video && let Some(content) = &mut self.content {
-            content.observe(&reading.digest);
+            let verdict = content.observe(&reading.digest);
+            if verdict != FrameVerdict::Next {
+                self.clean_run = CleanRun::default();
+            }
+            if verdict != FrameVerdict::Wrong {
+                let run = &mut self.clean_run;
+                run.start.get_or_insert(arrival_unix);
+                run.last = arrival_unix;
+                run.video_offset.add(offset_ns);
+            }
         }
         let Some(av) = &mut self.av else {
             return;
         };
-        let offset = if from_video {
-            &mut av.video_offset
+        if from_video {
+            av.video_offset.add(offset_ns);
         } else if reading.element == av.audio_sink {
-            &mut av.audio_offset
-        } else {
-            return;
-        };
-        offset.sum_ns += arrival_ns - pts_ns;
-        offset.frames += 1;
+            av.audio_offset.add(offset_ns);
+            if self.clean_run.start.is_some() {
+                self.clean_run.audio_offset.add(offset_ns);
+            }
+        }
+    }
+
+    // judged at `window_end`, the end of the clean window after a fault that ended at `fault_end`
+    pub fn take_recovery(&mut self, fault_end: f64, window_end: f64) -> WindowRecovery {
+        let run = &mut self.clean_run;
+        let video = run.video_offset.take_mean_ns();
+        let audio = run.audio_offset.take_mean_ns();
+        let lasted = run.last >= window_end - RECOVERY_TAIL_SECS;
+        // a run older than the fault means the fault broke no frame
+        let recovery_secs = run
+            .start
+            .filter(|_| lasted)
+            .map(|start| (start - fault_end).max(0.0));
+        let av_drift_ms = self
+            .av
+            .as_ref()
+            .and(recovery_secs)
+            .and(audio.zip(video))
+            .map(|(audio, video)| (audio - video) / NANOS_PER_MILLI);
+        WindowRecovery {
+            recovery_secs,
+            av_drift_ms,
+        }
     }
 
     pub fn take_sample(&mut self) -> FrameSample {
@@ -363,20 +438,158 @@ mod tests {
     }
 
     #[test]
-    fn skipped_frames_are_faults_except_on_the_faulted_tier() {
-        let skipped = ContentCounts {
+    fn bad_frames_are_faults_except_on_the_faulted_tier() {
+        let bad = ContentCounts {
             matched: 10,
-            mismatched: 0,
+            mismatched: 2,
             skipped: 35,
         };
-        assert_eq!(skipped.faults(Tier::SelfHosted), 35);
-        assert_eq!(skipped.faults(Tier::Public), 35);
-        assert_eq!(skipped.faults(Tier::Faulted), 0);
-        let mismatched = ContentCounts {
-            mismatched: 2,
-            ..skipped
-        };
-        assert_eq!(mismatched.faults(Tier::Faulted), 2);
+        assert_eq!(bad.faults(Tier::SelfHosted), 37);
+        assert_eq!(bad.faults(Tier::Public), 37);
+        assert_eq!(bad.faults(Tier::Faulted), 0);
+    }
+
+    const FAULT_END: f64 = 1_792_900_000.0;
+    const WINDOW_END: f64 = FAULT_END + 60.0;
+    const FRAME_SECS: f64 = FRAME_NS as f64 / 1e9;
+    const CORRUPT: &str = "ffff000000000000000000000000000000000000";
+
+    // video frames in clip order from `first_frame`, arriving from `from` on the wall clock, one digest per frame
+    fn feed(checks: &mut FrameChecks, digests: &[&str], first_frame: u64, from: f64) {
+        for (step, digest) in digests.iter().enumerate() {
+            let frame = first_frame + step as u64;
+            let arrival = from + step as f64 * FRAME_SECS;
+            checks.observe(
+                &event("video", frame * FRAME_NS, digest),
+                (frame * FRAME_NS) as i128,
+                arrival,
+            );
+        }
+    }
+
+    // clip frames for `secs` of playback, starting at clip frame `first`
+    fn clip(first: usize, secs: f64) -> Vec<&'static str> {
+        let frames = (secs / FRAME_SECS) as usize;
+        (first..first + frames)
+            .map(|index| digest(index % 4))
+            .collect()
+    }
+
+    #[test]
+    fn recovery_runs_from_the_last_bad_frame_to_the_end_of_the_window() {
+        let mut checks = checks(false);
+        // corrupt frames until 2 s after the fault, then right frames to the end of the window
+        let bad_until = FAULT_END + 2.0;
+        feed(&mut checks, &[CORRUPT; 3], 0, bad_until - 3.0 * FRAME_SECS);
+        feed(&mut checks, &clip(3, WINDOW_END - bad_until), 3, bad_until);
+        let recovery = checks.take_recovery(FAULT_END, WINDOW_END);
+        let secs = recovery.recovery_secs.unwrap();
+        assert!((secs - 2.0).abs() < 1e-6, "recovered after {secs} s");
+        assert_eq!(recovery.av_drift_ms, None, "no audio on this row");
+    }
+
+    #[test]
+    fn a_skip_breaks_the_run() {
+        let mut checks = checks(false);
+        feed(&mut checks, &clip(0, 10.0), 0, FAULT_END);
+        // two frames go missing 10 s after the fault
+        let resumed = FAULT_END + 10.0 + FRAME_SECS;
+        feed(&mut checks, &clip(2, WINDOW_END - resumed), 2, resumed);
+        let secs = checks
+            .take_recovery(FAULT_END, WINDOW_END)
+            .recovery_secs
+            .unwrap();
+        assert!(
+            (secs - (resumed - FAULT_END)).abs() < 1e-6,
+            "recovered after {secs} s"
+        );
+    }
+
+    #[test]
+    fn a_run_that_stops_before_the_window_ends_did_not_recover() {
+        let mut checks = checks(false);
+        let stopped = WINDOW_END - RECOVERY_TAIL_SECS - 1.0;
+        feed(&mut checks, &clip(0, stopped - FAULT_END), 0, FAULT_END);
+        assert_eq!(
+            checks.take_recovery(FAULT_END, WINDOW_END).recovery_secs,
+            None
+        );
+    }
+
+    #[test]
+    fn a_fault_that_broke_no_frame_recovers_at_once_and_the_run_carries_on() {
+        let mut checks = checks(false);
+        let earlier = FAULT_END - 90.0;
+        feed(&mut checks, &clip(0, WINDOW_END - earlier), 0, earlier);
+        assert_eq!(
+            checks.take_recovery(FAULT_END, WINDOW_END).recovery_secs,
+            Some(0.0)
+        );
+        // the same unbroken run is still going at the next judgement
+        let next_fault_end = WINDOW_END + 30.0;
+        let next_window_end = next_fault_end + 60.0;
+        let played = ((WINDOW_END - earlier) / FRAME_SECS) as u64;
+        feed(
+            &mut checks,
+            &clip(played as usize, next_window_end - WINDOW_END),
+            played,
+            WINDOW_END,
+        );
+        assert_eq!(
+            checks
+                .take_recovery(next_fault_end, next_window_end)
+                .recovery_secs,
+            Some(0.0)
+        );
+    }
+
+    #[test]
+    fn a_restart_breaks_the_run() {
+        let mut checks = checks(false);
+        feed(&mut checks, &clip(0, 20.0), 0, FAULT_END - 10.0);
+        checks.restart();
+        let rejoined = FAULT_END + 15.0;
+        feed(&mut checks, &clip(1, WINDOW_END - rejoined), 1, rejoined);
+        let secs = checks
+            .take_recovery(FAULT_END, WINDOW_END)
+            .recovery_secs
+            .unwrap();
+        assert!((secs - 15.0).abs() < 1e-6, "recovered after {secs} s");
+    }
+
+    #[test]
+    fn drift_covers_the_recovered_run_only() {
+        let mut checks = checks(true);
+        let audio_lag_ns = 40_000_000;
+        // before recovery, audio lags far more, and those frames must not count
+        let bad_frames = 30;
+        for frame in 0..bad_frames {
+            let pts = frame * FRAME_NS;
+            let arrival = FAULT_END + frame as f64 * FRAME_SECS;
+            checks.observe(&event("video", pts, CORRUPT), pts as i128, arrival);
+            checks.observe(&event("audio", pts, "1234"), (pts * 10) as i128, arrival);
+        }
+        let recovered_at = FAULT_END + bad_frames as f64 * FRAME_SECS;
+        let frames = ((WINDOW_END - recovered_at) / FRAME_SECS) as u64;
+        for step in 0..frames {
+            let frame = bad_frames + step;
+            let pts = frame * FRAME_NS;
+            let arrival = recovered_at + step as f64 * FRAME_SECS;
+            checks.observe(
+                &event("video", pts, digest(frame as usize % 4)),
+                pts as i128,
+                arrival,
+            );
+            checks.observe(
+                &event("audio", pts, "1234"),
+                pts as i128 + audio_lag_ns,
+                arrival,
+            );
+        }
+        let recovery = checks.take_recovery(FAULT_END, WINDOW_END);
+        assert!(recovery.recovery_secs.is_some());
+        let drift = recovery.av_drift_ms.unwrap();
+        assert!((drift - 40.0).abs() < 1e-6, "drift {drift} ms");
     }
 
     // the line g2g-launch --observe sends for each buffer a named checksumsink digests
@@ -416,6 +629,7 @@ mod tests {
             checks.observe(
                 &event("video", step as u64 * FRAME_NS, digest(index)),
                 step as i128 * FRAME_NS as i128,
+                0.0,
             );
         }
         checks.observe(
@@ -425,10 +639,12 @@ mod tests {
                 "ffff000000000000000000000000000000000000",
             ),
             4 * FRAME_NS as i128,
+            0.0,
         );
         checks.observe(
             &event("video", 5 * FRAME_NS, digest(0)),
             5 * FRAME_NS as i128,
+            0.0,
         );
         let sample = checks.take_sample();
         assert_eq!(
@@ -445,9 +661,9 @@ mod tests {
     #[test]
     fn a_restart_rejoins_without_a_skip() {
         let mut checks = checks(false);
-        checks.observe(&event("video", 0, digest(0)), 0);
+        checks.observe(&event("video", 0, digest(0)), 0, 0.0);
         checks.restart();
-        checks.observe(&event("video", 0, digest(3)), 1_000_000_000_000);
+        checks.observe(&event("video", 0, digest(3)), 1_000_000_000_000, 0.0);
         let sample = checks.take_sample();
         assert_eq!(sample.content.unwrap().skipped, 0);
         assert_eq!(sample.timestamps.unwrap().bad(), 0);
@@ -460,17 +676,22 @@ mod tests {
         let wrap_ns: u64 = (1u64 << 33) * 1_000_000_000 / 90_000;
         let near_wrap = wrap_ns - FRAME_NS;
         let arrivals = [0, 1, 2, 3, 4].map(|step| step * FRAME_NS as i128);
-        checks.observe(&event("video", near_wrap, digest(0)), arrivals[0]);
+        checks.observe(&event("video", near_wrap, digest(0)), arrivals[0], 0.0);
         // a correct pipeline keeps counting past the wrap
         checks.observe(
             &event("video", near_wrap + FRAME_NS, digest(1)),
             arrivals[1],
+            0.0,
         );
         // a broken one wraps back to zero
-        checks.observe(&event("video", 0, digest(2)), arrivals[2]);
-        checks.observe(&event("video", FRAME_NS, digest(3)), arrivals[3]);
+        checks.observe(&event("video", 0, digest(2)), arrivals[2], 0.0);
+        checks.observe(&event("video", FRAME_NS, digest(3)), arrivals[3], 0.0);
         // and one that unwraps twice jumps a whole wrap ahead
-        checks.observe(&event("video", FRAME_NS + wrap_ns, digest(0)), arrivals[4]);
+        checks.observe(
+            &event("video", FRAME_NS + wrap_ns, digest(0)),
+            arrivals[4],
+            0.0,
+        );
         assert_eq!(
             checks.take_sample().timestamps,
             Some(TimestampCounts {
@@ -486,13 +707,18 @@ mod tests {
     fn a_stall_with_matching_wall_time_is_no_jump() {
         let mut checks = checks(false);
         let stall_ns: u64 = 20_000_000_000;
-        checks.observe(&event("video", 0, digest(0)), 0);
-        checks.observe(&event("video", stall_ns, digest(1)), i128::from(stall_ns));
+        checks.observe(&event("video", 0, digest(0)), 0, 0.0);
+        checks.observe(
+            &event("video", stall_ns, digest(1)),
+            i128::from(stall_ns),
+            0.0,
+        );
         // an hls segment arrives in a burst, pts runs ahead of the wall clock frame by frame
         for frame in 2..10 {
             checks.observe(
                 &event("video", stall_ns + frame * FRAME_NS, digest(0)),
                 i128::from(stall_ns) + 1,
+                0.0,
             );
         }
         assert_eq!(checks.take_sample().timestamps.unwrap().bad(), 0);
@@ -505,8 +731,12 @@ mod tests {
         for frame in 0..30u64 {
             let pts = frame * FRAME_NS;
             let arrival = i128::from(pts) + 5_000_000;
-            checks.observe(&event("video", pts, digest(frame as usize % 4)), arrival);
-            checks.observe(&event("audio", pts, "1234"), arrival + audio_lag_ns);
+            checks.observe(
+                &event("video", pts, digest(frame as usize % 4)),
+                arrival,
+                0.0,
+            );
+            checks.observe(&event("audio", pts, "1234"), arrival + audio_lag_ns, 0.0);
         }
         let sample = checks.take_sample();
         assert_eq!(sample.av_drift_ms, Some(40.0));
@@ -515,7 +745,7 @@ mod tests {
             30,
             "audio lines are not content checked"
         );
-        checks.observe(&event("video", 0, digest(0)), 0);
+        checks.observe(&event("video", 0, digest(0)), 0, 0.0);
         assert_eq!(
             checks.take_sample().av_drift_ms,
             None,

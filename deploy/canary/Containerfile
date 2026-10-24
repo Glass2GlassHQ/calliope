@@ -33,8 +33,9 @@ COPY . /src/calliope
 RUN cd /src/calliope && cargo build --release --locked -p calliope-cli
 
 FROM base AS runtime
-# ffmpeg, iproute-tc and mediamtx run the faulted feed in g2g-canary-faulted.container
+# ffmpeg, iproute-tc, mediamtx and the gstreamer packages run the faulted feed in g2g-canary-faulted.container
 RUN dnf -y install --allowerasing ffmpeg ffmpeg-libs opus libdav1d iproute-tc openssl-libs ca-certificates \
+        python3-gobject gstreamer1-rtsp-server gstreamer1-plugins-good gstreamer1-plugins-bad-free \
     && dnf clean all
 COPY --from=build /src/glass2glass/target/release/g2g-launch /usr/local/bin/g2g-launch
 COPY --from=build /src/calliope/target/release/calliope /usr/local/bin/calliope
@@ -43,6 +44,7 @@ COPY --from=mediamtx /clips /usr/share/g2g-canary/clips
 COPY --from=livesim2 /livesim2 /usr/local/bin/livesim2
 COPY --from=livesim2 /src/cmd/livesim2/app/testdata/assets /usr/share/livesim2/vod
 COPY --chmod=0755 deploy/canary/faulted.sh /usr/local/bin/canary-faulted.sh
+COPY deploy/canary/gst-rtsp-relay.py /usr/local/bin/canary-gst-rtsp-relay.py
 COPY deploy/canary/mediamtx-faulted.yml /etc/canary/mediamtx-faulted.yml
 COPY deploy/canary/fault-schedule.txt /etc/canary/fault-schedule.txt
 # each table decodes a clip through the same chain as the rows that name it

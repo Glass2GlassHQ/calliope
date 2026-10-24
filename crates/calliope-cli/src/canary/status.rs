@@ -7,11 +7,13 @@ use serde::Serialize;
 use super::checks::{MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, MEMORY_WINDOW_SECS, PTS_FORWARD_JUMP_NS};
 use super::config::{CanaryConfig, Tier};
 use super::record::{
-    Incident, SECS_PER_DAY, SECS_PER_HOUR, SECS_PER_MINUTE, Sample, utc_date, utc_datetime,
+    Incident, Recovery, SECS_PER_DAY, SECS_PER_HOUR, SECS_PER_MINUTE, Sample, utc_date,
+    utc_datetime,
 };
+use super::schedule::{FaultKind, FaultSchedule, fault_schedule};
 
 pub const HISTORY_DAYS: u64 = 30;
-const WEEK_DAYS: u64 = 7;
+pub const WEEK_DAYS: u64 = 7;
 const INCIDENTS_SHOWN: usize = 50;
 const STATUS_JSON: &str = "status.json";
 const STATUS_HTML: &str = "index.html";
@@ -57,6 +59,39 @@ pub struct PipelineStatus {
     pub last_sample: Option<Sample>,
     // oldest first, one per utc day over HISTORY_DAYS
     pub daily: Vec<DailyUptime>,
+    // a faulted row's recoveries, one per fault in schedule order
+    pub recovery: Vec<FaultRecovery>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct FaultRecovery {
+    pub fault: String,
+    pub last_24h: RecoverySummary,
+    pub last_7d: RecoverySummary,
+}
+
+#[derive(Debug, Default, Serialize)]
+pub struct RecoverySummary {
+    // clean windows judged
+    pub windows: u64,
+    // windows the row never recovered in
+    pub unrecovered: u64,
+    // the slowest recovery among the rest
+    pub worst_secs: Option<f64>,
+}
+
+fn summarize_recoveries<'a>(recoveries: impl Iterator<Item = &'a Recovery>) -> RecoverySummary {
+    recoveries.fold(RecoverySummary::default(), |summary, recovery| {
+        let worst_secs = match (summary.worst_secs, recovery.recovery_secs) {
+            (Some(worst), Some(secs)) => Some(worst.max(secs)),
+            (worst, secs) => worst.or(secs),
+        };
+        RecoverySummary {
+            windows: summary.windows + 1,
+            unrecovered: summary.unrecovered + u64::from(recovery.recovery_secs.is_none()),
+            worst_secs,
+        }
+    })
 }
 
 #[derive(Debug, Serialize)]
@@ -87,9 +122,11 @@ pub fn summarize(
     config: &CanaryConfig,
     samples: &[Sample],
     incidents: &[Incident],
+    recoveries: &[Recovery],
     g2g_commit: &str,
     now: u64,
 ) -> Status {
+    let schedule = fault_schedule();
     let window_end = now + 1;
     let day_ago = now.saturating_sub(SECS_PER_DAY);
     let first_day = (now / SECS_PER_DAY + 1).saturating_sub(HISTORY_DAYS);
@@ -107,6 +144,29 @@ pub fn summarize(
                 .filter(|sample| sample.ts <= now)
                 .max_by_key(|sample| sample.ts);
             let since = |days: u64| now.saturating_sub(days * SECS_PER_DAY);
+            let recovery = if pipeline.tier == Tier::Faulted {
+                schedule
+                    .faults()
+                    .map(|fault| {
+                        let judged_since = |days: u64| {
+                            let from = since(days);
+                            recoveries.iter().filter(move |recovery| {
+                                recovery.pipeline == pipeline.id
+                                    && recovery.fault == fault.name
+                                    && recovery.window_end >= from
+                                    && recovery.window_end <= now
+                            })
+                        };
+                        FaultRecovery {
+                            fault: fault.name.to_string(),
+                            last_24h: summarize_recoveries(judged_since(1)),
+                            last_7d: summarize_recoveries(judged_since(WEEK_DAYS)),
+                        }
+                    })
+                    .collect()
+            } else {
+                Vec::new()
+            };
             let daily = (first_day..=now / SECS_PER_DAY)
                 .map(|day| {
                     let start = day * SECS_PER_DAY;
@@ -132,6 +192,7 @@ pub fn summarize(
                     .count(),
                 last_sample: last_sample.cloned(),
                 daily,
+                recovery,
             }
         })
         .collect();
@@ -215,60 +276,20 @@ fn tier_description(tier: Tier) -> String {
     }
 }
 
-const FAULT_SCHEDULE: &str = include_str!("../../../../deploy/canary/fault-schedule.txt");
-
-#[derive(Debug)]
-struct FaultSchedule {
-    restart_secs: u64,
-    windows: Vec<FaultWindow>,
-}
-
-#[derive(Debug)]
-struct FaultWindow {
-    secs: u64,
-    // none for a clean window
-    fault: Option<&'static str>,
-}
-
-fn fault_schedule() -> FaultSchedule {
-    let mut restart_secs = None;
-    let mut windows = Vec::new();
-    for line in FAULT_SCHEDULE.lines() {
-        if let Some(secs) = line.strip_prefix("restart ") {
-            restart_secs = Some(secs.parse().expect("restart seconds"));
-        } else if let Some(window) = line.strip_prefix("window ") {
-            let (secs, netem) = window.split_once(' ').expect("window netem arguments");
-            windows.push(FaultWindow {
-                secs: secs.parse().expect("window seconds"),
-                fault: netem.split_once(':').map(|(_, fault)| fault.trim()),
-            });
-        } else {
-            assert!(line.starts_with('#'), "unknown fault schedule line: {line}");
-        }
-    }
-    FaultSchedule {
-        restart_secs: restart_secs.expect("fault schedule restart line"),
-        windows,
-    }
-}
-
 fn faulted_description(schedule: &FaultSchedule) -> String {
-    let cycle_secs = schedule.windows.iter().map(|window| window.secs).sum();
     let faults: Vec<String> = schedule
         .windows
         .iter()
         .filter_map(|window| {
             let fault = window.fault?;
-            Some(format!("{fault} for {}", duration_words(window.secs)))
+            Some(match fault.kind {
+                FaultKind::Restart => fault.name.to_string(),
+                FaultKind::Netem | FaultKind::Cap => {
+                    format!("{} for {}", fault.name, duration_words(window.secs))
+                }
+            })
         })
         .collect();
-    let shortest_clean_secs = schedule
-        .windows
-        .iter()
-        .filter(|window| window.fault.is_none())
-        .map(|window| window.secs)
-        .min()
-        .expect("fault schedule clean window");
     let (last_fault, other_faults) = faults.split_last().expect("fault schedule fault window");
     let fault_list = if other_faults.is_empty() {
         last_fault.clone()
@@ -276,17 +297,16 @@ fn faulted_description(schedule: &FaultSchedule) -> String {
         format!("{} and {last_fault}", other_faults.join(", "))
     };
     format!(
-        "The same looped clip as the self-hosted rows, served by a second mediamtx whose \
-         network is broken on purpose. Every {} it goes through {}, with at least {} of clean \
-         network after each, and the server restarts every {}. These rows check that g2g \
-         recovers: a row that stalls during a fault and comes back afterwards is working, and \
-         each server restart shows as an incident. RTSP and HLS run over TCP, which resends \
-         lost packets, so their frames must still match the clip. The faults would lower the \
-         self-hosted uptime, so these rows are listed apart.",
-        duration_words(cycle_secs),
+        "The same looped clip as the self-hosted rows, served by a second mediamtx and a \
+         gst-rtsp-server relay whose network is broken on purpose. Every {} it goes through {}, \
+         each followed by clean network. A row has recovered once its frames match the clip with \
+         none missing until the next fault, and the recovery table below shows how long that \
+         took. A row that has not recovered when the next fault starts is restarted and opens a \
+         no-recovery incident. Faults stall these rows and break their frames on purpose, so a \
+         stall restarts none of them and a wrong frame opens no incident. The faults would lower \
+         the self-hosted uptime, so these rows are listed apart.",
+        duration_words(schedule.cycle_secs()),
         fault_list,
-        duration_words(shortest_clean_secs),
-        duration_words(schedule.restart_secs),
     )
 }
 
@@ -301,6 +321,54 @@ fn duration_words(secs: u64) -> String {
     } else {
         format!("{count} {unit}s")
     }
+}
+
+fn recovery_cell(summary: &RecoverySummary) -> String {
+    if summary.windows == 0 {
+        return "n/a".to_string();
+    }
+    if summary.unrecovered > 0 {
+        return alarm(
+            format!("{} of {} missed", summary.unrecovered, summary.windows),
+            true,
+        );
+    }
+    or_na(summary.worst_secs.map(|secs| format!("{secs:.1} s")))
+}
+
+fn recovery_table(status: &Status) -> String {
+    let rows: Vec<&PipelineStatus> = status
+        .pipelines
+        .iter()
+        .filter(|pipeline| !pipeline.recovery.is_empty())
+        .collect();
+    let Some(first) = rows.first() else {
+        return String::new();
+    };
+    let mut html = format!(
+        "<p>Recovery: the slowest time from the end of each fault to the first frame of a run of \
+         right frames that lasted until the next fault, over the last 24 hours and the last \
+         {WEEK_DAYS} days. Red counts the faults a row did not recover from.</p>\n\
+         <table><tr><th>pipeline</th>"
+    );
+    for fault in &first.recovery {
+        let _ = write!(html, "<th>{}</th>", escape_html(&fault.fault));
+    }
+    html.push_str("</tr>\n");
+    for pipeline in rows {
+        let _ = write!(html, "<tr><td>{}</td>", escape_html(&pipeline.id));
+        for fault in &pipeline.recovery {
+            let _ = write!(
+                html,
+                "<td>{} / {}</td>",
+                recovery_cell(&fault.last_24h),
+                recovery_cell(&fault.last_7d)
+            );
+        }
+        html.push_str("</tr>\n");
+    }
+    html.push_str("</table>\n");
+    html
 }
 
 fn or_na(value: Option<String>) -> String {
@@ -466,6 +534,9 @@ pub fn render_html(status: &Status) -> String {
             html.push('\n');
         }
         html.push_str("</table>\n");
+        if tier == Tier::Faulted {
+            html.push_str(&recovery_table(status));
+        }
     }
     html.push_str(
         "<h2>What each pipeline runs</h2>\n<p>The <code>g2g-launch</code> pipeline of every row \
@@ -488,7 +559,9 @@ pub fn render_html(status: &Status) -> String {
         "<h2>Incidents</h2>\n<p>The newest {INCIDENTS_SHOWN} problems of the last {HISTORY_DAYS} \
          days. A down incident means the pipeline exited, was killed or produced no frame for \
          {} seconds, and the supervisor restarted it. A content, timestamps or memory-growth \
-         incident means the check of that name above failed. Restarts counts the restarts \
+         incident means the check of that name above failed. A no-recovery incident means a \
+         faulted row had not recovered when the next fault started, and the supervisor \
+         restarted it. Restarts counts the restarts \
          during the incident, and last error is the last error g2g printed before it.</p>",
         status.stall_secs
     );
@@ -632,6 +705,7 @@ mod tests {
             &canary(vec![pipeline("a"), pipeline("silent")]),
             &samples,
             &[],
+            &[],
             G2G_COMMIT,
             now,
         );
@@ -674,6 +748,7 @@ mod tests {
             &canary(vec![pipeline("a")]),
             &[],
             &[yesterday.clone(), old, ongoing.clone()],
+            &[],
             G2G_COMMIT,
             now,
         );
@@ -688,6 +763,7 @@ mod tests {
             &canary(vec![pipeline("a")]),
             &samples,
             &[incident("a", TODAY + 60, None)],
+            &[],
             G2G_COMMIT,
             TODAY + SECS_PER_DAY - 1,
         );
@@ -703,7 +779,7 @@ mod tests {
     fn each_row_carries_its_launch_line() {
         let mut config = pipeline("a");
         config.launch = "rtspsrc location=\"rtsp://x\" ! decodebin ! fakesink".into();
-        let status = summarize(&canary(vec![config]), &[], &[], G2G_COMMIT, TODAY);
+        let status = summarize(&canary(vec![config]), &[], &[], &[], G2G_COMMIT, TODAY);
         assert_eq!(
             status.pipelines[0].launch,
             "rtspsrc location=\"rtsp://x\" ! decodebin ! fakesink"
@@ -715,25 +791,77 @@ mod tests {
     }
 
     #[test]
-    fn the_faulted_description_names_each_window_of_the_schedule() {
+    fn the_faulted_description_names_each_fault_of_the_schedule() {
         let schedule = fault_schedule();
         let description = tier_description(Tier::Faulted);
-        let faults: Vec<&FaultWindow> = schedule
-            .windows
-            .iter()
-            .filter(|window| window.fault.is_some())
-            .collect();
-        assert!(!faults.is_empty());
-        for window in faults {
-            let named = format!(
-                "{} for {}",
-                window.fault.unwrap(),
-                duration_words(window.secs)
-            );
+        for window in &schedule.windows {
+            let Some(fault) = window.fault else {
+                continue;
+            };
+            let named = match fault.kind {
+                FaultKind::Restart => fault.name.to_string(),
+                FaultKind::Netem | FaultKind::Cap => {
+                    format!("{} for {}", fault.name, duration_words(window.secs))
+                }
+            };
             assert!(description.contains(&named), "{named} in {description}");
         }
-        let restart = format!("restarts every {}", duration_words(schedule.restart_secs));
-        assert!(description.contains(&restart), "{description}");
+        let cycle = format!("Every {} it", duration_words(schedule.cycle_secs()));
+        assert!(description.contains(&cycle), "{description}");
+    }
+
+    fn recovery(pipeline: &str, fault: &str, window_end: u64, secs: Option<f64>) -> Recovery {
+        Recovery {
+            pipeline: pipeline.into(),
+            fault: fault.into(),
+            fault_end: window_end - 60,
+            window_end,
+            recovery_secs: secs,
+            av_drift_ms: None,
+        }
+    }
+
+    #[test]
+    fn faulted_rows_show_their_slowest_recovery_per_fault() {
+        let schedule = fault_schedule();
+        let faults: Vec<&str> = schedule.faults().map(|fault| fault.name).collect();
+        let (first, second) = (faults[0], faults[1]);
+        let mut faulted = pipeline("lossy-rtsp");
+        faulted.tier = Tier::Faulted;
+        let now = TODAY + SECS_PER_DAY - 1;
+        let recoveries = [
+            recovery("lossy-rtsp", first, now - 100, Some(1.5)),
+            recovery("lossy-rtsp", first, now - 200, Some(4.3)),
+            // three days ago, only in the week
+            recovery("lossy-rtsp", first, now - 3 * SECS_PER_DAY, Some(9.0)),
+            recovery("lossy-rtsp", second, now - 300, None),
+            recovery("lossy-rtsp", second, now - 400, Some(2.0)),
+            // another row's records stay on that row
+            recovery("a", first, now - 100, None),
+        ];
+        let status = summarize(
+            &canary(vec![pipeline("a"), faulted]),
+            &[],
+            &[],
+            &recoveries,
+            G2G_COMMIT,
+            now,
+        );
+        assert!(status.pipelines[0].recovery.is_empty(), "not a faulted row");
+        let row = &status.pipelines[1].recovery;
+        assert_eq!(row.len(), faults.len(), "a column per fault");
+        assert_eq!(row[0].fault, first);
+        assert_eq!(row[0].last_24h.windows, 2);
+        assert_eq!(row[0].last_24h.worst_secs, Some(4.3));
+        assert_eq!(row[0].last_7d.worst_secs, Some(9.0));
+        assert_eq!(row[1].last_24h.unrecovered, 1);
+        assert_eq!(row[2].last_24h.windows, 0);
+
+        let html = render_html(&status);
+        let table = &html[html.find("Recovery:").unwrap()..];
+        assert!(table.contains("4.3 s / 9.0 s"), "{table}");
+        assert!(table.contains("1 of 2 missed"), "{table}");
+        assert!(table.contains("n/a / n/a"), "{table}");
     }
 
     #[test]
@@ -764,6 +892,7 @@ mod tests {
             &canary(vec![pipeline("a"), faulted]),
             &[sample("a", TODAY, 1800), checked],
             &[memory],
+            &[],
             G2G_COMMIT,
             TODAY + 30,
         );

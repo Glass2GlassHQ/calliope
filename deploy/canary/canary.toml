@@ -154,9 +154,8 @@ id = "dash-livesim2-multiperiod"
 tier = "self-hosted"
 launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
 
-# faulted: the baseline clip through g2g-canary-faulted, whose loopback has scheduled netem
-# loss, jitter and reorder and whose mediamtx restarts every 20 minutes
-# tcp repairs every loss, so the rtsp and hls frames still match the table
+# faulted: the baseline clip through g2g-canary-faulted, whose loopback follows fault-schedule.txt
+# every row needs the content check, the recovery check is built on it
 
 [[pipeline]]
 id = "faulted-rtsp"
@@ -175,12 +174,33 @@ expect-hashes = "/etc/canary/hashes/baseline.txt"
 [[pipeline]]
 id = "faulted-srt"
 tier = "faulted"
-launch = "srtsrc address=127.0.0.1 port=18892 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+launch = "srtsrc address=127.0.0.1 port=18892 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 [[pipeline]]
 id = "faulted-rist"
 tier = "faulted"
-launch = "ristsrc address=127.0.0.1 port=18896 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+launch = "ristsrc address=127.0.0.1 port=18896 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# the same path through gst-rtsp-server, a second rtsp implementation
+[[pipeline]]
+id = "faulted-rtsp-gst"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:19555/faulted reconnect=5 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# audio and video, for the drift after each recovery
+[[pipeline]]
+id = "faulted-h264-aac-rtsp"
+tier = "faulted"
+launch = "rtspsrc name=s location=rtsp://127.0.0.1:19554/faulted-av reconnect=5 s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! aacparse ! avdec_aac ! checksumsink name=audio"
+video-sink = "video"
+audio-sink = "audio"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 # public: third-party test streams with no uptime promise
 

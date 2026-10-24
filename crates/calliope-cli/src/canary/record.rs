@@ -15,6 +15,7 @@ pub const SECS_PER_HOUR: u64 = 3_600;
 pub const SECS_PER_MINUTE: u64 = 60;
 pub const SAMPLES_PREFIX: &str = "samples";
 pub const INCIDENTS_PREFIX: &str = "incidents";
+pub const RECOVERIES_PREFIX: &str = "recoveries";
 pub const STDERR_DIR: &str = "stderr";
 const OPEN_INCIDENTS_FILE: &str = "open-incidents.json";
 
@@ -61,6 +62,8 @@ pub enum Cause {
     Timestamps { backward: u64, forward_jumps: u64 },
     // the highest slope while open
     MemoryGrowth { kib_per_hour: f64 },
+    // no unbroken run of right frames lasted the clean window after this fault
+    NoRecovery { fault: String },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -69,6 +72,7 @@ pub enum IncidentKind {
     Content,
     Timestamps,
     MemoryGrowth,
+    NoRecovery,
 }
 
 impl IncidentKind {
@@ -78,6 +82,7 @@ impl IncidentKind {
             IncidentKind::Content => "content",
             IncidentKind::Timestamps => "timestamps",
             IncidentKind::MemoryGrowth => "memory-growth",
+            IncidentKind::NoRecovery => "no-recovery",
         }
     }
 }
@@ -90,6 +95,7 @@ impl Cause {
             Cause::Content { .. } => IncidentKind::Content,
             Cause::Timestamps { .. } => IncidentKind::Timestamps,
             Cause::MemoryGrowth { .. } => IncidentKind::MemoryGrowth,
+            Cause::NoRecovery { .. } => IncidentKind::NoRecovery,
         }
     }
 
@@ -161,8 +167,22 @@ impl fmt::Display for Cause {
                     "memory growth: rss up {kib_per_hour:.0} KiB/h over a day"
                 )
             }
+            Cause::NoRecovery { fault } => write!(f, "no recovery from {fault}"),
         }
     }
+}
+
+// how one faulted row came back from one fault, judged at the end of the clean window after it
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Recovery {
+    pub pipeline: String,
+    pub fault: String,
+    // unix seconds the fault ended and the clean window after it ended
+    pub fault_end: u64,
+    pub window_end: u64,
+    // from the fault's end to the first frame of the unbroken run of right frames that lasted the clean window
+    pub recovery_secs: Option<f64>,
+    pub av_drift_ms: Option<f64>,
 }
 
 // opens on the first failure, closes when frames flow again
@@ -309,6 +329,13 @@ pub fn unix_now() -> u64 {
         .duration_since(UNIX_EPOCH)
         .expect("system clock before 1970")
         .as_secs()
+}
+
+pub fn unix_now_fractional() -> f64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock before 1970")
+        .as_secs_f64()
 }
 
 pub fn utc_date(ts: u64) -> String {

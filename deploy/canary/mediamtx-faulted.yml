@@ -19,3 +19,4 @@ pprof: false
 playback: false
 paths:
   faulted: {}
+  faulted-av: {}

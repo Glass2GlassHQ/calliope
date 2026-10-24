@@ -487,13 +487,29 @@ The public livesim2.dashif.org allows 10000 requests per IP address per 24 hours
 which one live row spends in about 3 hours.
 
 The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
-container with its own network namespace that runs a second mediamtx and
-feeder. Netem on its loopback runs the cycle of loss, jitter, reorder and burst
-loss in `deploy/canary/fault-schedule.txt` on the reader-facing ports only, and
-its mediamtx restarts at the interval that file sets. Rootless podman allows this: the container has `CAP_NET_ADMIN` in
-its own namespace, and pasta publishes its RTSP and HLS ports on the host
-loopback and forwards its SRT and RIST sends to the host. Netem runs only
-inside that namespace, so the self-hosted rows never see it.
+container with its own network namespace that runs a second mediamtx, a
+gst-rtsp-server relay of the clean `baseline` path and a feeder. Netem on its
+loopback runs the windows in `deploy/canary/fault-schedule.txt` on the
+reader-facing ports only: loss, jitter, reorder, burst loss, rate caps, link
+outages and a mediamtx restart, each followed by a clean window. A rate cap is a
+multiple of the traffic the netem band carried in the clean window before it.
+Windows sit at fixed places in a cycle counted from the unix epoch, so the
+container and the canary agree on them from the clock alone. Rootless podman
+allows this: the container has `CAP_NET_ADMIN` in its own namespace, and pasta
+publishes its RTSP and HLS ports on the host loopback and forwards its SRT and
+RIST sends to the host. Netem runs only inside that namespace, so the
+self-hosted rows never see it.
+
+Every faulted row needs `video-sink` and `expect-hashes`. At the end of each
+clean window the canary judges each row's recovery from the fault before it:
+the time from the fault's end to the first frame of an unbroken run of right
+frames that lasts to the window's end. It appends one line per row to
+`recoveries-<date>.jsonl` (`recovery_secs` is null when the row did not
+recover, and `av_drift_ms` covers the run on a row with `audio-sink`). A row
+that did not recover is killed and restarted, which opens a `no-recovery`
+incident that closes on its next recovery. Faulted rows are never killed for a
+stall, and their wrong or skipped frames open no `content` incident. The status
+page shows each row's slowest recovery per fault over 24 hours and 7 days.
 
 ### Deploy
 

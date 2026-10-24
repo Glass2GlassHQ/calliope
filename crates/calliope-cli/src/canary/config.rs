@@ -149,6 +149,13 @@ impl CanaryConfig {
                 "pipeline '{}': video-sink and audio-sink name the same sink",
                 pipeline.id
             );
+            let recovery_checked =
+                pipeline.video_sink.is_some() && pipeline.expect_hashes.is_some();
+            ensure!(
+                pipeline.tier != Tier::Faulted || recovery_checked,
+                "pipeline '{}': a faulted row needs video-sink and expect-hashes for its recovery check",
+                pipeline.id
+            );
         }
         let last_port = usize::from(self.observe_base_port) + self.pipelines.len() - 1;
         ensure!(
@@ -217,6 +224,11 @@ mod tests {
         );
         let no_video_sink = checked.replace("video-sink = \"video\"\n", "");
         assert!(parse(&no_video_sink).is_err());
+        let no_hashes = checked.replace("expect-hashes = \"/etc/canary/hashes/mux.txt\"", "");
+        assert!(
+            parse(&no_hashes).is_err(),
+            "a faulted row without a content check has no recovery check"
+        );
     }
 
     #[test]

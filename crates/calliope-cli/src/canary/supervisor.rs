@@ -7,13 +7,16 @@ use std::time::{Duration, Instant};
 use anyhow::{Context, Result};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::{Child, Command};
+use tokio::sync::mpsc::UnboundedReceiver;
 
 use calliope_adapter_g2g::observe::{ObserveMessage, follow_observe, observe_args};
 use calliope_core::runner::{RunStatus, exit_to_status};
 
 use super::checks::FrameChecks;
-use super::config::{CanaryConfig, PipelineConfig};
-use super::record::{Cause, Incident, IncidentKind, STDERR_DIR, SharedOpenIncidents, unix_now};
+use super::config::{CanaryConfig, PipelineConfig, Tier};
+use super::record::{
+    Cause, Incident, IncidentKind, STDERR_DIR, SharedOpenIncidents, unix_now, unix_now_fractional,
+};
 
 pub const STDERR_TAIL_LINES: usize = 50;
 const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
@@ -43,6 +46,13 @@ impl PipelineState {
 }
 
 pub type SharedState = Arc<Mutex<PipelineState>>;
+
+// a faulted row's run that did not recover from `fault`, for its supervisor to kill
+#[derive(Debug)]
+pub struct UnrecoveredRun {
+    pub pid: u32,
+    pub fault: String,
+}
 
 #[derive(Debug)]
 pub struct Supervisor {
@@ -95,10 +105,10 @@ impl Supervisor {
     }
 
     // returns only on a log write error
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, mut unrecovered: UnboundedReceiver<UnrecoveredRun>) -> Result<()> {
         let mut backoff = self.backoff_min;
         loop {
-            let end = self.run_once().await?;
+            let end = self.run_once(&mut unrecovered).await?;
             if end.ran_for >= self.healthy_run {
                 backoff = self.backoff_min;
             }
@@ -113,7 +123,10 @@ impl Supervisor {
         }
     }
 
-    async fn run_once(&self) -> Result<RunEnd> {
+    async fn run_once(
+        &self,
+        unrecovered: &mut UnboundedReceiver<UnrecoveredRun>,
+    ) -> Result<RunEnd> {
         let spawned_at = Instant::now();
         let spawned_unix = unix_now();
         let mut child = match Command::new(&self.program)
@@ -153,7 +166,9 @@ impl Supervisor {
         });
         let telemetry = tokio::spawn(follow_observe(self.port, self.on_message()));
 
-        let watched = self.watch(&mut child, spawned_at, spawned_unix).await;
+        let watched = self
+            .watch(&mut child, spawned_at, spawned_unix, unrecovered)
+            .await;
         telemetry.abort();
         if let Some(reader) = stderr_reader {
             let _ = tokio::time::timeout(STDERR_DRAIN_TIMEOUT, reader).await;
@@ -174,19 +189,30 @@ impl Supervisor {
         })
     }
 
-    // waits for exit or kills on stall, closing an open incident once frames flow
+    // waits for exit or kills on stall or no recovery, closing an open incident once frames flow
     async fn watch(
         &self,
         child: &mut Child,
         spawned_at: Instant,
         spawned_unix: u64,
+        unrecovered: &mut UnboundedReceiver<UnrecoveredRun>,
     ) -> Result<(Cause, u64)> {
         let mut watchdog = tokio::time::interval(WATCHDOG_INTERVAL);
+        // faults stall these rows on purpose, the recovery check judges them instead
+        let stall_kills = self.pipeline.tier != Tier::Faulted;
         loop {
             tokio::select! {
                 status = child.wait() => {
                     let status = status.context("wait for g2g-launch")?;
                     return Ok((exit_cause(status), unix_now()));
+                }
+                Some(run) = unrecovered.recv() => {
+                    // a request for an earlier run comes too late
+                    if child.id() == Some(run.pid) {
+                        let _ = child.start_kill();
+                        let _ = child.wait().await;
+                        return Ok((Cause::NoRecovery { fault: run.fault }, unix_now()));
+                    }
                 }
                 _ = watchdog.tick() => {
                     let last_frame = self.lock().last_frame;
@@ -195,7 +221,7 @@ impl Supervisor {
                     }
                     let (progress_at, progress_unix) =
                         last_frame.unwrap_or((spawned_at, spawned_unix));
-                    if progress_at.elapsed() >= self.stall {
+                    if stall_kills && progress_at.elapsed() >= self.stall {
                         let _ = child.start_kill();
                         let _ = child.wait().await;
                         return Ok((Cause::Stall { secs: self.stall.as_secs() }, progress_unix));
@@ -223,7 +249,9 @@ impl Supervisor {
                 }
                 ObserveMessage::Checksum(reading) => {
                     let arrival_ns = run_started.elapsed().as_nanos() as i128;
-                    state.checks.observe(&reading, arrival_ns);
+                    state
+                        .checks
+                        .observe(&reading, arrival_ns, unix_now_fractional());
                 }
             }
         }
@@ -233,7 +261,7 @@ impl Supervisor {
         let mut state = self.lock();
         state.restarts += 1;
         let mut open_incidents = self.open_incidents.lock().expect("open incidents lock");
-        if let Some(open) = open_incidents.get(&self.pipeline.id, IncidentKind::Down) {
+        if let Some(open) = open_incidents.get(&self.pipeline.id, end.cause.kind()) {
             let mut incident = open.clone();
             incident.restarts += 1;
             return open_incidents.put(incident);
@@ -397,10 +425,15 @@ mod tests {
         OpenIncidents::load(dir).unwrap().all().to_vec()
     }
 
-    async fn supervise_for(config: &CanaryConfig, state: &SharedState) {
+    fn supervisor(config: &CanaryConfig, state: &SharedState) -> Supervisor {
         let open_incidents = Arc::new(Mutex::new(OpenIncidents::load(&config.log_dir).unwrap()));
-        let supervisor = Supervisor::new(config, 0, Arc::clone(state), open_incidents);
-        let ended = tokio::time::timeout(OBSERVE_FOR, supervisor.run()).await;
+        Supervisor::new(config, 0, Arc::clone(state), open_incidents)
+    }
+
+    async fn supervise_for(config: &CanaryConfig, state: &SharedState) {
+        let (_unrecovered, requests) = tokio::sync::mpsc::unbounded_channel();
+        let run = supervisor(config, state).run(requests);
+        let ended = tokio::time::timeout(OBSERVE_FOR, run).await;
         assert!(ended.is_err(), "supervisor returned early: {ended:?}");
     }
 
@@ -426,6 +459,50 @@ mod tests {
         assert_eq!(incident.tier, Tier::SelfHosted);
         let stderr = std::fs::read_to_string(dir.join(incident.stderr.as_ref().unwrap())).unwrap();
         assert!(stderr.contains("fake: waiting for stream"));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_faulted_row_is_killed_for_no_recovery_and_never_for_a_stall() {
+        let dir = scratch("unrecovered");
+        let program = fake_launch(&dir, "echo 'fake: link down' >&2\nexec sleep 60");
+        let silent = silent_observe_listener();
+        let mut config = config(&dir, &program, silent.local_addr().unwrap().port());
+        config.pipelines[0].tier = Tier::Faulted;
+        let state = SharedState::default();
+        let (unrecovered, requests) = tokio::sync::mpsc::unbounded_channel();
+        let supervising = tokio::spawn(supervisor(&config, &state).run(requests));
+        // past the stall limit without a frame
+        tokio::time::sleep(Duration::from_secs(STALL_SECS * 2)).await;
+        let pid = {
+            let state = state.lock().unwrap();
+            assert_eq!(
+                state.restarts, 0,
+                "a faulted row is never killed for a stall"
+            );
+            state.pid.expect("the run is still alive")
+        };
+        let fault = "long link outage";
+        unrecovered
+            .send(UnrecoveredRun {
+                pid,
+                fault: fault.into(),
+            })
+            .unwrap();
+        tokio::time::sleep(Duration::from_secs(1)).await;
+        supervising.abort();
+
+        assert_eq!(state.lock().unwrap().restarts, 1);
+        let open = reloaded_open_incidents(&dir);
+        assert_eq!(open.len(), 1, "{open:?}");
+        assert_eq!(
+            open[0].cause,
+            Cause::NoRecovery {
+                fault: fault.into()
+            }
+        );
+        let stderr = std::fs::read_to_string(dir.join(open[0].stderr.as_ref().unwrap())).unwrap();
+        assert!(stderr.contains("fake: link down"));
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

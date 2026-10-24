@@ -1,6 +1,7 @@
 mod checks;
 mod config;
 mod record;
+mod schedule;
 mod status;
 mod supervisor;
 
@@ -8,18 +9,20 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use futures::stream::{FuturesUnordered, StreamExt};
+use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
 
 use calliope_core::runner::read_proc_status_kb;
 
 use checks::{FrameChecks, MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, RssWindow};
-use config::CanaryConfig;
+use config::{CanaryConfig, Tier};
 use record::{
-    Cause, INCIDENTS_PREFIX, IncidentKind, OpenIncidents, SAMPLES_PREFIX, SECS_PER_DAY, STDERR_DIR,
-    Sample, SharedOpenIncidents, unix_now,
+    Cause, INCIDENTS_PREFIX, IncidentKind, OpenIncidents, RECOVERIES_PREFIX, Recovery,
+    SAMPLES_PREFIX, SECS_PER_DAY, STDERR_DIR, Sample, SharedOpenIncidents, unix_now,
 };
-use supervisor::{PipelineState, SharedState, Supervisor};
+use schedule::RecoveryWindow;
+use supervisor::{PipelineState, SharedState, Supervisor, UnrecoveredRun};
 
 const NANOS_PER_MILLI: f64 = 1_000_000.0;
 
@@ -42,6 +45,7 @@ pub async fn run(config_path: &Path) -> Result<()> {
     let mut open_incidents = OpenIncidents::load(&config.log_dir)?;
     open_incidents.close_unconfigured(&config.pipelines, unix_now())?;
     let open_incidents = Arc::new(Mutex::new(open_incidents));
+    let mut unrecovered = Vec::with_capacity(states.len());
     let mut supervisors: FuturesUnordered<_> = states
         .iter()
         .enumerate()
@@ -52,21 +56,34 @@ pub async fn run(config_path: &Path) -> Result<()> {
                 Arc::clone(state),
                 Arc::clone(&open_incidents),
             );
-            tokio::spawn(supervisor.run())
+            let (sender, receiver) = unbounded_channel();
+            unrecovered.push(sender);
+            tokio::spawn(supervisor.run(receiver))
         })
         .collect();
-    let mut sampler = Sampler::new(&config, g2g_commit, states, open_incidents);
+    let mut sampler = Sampler::new(&config, g2g_commit, states, open_incidents, unrecovered);
     let mut ticker = tokio::time::interval(Duration::from_secs(config.sample_secs));
     // the first tick fires at once, with nothing to sample yet
     ticker.tick().await;
     sampler.write_status()?;
+    let fault_schedule = schedule::fault_schedule();
+    let started = unix_now();
+    let mut recovery_window = fault_schedule.next_recovery_window(started);
     let shutdown = shutdown_signal();
     tokio::pin!(shutdown);
     loop {
+        let until_judged = Duration::from_secs(recovery_window.end.saturating_sub(unix_now()));
         tokio::select! {
             _ = ticker.tick() => {
                 sampler.sample()?;
                 sampler.write_status()?;
+            }
+            _ = tokio::time::sleep(until_judged) => {
+                // the canary started inside this window, after its fault
+                if recovery_window.start >= started {
+                    sampler.judge_recovery(&recovery_window)?;
+                }
+                recovery_window = fault_schedule.next_recovery_window(recovery_window.end);
             }
             ended = supervisors.next() => {
                 match ended {
@@ -106,6 +123,8 @@ struct Sampler<'a> {
     sampled_frames: Vec<u64>,
     rss_windows: Vec<RssWindow>,
     sampled_at: Instant,
+    // to each pipeline's supervisor
+    unrecovered: Vec<UnboundedSender<UnrecoveredRun>>,
 }
 
 impl<'a> Sampler<'a> {
@@ -114,6 +133,7 @@ impl<'a> Sampler<'a> {
         g2g_commit: String,
         states: Vec<SharedState>,
         open_incidents: SharedOpenIncidents,
+        unrecovered: Vec<UnboundedSender<UnrecoveredRun>>,
     ) -> Self {
         Sampler {
             config,
@@ -123,6 +143,7 @@ impl<'a> Sampler<'a> {
             states,
             open_incidents,
             sampled_at: Instant::now(),
+            unrecovered,
         }
     }
 
@@ -207,6 +228,49 @@ impl<'a> Sampler<'a> {
         )
     }
 
+    // records how each faulted row came back from the fault before `window`, and has a run that never did restarted
+    fn judge_recovery(&self, window: &RecoveryWindow) -> Result<()> {
+        for (index, pipeline) in self.config.pipelines.iter().enumerate() {
+            if pipeline.tier != Tier::Faulted {
+                continue;
+            }
+            let (recovery, pid) = {
+                let mut state = self.states[index].lock().expect("pipeline state lock");
+                let recovery = state
+                    .checks
+                    .take_recovery(window.start as f64, window.end as f64);
+                (recovery, state.pid)
+            };
+            let record = Recovery {
+                pipeline: pipeline.id.clone(),
+                fault: window.fault.name.to_string(),
+                fault_end: window.start,
+                window_end: window.end,
+                recovery_secs: recovery.recovery_secs,
+                av_drift_ms: recovery.av_drift_ms,
+            };
+            record::append(&self.config.log_dir, RECOVERIES_PREFIX, window.end, &record)?;
+            if recovery.recovery_secs.is_some() {
+                self.open_incidents
+                    .lock()
+                    .expect("open incidents lock")
+                    .close(&pipeline.id, IncidentKind::NoRecovery, window.end)?;
+                continue;
+            }
+            // a row with no run is already down, and its supervisor opened that incident
+            let Some(pid) = pid else {
+                continue;
+            };
+            self.unrecovered[index]
+                .send(UnrecoveredRun {
+                    pid,
+                    fault: record.fault,
+                })
+                .map_err(|_| anyhow!("pipeline '{}' supervisor stopped", pipeline.id))?;
+        }
+        Ok(())
+    }
+
     fn write_status(&self) -> Result<()> {
         let now = unix_now();
         let since = now.saturating_sub(status::HISTORY_DAYS * SECS_PER_DAY);
@@ -220,7 +284,17 @@ impl<'a> Sampler<'a> {
                 .expect("open incidents lock")
                 .all(),
         );
-        let summary = status::summarize(self.config, &samples, &incidents, &self.g2g_commit, now);
+        let week_ago = now.saturating_sub(status::WEEK_DAYS * SECS_PER_DAY);
+        let recoveries: Vec<Recovery> =
+            record::read_days(&self.config.log_dir, RECOVERIES_PREFIX, week_ago, now)?;
+        let summary = status::summarize(
+            self.config,
+            &samples,
+            &incidents,
+            &recoveries,
+            &self.g2g_commit,
+            now,
+        );
         status::write_status(&self.config.status_dir, &summary)
     }
 }

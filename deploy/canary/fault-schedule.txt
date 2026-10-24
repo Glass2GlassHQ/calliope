@@ -1,14 +1,23 @@
-# read by canary-faulted.sh and described on the status page
-# seconds between scheduled restarts of the faulted mediamtx
-restart 1200
-# netem windows run in order and repeat: seconds, netem arguments, then after a colon the fault as the status page names it
-# a window without a name is clean, and each fault is followed by one so the readers recover in between
-window 120 delay 0ms
-window 60 loss 3%: 3% packet loss
-window 60 delay 0ms
-window 60 delay 80ms 40ms distribution normal: 80 ms delay with 40 ms jitter
-window 60 delay 0ms
-window 60 delay 20ms reorder 25% 50%: 25% of packets reordered
-window 60 delay 0ms
-window 30 loss 20% 25%: 20% loss
-window 90 delay 0ms
+# read by canary-faulted.sh, and by calliope for the recovery check and the status page
+# windows run in order and repeat, a window's place in the cycle is unix time modulo the cycle length
+# each line: kind, seconds, arguments, then after a colon the fault as the status page names it
+# netem takes netem arguments, cap a multiple of the traffic measured in the clean window before it,
+# restart kills the faulted mediamtx, and every fault is followed by a clean window the rows must recover in
+clean 116
+netem 60 loss 3%: 3% packet loss
+clean 60
+netem 60 delay 80ms 40ms distribution normal: 80 ms delay with 40 ms jitter
+clean 60
+netem 60 delay 20ms reorder 25% 50%: 25% of packets reordered
+clean 60
+netem 30 loss 20% 25%: 20% loss
+clean 90
+cap 60 1.5: the link capped at 1.5 times its traffic
+clean 60
+cap 60 0.5: the link capped at half its traffic
+clean 90
+netem 3 loss 100%: a short link outage
+clean 90
+netem 30 loss 100%: a long link outage
+clean 90
+restart 1: a server restart
