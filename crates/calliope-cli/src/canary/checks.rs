@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use calliope_adapter_g2g::observe::ChecksumReading;
 
-use super::config::PipelineConfig;
+use super::config::{PipelineConfig, Tier};
 
 // a pts step this much longer than the wall clock step between two frames is a forward jump
 pub const PTS_FORWARD_JUMP_NS: i128 = 1_000_000_000;
@@ -100,6 +100,15 @@ pub struct ContentCounts {
 impl ContentCounts {
     pub fn bad(&self) -> u64 {
         self.mismatched + self.skipped
+    }
+
+    // the bad frames that open an incident on a row of this tier
+    pub fn faults(&self, tier: Tier) -> u64 {
+        match tier {
+            // the faulted server restarts on a schedule, and the frames published while it is down never reach a reader
+            Tier::Faulted => self.mismatched,
+            Tier::SelfHosted | Tier::Public => self.bad(),
+        }
     }
 }
 
@@ -351,6 +360,23 @@ mod tests {
             }),
             ..FrameChecks::default()
         }
+    }
+
+    #[test]
+    fn skipped_frames_are_faults_except_on_the_faulted_tier() {
+        let skipped = ContentCounts {
+            matched: 10,
+            mismatched: 0,
+            skipped: 35,
+        };
+        assert_eq!(skipped.faults(Tier::SelfHosted), 35);
+        assert_eq!(skipped.faults(Tier::Public), 35);
+        assert_eq!(skipped.faults(Tier::Faulted), 0);
+        let mismatched = ContentCounts {
+            mismatched: 2,
+            ..skipped
+        };
+        assert_eq!(mismatched.faults(Tier::Faulted), 2);
     }
 
     // the line g2g-launch --observe sends for each buffer a named checksumsink digests

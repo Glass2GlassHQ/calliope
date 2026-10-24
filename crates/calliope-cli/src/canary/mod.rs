@@ -174,12 +174,12 @@ impl<'a> Sampler<'a> {
             pipeline,
             IncidentKind::Content,
             content
-                .filter(|counts| counts.bad() > 0)
+                .filter(|counts| counts.faults(pipeline.tier) > 0)
                 .map(|counts| Cause::Content {
                     mismatched: counts.mismatched,
                     skipped: counts.skipped,
                 }),
-            content.is_some_and(|counts| counts.matched > 0 && counts.bad() == 0),
+            content.is_some_and(|counts| counts.matched > 0 && counts.faults(pipeline.tier) == 0),
             sample.ts,
         )?;
         let timestamps = sample.timestamps;
