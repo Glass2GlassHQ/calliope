@@ -64,7 +64,8 @@ pub struct Supervisor {
     backoff_min: Duration,
     backoff_max: Duration,
     healthy_run: Duration,
-    startup_grace_ends: Instant,
+    grace: Duration,
+    grace_ends: Instant,
     state: SharedState,
     open_incidents: SharedOpenIncidents,
 }
@@ -98,14 +99,15 @@ impl Supervisor {
             backoff_min: Duration::from_secs(config.backoff_min_secs),
             backoff_max: Duration::from_secs(config.backoff_max_secs),
             healthy_run: Duration::from_secs(config.healthy_run_secs),
-            startup_grace_ends: Instant::now() + Duration::from_secs(config.startup_grace_secs),
+            grace: Duration::from_secs(config.startup_grace_secs),
+            grace_ends: Instant::now() + Duration::from_secs(config.startup_grace_secs),
             state,
             open_incidents,
         }
     }
 
     // returns only on a log write error
-    pub async fn run(self, mut unrecovered: UnboundedReceiver<UnrecoveredRun>) -> Result<()> {
+    pub async fn run(mut self, mut unrecovered: UnboundedReceiver<UnrecoveredRun>) -> Result<()> {
         let mut backoff = self.backoff_min;
         loop {
             let end = self.run_once(&mut unrecovered).await?;
@@ -115,6 +117,8 @@ impl Supervisor {
             let ended_cleanly =
                 self.pipeline.ends && end.decoded && end.cause == Cause::Exit { code: 0 };
             if ended_cleanly {
+                // the next stream can take a while to start
+                self.grace_ends = Instant::now() + self.grace;
                 continue;
             }
             self.record_failure(end)?;
@@ -266,7 +270,7 @@ impl Supervisor {
             incident.restarts += 1;
             return open_incidents.put(incident);
         }
-        if Instant::now() < self.startup_grace_ends {
+        if Instant::now() < self.grace_ends {
             return Ok(());
         }
         let id = format!("{}-{}", self.pipeline.id, end.failed_at);
@@ -629,6 +633,32 @@ mod tests {
             "the id survives the restart"
         );
         assert!(closed[0].end.is_some());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn failures_right_after_an_ending_stream_ends_open_no_incident() {
+        let dir = scratch("ends");
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(serve_growing_telemetry(listener));
+        let ended = dir.join("ended");
+        let program = fake_launch(
+            &dir,
+            &format!(
+                "[ -e {ended} ] && exit 1\ntouch {ended}\nsleep 3\nexit 0",
+                ended = ended.display()
+            ),
+        );
+        // the startup grace is over before the stream ends, the grace after the end covers the rest of the run
+        let mut config = config_with_grace(&dir, &program, port, 2);
+        config.pipelines[0].ends = true;
+        let state = SharedState::default();
+        supervise_for(&config, &state).await;
+
+        assert!(ended.exists(), "the stream ended once");
+        assert!(state.lock().unwrap().restarts >= 1);
+        assert!(reloaded_open_incidents(&dir).is_empty());
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

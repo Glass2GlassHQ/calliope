@@ -34,7 +34,7 @@ pub struct CanaryConfig {
     // a run that lasted this long resets the restart backoff
     #[serde(default = "default_healthy_run_secs")]
     pub healthy_run_secs: u64,
-    // failures this soon after the canary starts open no incident, the streams it reads start alongside it
+    // failures this soon after the canary starts, or after an `ends` row ends, open no incident
     #[serde(default = "default_startup_grace_secs")]
     pub startup_grace_secs: u64,
     #[serde(rename = "pipeline")]
