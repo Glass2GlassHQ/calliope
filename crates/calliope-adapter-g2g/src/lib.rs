@@ -129,7 +129,7 @@ pub fn reports_muxer_refusal(stderr: &str) -> bool {
     let g2g_lines: Vec<&str> = stderr
         .lines()
         .map(str::trim)
-        .filter(|line| !line.is_empty() && !line.starts_with('['))
+        .filter(|line| !line.is_empty() && !line.starts_with('[') && !line.starts_with("WARN "))
         .collect();
     g2g_lines == [FAN_IN_CAPS_FAILURE]
         || g2g_lines
@@ -392,5 +392,18 @@ impl G2g {
             args: launch_args(scenario, flags, &pipeline),
             output,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_warning_beside_the_fan_in_failure_is_still_a_muxer_refusal() {
+        let stderr = format!(
+            "WARN  Registry         autoaudiosink found no usable sink in this build\n{FAN_IN_CAPS_FAILURE}\n"
+        );
+        assert!(reports_muxer_refusal(&stderr));
     }
 }
