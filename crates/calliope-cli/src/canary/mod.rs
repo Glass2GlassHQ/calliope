@@ -208,12 +208,12 @@ impl<'a> Sampler<'a> {
             pipeline,
             IncidentKind::Timestamps,
             timestamps
-                .filter(|counts| counts.bad() > 0)
+                .filter(|counts| counts.faults(pipeline.tier) > 0)
                 .map(|counts| Cause::Timestamps {
                     backward: counts.backward,
                     forward_jumps: counts.forward_jumps,
                 }),
-            timestamps.is_some_and(|counts| counts.bad() == 0),
+            timestamps.is_some_and(|counts| counts.faults(pipeline.tier) == 0),
             sample.ts,
         )?;
         let growth = sample.rss_growth_kib_per_hour;

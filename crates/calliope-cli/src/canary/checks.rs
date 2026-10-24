@@ -106,11 +106,15 @@ impl ContentCounts {
 
     // the bad frames that open an incident on a row of this tier
     pub fn faults(&self, tier: Tier) -> u64 {
-        match tier {
-            // faults break frames on purpose, the recovery check judges these rows instead
-            Tier::Faulted => 0,
-            Tier::SelfHosted | Tier::Public => self.bad(),
-        }
+        incident_faults(tier, self.bad())
+    }
+}
+
+fn incident_faults(tier: Tier, bad: u64) -> u64 {
+    match tier {
+        // faults break frames on purpose, the recovery check judges these rows instead
+        Tier::Faulted => 0,
+        Tier::SelfHosted | Tier::Public => bad,
     }
 }
 
@@ -167,6 +171,11 @@ pub struct TimestampCounts {
 impl TimestampCounts {
     pub fn bad(&self) -> u64 {
         self.backward + self.forward_jumps
+    }
+
+    // the bad timestamps that open an incident on a row of this tier
+    pub fn faults(&self, tier: Tier) -> u64 {
+        incident_faults(tier, self.bad())
     }
 }
 
@@ -446,6 +455,18 @@ mod tests {
         };
         assert_eq!(bad.faults(Tier::SelfHosted), 37);
         assert_eq!(bad.faults(Tier::Public), 37);
+        assert_eq!(bad.faults(Tier::Faulted), 0);
+    }
+
+    #[test]
+    fn bad_timestamps_are_faults_except_on_the_faulted_tier() {
+        let bad = TimestampCounts {
+            frames: 10,
+            backward: 1,
+            forward_jumps: 4,
+        };
+        assert_eq!(bad.faults(Tier::SelfHosted), 5);
+        assert_eq!(bad.faults(Tier::Public), 5);
         assert_eq!(bad.faults(Tier::Faulted), 0);
     }
 
