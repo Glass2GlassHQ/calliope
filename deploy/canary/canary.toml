@@ -193,7 +193,7 @@ launch = "hlssrc location=https://demo.unified-streaming.com/k8s/live/stable/liv
 [[pipeline]]
 id = "strba-rtsp"
 tier = "public"
-launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream ! decodebin ! fakesink"
+launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream reconnect=5 ! decodebin ! fakesink"
 
 # no public srt entry: g2g's srtsrc only listens, a public srt server never calls in
 
