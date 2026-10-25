@@ -1,7 +1,7 @@
 use std::fmt;
 use std::io::{BufRead, BufReader, ErrorKind, Write};
 use std::path::{Path, PathBuf};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, Result};
 use serde::de::DeserializeOwned;
@@ -331,6 +331,13 @@ pub fn unix_now() -> u64 {
         .as_secs()
 }
 
+// keeps the fraction of a second that a sleep computed from `unix_now` drops
+pub fn until_unix(unix_secs: u64, now: SystemTime) -> Duration {
+    (UNIX_EPOCH + Duration::from_secs(unix_secs))
+        .duration_since(now)
+        .unwrap_or(Duration::ZERO)
+}
+
 pub fn unix_now_fractional() -> f64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -418,6 +425,13 @@ pub fn read_days<T: DeserializeOwned>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_wait_until_a_unix_second_keeps_the_fraction() {
+        let now = UNIX_EPOCH + Duration::from_millis(100_900);
+        assert_eq!(until_unix(101, now), Duration::from_millis(100));
+        assert_eq!(until_unix(100, now), Duration::ZERO);
+    }
 
     #[test]
     fn formats_utc_dates_across_leap_days() {

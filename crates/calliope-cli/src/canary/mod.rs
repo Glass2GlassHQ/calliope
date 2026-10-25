@@ -7,7 +7,7 @@ mod supervisor;
 
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime};
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
 use futures::stream::{FuturesUnordered, StreamExt};
@@ -19,7 +19,7 @@ use checks::{FrameChecks, MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, RssWindow};
 use config::{CanaryConfig, Tier};
 use record::{
     Cause, INCIDENTS_PREFIX, IncidentKind, OpenIncidents, RECOVERIES_PREFIX, Recovery,
-    SAMPLES_PREFIX, SECS_PER_DAY, STDERR_DIR, Sample, SharedOpenIncidents, unix_now,
+    SAMPLES_PREFIX, SECS_PER_DAY, STDERR_DIR, Sample, SharedOpenIncidents, unix_now, until_unix,
 };
 use schedule::RecoveryWindow;
 use supervisor::{PipelineState, SharedState, Supervisor, UnrecoveredRun};
@@ -72,7 +72,7 @@ pub async fn run(config_path: &Path) -> Result<()> {
     let shutdown = shutdown_signal();
     tokio::pin!(shutdown);
     loop {
-        let until_judged = Duration::from_secs(recovery_window.end.saturating_sub(unix_now()));
+        let until_judged = until_unix(recovery_window.end, SystemTime::now());
         tokio::select! {
             _ = ticker.tick() => {
                 sampler.sample()?;
