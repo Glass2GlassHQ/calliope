@@ -18,6 +18,8 @@ const SECS_PER_HOUR: f64 = 3_600.0;
 const NANOS_PER_MILLI: f64 = 1_000_000.0;
 // hls delivers a segment at a time, so a recovered row can go this long without a frame
 pub const RECOVERY_TAIL_SECS: f64 = 5.0;
+// hls bursts a segment's frames too, so a frame is late only this far behind the run's on-time frames
+const LATE_FRAME_NS: i128 = (RECOVERY_TAIL_SECS * 1_000_000_000.0) as i128;
 
 // the digests of a looped clip, by frame index
 #[derive(Debug)]
@@ -209,12 +211,60 @@ struct AvSinks {
 // the current unbroken run of good video frames
 #[derive(Debug, Default)]
 struct CleanRun {
-    // unix seconds the run's first frame arrived, none while frames are bad
+    // unix seconds the first frame after the run's last late frame arrived, none while frames are bad or late
     start: Option<f64>,
     last: f64,
+    // the smallest arrival minus pts of the run, a frame that arrived on time
+    on_time_offset_ns: Option<i128>,
+    // frames a later on-time frame can still show to be late, offsets falling from front to back
+    maybe_late: VecDeque<MaybeLateFrame>,
     // arrival minus pts over the run
     video_offset: OffsetMean,
     audio_offset: OffsetMean,
+}
+
+#[derive(Debug)]
+struct MaybeLateFrame {
+    offset_ns: i128,
+    // none until the next frame arrives
+    next_arrival: Option<f64>,
+}
+
+impl CleanRun {
+    fn add_good_frame(&mut self, offset_ns: i128, arrival_unix: f64) {
+        if let Some(previous) = self.maybe_late.back_mut() {
+            previous.next_arrival = Some(arrival_unix);
+        }
+        self.start.get_or_insert(arrival_unix);
+        self.last = arrival_unix;
+        self.video_offset.add(offset_ns);
+        let on_time = self
+            .on_time_offset_ns
+            .map_or(offset_ns, |on_time| on_time.min(offset_ns));
+        self.on_time_offset_ns = Some(on_time);
+        // a frame no later than this one is late only if this one is
+        while self
+            .maybe_late
+            .back()
+            .is_some_and(|frame| frame.offset_ns <= offset_ns)
+        {
+            self.maybe_late.pop_back();
+        }
+        self.maybe_late.push_back(MaybeLateFrame {
+            offset_ns,
+            next_arrival: None,
+        });
+        while self
+            .maybe_late
+            .front()
+            .is_some_and(|frame| frame.offset_ns - on_time > LATE_FRAME_NS)
+        {
+            self.start = self
+                .maybe_late
+                .pop_front()
+                .and_then(|late| late.next_arrival);
+        }
+    }
 }
 
 // how a row came back from a fault
@@ -302,10 +352,7 @@ impl FrameChecks {
                 self.clean_run = CleanRun::default();
             }
             if verdict != FrameVerdict::Wrong {
-                let run = &mut self.clean_run;
-                run.start.get_or_insert(arrival_unix);
-                run.last = arrival_unix;
-                run.video_offset.add(offset_ns);
+                self.clean_run.add_good_frame(offset_ns, arrival_unix);
             }
         }
         let Some(av) = &mut self.av else {
@@ -576,6 +623,74 @@ mod tests {
             .recovery_secs
             .unwrap();
         assert!((secs - 15.0).abs() < 1e-6, "recovered after {secs} s");
+    }
+
+    // a tcp stream that stalls delivers what it held back in a burst, 1 ms per frame
+    const BURST_FRAME_SECS: f64 = 0.001;
+    const STALL_FRAMES: u64 = 900;
+
+    // clip frames from frame 0 due from `due_from`, those due from `stalled_from` on held back until
+    // `resumed` and then sent in a burst, until the window ends
+    fn feed_stalled(checks: &mut FrameChecks, due_from: f64, stalled_from: f64, resumed: f64) {
+        let mut burst_frames = 0;
+        for frame in 0.. {
+            let due = due_from + frame as f64 * FRAME_SECS;
+            let burst_arrival = resumed + burst_frames as f64 * BURST_FRAME_SECS;
+            let arrival = if due >= stalled_from && due < burst_arrival {
+                burst_frames += 1;
+                burst_arrival
+            } else {
+                due
+            };
+            if arrival > WINDOW_END {
+                return;
+            }
+            checks.observe(
+                &event("video", frame * FRAME_NS, digest((frame % 4) as usize)),
+                ((arrival - FAULT_END) * 1e9) as i128,
+                arrival,
+            );
+        }
+    }
+
+    // the arrival of the first burst frame no more than LATE_FRAME_NS late, when the frame due
+    // at `stalled_from` comes first in a burst at `resumed`
+    fn first_on_time_in_burst(stalled_from: f64, resumed: f64) -> f64 {
+        let late_secs = LATE_FRAME_NS as f64 / 1e9;
+        let frames =
+            ((resumed - stalled_from - late_secs) / (FRAME_SECS - BURST_FRAME_SECS)).ceil();
+        resumed + frames * BURST_FRAME_SECS
+    }
+
+    fn assert_recovered_in_burst(checks: &mut FrameChecks, stalled_from: f64, resumed: f64) {
+        let secs = checks
+            .take_recovery(FAULT_END, WINDOW_END)
+            .recovery_secs
+            .unwrap();
+        let expected = first_on_time_in_burst(stalled_from, resumed) - FAULT_END;
+        assert!(
+            (secs - expected).abs() < 2.0 * BURST_FRAME_SECS,
+            "recovered after {secs} s, expected {expected} s"
+        );
+    }
+
+    #[test]
+    fn a_stalled_stream_recovers_when_its_frames_arrive_on_time_again() {
+        let mut checks = checks(false);
+        let due_from = FAULT_END - 60.0;
+        let stalled_from = due_from + STALL_FRAMES as f64 * FRAME_SECS;
+        let resumed = FAULT_END + 20.0;
+        feed_stalled(&mut checks, due_from, stalled_from, resumed);
+        assert_recovered_in_burst(&mut checks, stalled_from, resumed);
+    }
+
+    #[test]
+    fn a_run_that_starts_with_a_late_burst_recovers_at_its_first_on_time_frame() {
+        let mut checks = checks(false);
+        let due_from = FAULT_END - 30.0;
+        let resumed = FAULT_END + 2.0;
+        feed_stalled(&mut checks, due_from, due_from, resumed);
+        assert_recovered_in_burst(&mut checks, due_from, resumed);
     }
 
     #[test]

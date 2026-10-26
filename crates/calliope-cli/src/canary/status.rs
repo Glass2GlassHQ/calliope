@@ -4,7 +4,9 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Serialize;
 
-use super::checks::{MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, MEMORY_WINDOW_SECS, PTS_FORWARD_JUMP_NS};
+use super::checks::{
+    MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, MEMORY_WINDOW_SECS, PTS_FORWARD_JUMP_NS, RECOVERY_TAIL_SECS,
+};
 use super::config::{CanaryConfig, Tier};
 use super::record::{
     Incident, Recovery, SECS_PER_DAY, SECS_PER_HOUR, SECS_PER_MINUTE, Sample, utc_date,
@@ -349,8 +351,10 @@ fn recovery_table(status: &Status) -> String {
     };
     let mut html = format!(
         "<p>Recovery: the slowest time from the end of each fault to the first frame of a run of \
-         right frames that lasted until the next fault, over the last 24 hours and the last \
-         {WEEK_DAYS} days. Red counts the faults a row did not recover from.</p>\n\
+         right frames that arrived on time and lasted until the next fault, over the last 24 hours \
+         and the last {WEEK_DAYS} days. A frame is late when its delay, the time it \
+         arrived minus its timestamp, exceeds the smallest delay in its run by more than \
+         {RECOVERY_TAIL_SECS} seconds. Red counts the faults a row did not recover from.</p>\n\
          <table><tr><th>pipeline</th>"
     );
     for fault in &first.recovery {

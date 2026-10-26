@@ -502,8 +502,10 @@ self-hosted rows never see it.
 
 Every faulted row needs `video-sink` and `expect-hashes`. At the end of each
 clean window the canary judges each row's recovery from the fault before it:
-the time from the fault's end to the first frame of an unbroken run of right
-frames that lasts to the window's end. It appends one line per row to
+the time from the fault's end to the first frame of an unbroken run of right,
+on-time frames that lasts to the window's end. A frame is late when its arrival
+minus its pts exceeds the smallest such delay in its run by more than 5 s, as
+the frames a stalled TCP connection delivers in a burst do. It appends one line per row to
 `recoveries-<date>.jsonl` (`recovery_secs` is null when the row did not
 recover, and `av_drift_ms` covers the run on a row with `audio-sink`). A row
 that did not recover is killed and restarted, which opens a `no-recovery`
