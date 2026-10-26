@@ -51,6 +51,8 @@ pub struct PipelineConfig {
     // a clean exit after decoding is the end the stream has by design and opens no incident
     #[serde(default)]
     pub ends: bool,
+    // shown beside the launch line on the status page
+    pub note: Option<String>,
     // the `name=` of the checksumsink ending the video branch
     pub video_sink: Option<String>,
     // the `name=` of the checksumsink ending the audio branch, for a/v drift

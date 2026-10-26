@@ -219,11 +219,12 @@ launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.strea
 
 # no public livesim2 row: livesim2.dashif.org allows 10000 requests per ip per 24 hours, a live row spends that in about 3 hours
 
-# ll-hls with fmp4 parts, the stream ends and restarts every 12 hours
+# ll-hls with fmp4 parts
 [[pipeline]]
 id = "mux-llhls"
 tier = "public"
 ends = true
+note = "Mux ends this live stream at 03:20 and 15:20 UTC and starts a new one. A run that ends on the final playlist opens no incident. When that playlist does not arrive, the stream answers 412 until the next one starts, which shows as a short down incident at one of those times."
 launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8 max-bandwidth=1000000 ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
 
 # no public moq row: moq.dev's relay negotiates the ietf draft, but its broadcasts use the hang catalog and containers moqtsrc does not read

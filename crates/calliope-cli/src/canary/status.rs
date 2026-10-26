@@ -51,6 +51,7 @@ pub struct PipelineStatus {
     pub tier: Tier,
     // the g2g-launch line this row runs
     pub launch: String,
+    pub note: Option<String>,
     pub up_now: Option<bool>,
     pub uptime_24h: Option<f64>,
     pub uptime_7d: Option<f64>,
@@ -180,6 +181,7 @@ pub fn summarize(
                 id: pipeline.id.clone(),
                 tier: pipeline.tier,
                 launch: pipeline.launch.clone(),
+                note: pipeline.note.clone(),
                 up_now: last_sample.map(Sample::up),
                 uptime_24h: uptime_percent(own(), since(1), window_end),
                 uptime_7d: uptime_percent(own(), since(WEEK_DAYS), window_end),
@@ -542,15 +544,16 @@ pub fn render_html(status: &Status) -> String {
         "<h2>What each pipeline runs</h2>\n<p>The <code>g2g-launch</code> pipeline of every row \
          above. <code>checksumsink</code> digests each decoded frame for the content check, and \
          <code>fakesink</code> drops frames on rows without one.</p>\n\
-         <table><tr><th>pipeline</th><th>tier</th><th>launch</th></tr>\n",
+         <table><tr><th>pipeline</th><th>tier</th><th>launch</th><th>note</th></tr>\n",
     );
     for pipeline in &status.pipelines {
         let _ = writeln!(
             html,
-            "<tr><td>{}</td><td>{}</td><td><code>{}</code></td></tr>",
+            "<tr><td>{}</td><td>{}</td><td><code>{}</code></td><td>{}</td></tr>",
             escape_html(&pipeline.id),
             pipeline.tier.label(),
-            escape_html(&pipeline.launch)
+            escape_html(&pipeline.launch),
+            escape_html(pipeline.note.as_deref().unwrap_or_default())
         );
     }
     html.push_str("</table>\n");
@@ -644,6 +647,7 @@ mod tests {
             tier: Tier::SelfHosted,
             launch: "videotestsrc ! fakesink".into(),
             ends: false,
+            note: None,
             video_sink: None,
             audio_sink: None,
             expect_hashes: None,
@@ -788,6 +792,15 @@ mod tests {
         let escaped = "rtspsrc location=&quot;rtsp://x&quot; ! decodebin ! fakesink";
         assert!(html.contains(&format!("<td title=\"{escaped}\">a</td>")));
         assert!(html.contains(&format!("<td><code>{escaped}</code></td>")));
+    }
+
+    #[test]
+    fn a_row_note_shows_beside_its_launch_line() {
+        let mut config = pipeline("a");
+        config.note = Some("ends at 03:20 & 15:20".into());
+        let status = summarize(&canary(vec![config]), &[], &[], &[], G2G_COMMIT, TODAY);
+        let html = render_html(&status);
+        assert!(html.contains("</code></td><td>ends at 03:20 &amp; 15:20</td></tr>"));
     }
 
     #[test]
