@@ -160,7 +160,7 @@ launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s
 [[pipeline]]
 id = "faulted-rtsp"
 tier = "faulted"
-launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted reconnect=5 ! h264parse ! avdec_h264 ! checksumsink name=video"
+launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted stall-timeout=5000 reconnect=20 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
@@ -189,7 +189,7 @@ expect-hashes = "/etc/canary/hashes/baseline.txt"
 [[pipeline]]
 id = "faulted-rtsp-gst"
 tier = "faulted"
-launch = "rtspsrc location=rtsp://127.0.0.1:19555/faulted reconnect=5 ! h264parse ! avdec_h264 ! checksumsink name=video"
+launch = "rtspsrc location=rtsp://127.0.0.1:19555/faulted stall-timeout=5000 reconnect=20 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
@@ -197,7 +197,7 @@ expect-hashes = "/etc/canary/hashes/baseline.txt"
 [[pipeline]]
 id = "faulted-h264-aac-rtsp"
 tier = "faulted"
-launch = "rtspsrc name=s location=rtsp://127.0.0.1:19554/faulted-av reconnect=5 s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! aacparse ! avdec_aac ! checksumsink name=audio"
+launch = "rtspsrc name=s location=rtsp://127.0.0.1:19554/faulted-av stall-timeout=5000 reconnect=20 reconnect-backoff-max=1000 s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! aacparse ! avdec_aac ! checksumsink name=audio"
 video-sink = "video"
 audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
