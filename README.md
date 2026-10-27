@@ -583,10 +583,11 @@ for three segment lengths opens one too. The incident closes on the next file
 that passes. Samples carry `recording` with the files `checked` and `failed`,
 and the status page sums them per row over 24 hours and 7 days.
 
-The faulted egress rows put the fault on g2g's publishing side. `rtspclientsink`,
-`whipsink` and `srtsink` publish the moving bar into the faulted mediamtx on
-faulted ports: RTSP on 19554, WHIP on 19889 with WebRTC media on UDP 19189, and
-SRT on UDP 19891. The faulted mediamtx's `runOnAvailable` starts an ffmpeg that
+The faulted egress rows put the fault on g2g's publishing side. `rtspclientsink`
+and `srtsink` publish the moving bar into the faulted mediamtx on faulted ports:
+RTSP on 19554 and SRT on UDP 19891. The faulted mediamtx also takes WHIP on 19889
+with WebRTC media on UDP 19189, which no row uses while `whipsink` cannot replace
+a session it loses. The faulted mediamtx's `runOnAvailable` starts an ffmpeg that
 copies each `egress-faulted-*` path over its RTMP port, which netem leaves alone,
 into the clean mediamtx. A reader row reads it there over RTSP and checks it
 against `moving-bar.txt`, so only the publisher's leg is faulted. Each publisher
