@@ -1,6 +1,6 @@
 #!/bin/sh
 # runs a second mediamtx, a gst-rtsp-server relay and a feeder in this container's network namespace, with the
-# fault schedule's netem on the reader ports
+# fault schedule's netem on the ports readers read from and g2g publishes to
 set -u
 
 clips=/usr/share/g2g-canary/clips
@@ -8,7 +8,8 @@ config=/etc/canary/mediamtx-faulted.yml
 schedule=/etc/canary/fault-schedule.txt
 gst_relay_port=19555
 # reader-facing ports: mediamtx rtsp and hls, the gst-rtsp-server relay, and the g2g srt and rist listeners the feeder calls
-faulted_ports="19554 $gst_relay_port 19888 18892 18896 18897"
+# publisher-facing ports: mediamtx whip, its webrtc udp and srt
+faulted_ports="19554 $gst_relay_port 19888 18892 18896 18897 19889 19189 19891"
 retry_secs=1
 mediamtx_pid_file=/tmp/mediamtx.pid
 # a netem change keeps the previous rate and reorder unless it sets them

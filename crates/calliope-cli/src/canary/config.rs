@@ -59,6 +59,15 @@ pub struct PipelineConfig {
     pub audio_sink: Option<String>,
     // the video sink's digests of the looped clip, one checksumsink line per frame
     pub expect_hashes: Option<PathBuf>,
+    // the faulted row that reads back what this row publishes and checks its content
+    pub checked_by: Option<String>,
+}
+
+impl PipelineConfig {
+    // a faulted publisher's recovery shows in the row that checks it
+    pub fn judges_recovery(&self) -> bool {
+        self.tier == Tier::Faulted && self.checked_by.is_none()
+    }
 }
 
 // self-hosted streams separate a g2g failure from the internet failing
@@ -154,10 +163,14 @@ impl CanaryConfig {
             let recovery_checked =
                 pipeline.video_sink.is_some() && pipeline.expect_hashes.is_some();
             ensure!(
-                pipeline.tier != Tier::Faulted || recovery_checked,
-                "pipeline '{}': a faulted row needs video-sink and expect-hashes for its recovery check",
+                !pipeline.judges_recovery() || recovery_checked,
+                "pipeline '{}': a faulted row needs video-sink and expect-hashes for its recovery check, \
+                 or checked-by naming the row that checks it",
                 pipeline.id
             );
+            if let Some(reader) = &pipeline.checked_by {
+                self.validate_checked_by(pipeline, reader)?;
+            }
         }
         let last_port = usize::from(self.observe_base_port) + self.pipelines.len() - 1;
         ensure!(
@@ -166,6 +179,39 @@ impl CanaryConfig {
             self.pipelines.len()
         );
         Ok(())
+    }
+
+    fn validate_checked_by(&self, publisher: &PipelineConfig, reader: &str) -> Result<()> {
+        ensure!(
+            publisher.tier == Tier::Faulted && publisher.video_sink.is_none(),
+            "pipeline '{}': checked-by is for a faulted row without frame checks of its own",
+            publisher.id
+        );
+        let Some(reader) = self.pipelines.iter().find(|pipeline| pipeline.id == reader) else {
+            bail!(
+                "pipeline '{}': checked-by names no pipeline '{reader}'",
+                publisher.id
+            );
+        };
+        ensure!(
+            reader.judges_recovery() && reader.expect_hashes.is_some(),
+            "pipeline '{}': checked-by row '{}' must be a faulted row with expect-hashes",
+            publisher.id,
+            reader.id
+        );
+        Ok(())
+    }
+
+    // the rows whose content `reader` checks
+    pub fn publishers_checked_by<'a>(
+        &'a self,
+        reader: &'a PipelineConfig,
+    ) -> impl Iterator<Item = usize> + 'a {
+        self.pipelines
+            .iter()
+            .enumerate()
+            .filter(move |(_, pipeline)| pipeline.checked_by.as_ref() == Some(&reader.id))
+            .map(|(index, _)| index)
     }
 
     pub fn observe_port(&self, index: usize) -> u16 {
@@ -230,6 +276,66 @@ mod tests {
         assert!(
             parse(&no_hashes).is_err(),
             "a faulted row without a content check has no recovery check"
+        );
+    }
+
+    const FAULTED_PUBLISHER: &str = r#"
+        log-dir = "log"
+        status-dir = "status"
+        [[pipeline]]
+        id = "egress-faulted-srt-publish"
+        tier = "faulted"
+        launch = "videotestsrc ! x264enc ! mpegtsmux ! srtsink port=19891"
+        checked-by = "egress-faulted-srt-read"
+        [[pipeline]]
+        id = "egress-faulted-srt-read"
+        tier = "faulted"
+        launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-srt ! h264parse ! avdec_h264 ! checksumsink name=video"
+        video-sink = "video"
+        expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+    "#;
+
+    #[test]
+    fn a_faulted_publisher_names_the_faulted_row_that_checks_it() {
+        let config = parse(FAULTED_PUBLISHER).unwrap();
+        let (publisher, reader) = (&config.pipelines[0], &config.pipelines[1]);
+        assert!(!publisher.judges_recovery());
+        assert!(reader.judges_recovery());
+        assert_eq!(
+            config.publishers_checked_by(reader).collect::<Vec<_>>(),
+            [0]
+        );
+        let unchecked = FAULTED_PUBLISHER.replace("checked-by = \"egress-faulted-srt-read\"\n", "");
+        assert!(
+            parse(&unchecked).is_err(),
+            "a faulted row needs a content check"
+        );
+        let missing = FAULTED_PUBLISHER.replace(
+            "checked-by = \"egress-faulted-srt-read\"",
+            "checked-by = \"egress-faulted-rtmp-read\"",
+        );
+        assert!(parse(&missing).is_err(), "checked-by names no row");
+        let unhashed =
+            FAULTED_PUBLISHER.replace("expect-hashes = \"/etc/canary/hashes/moving-bar.txt\"", "");
+        assert!(
+            parse(&unhashed).is_err(),
+            "the checking row has no content check"
+        );
+        let clean_reader = FAULTED_PUBLISHER.replacen(
+            "tier = \"faulted\"\n        launch = \"rtspsrc",
+            "tier = \"self-hosted\"\n        launch = \"rtspsrc",
+            1,
+        );
+        assert_ne!(clean_reader, FAULTED_PUBLISHER);
+        assert!(
+            parse(&clean_reader).is_err(),
+            "the checking row is not faulted"
+        );
+        let clean_publisher =
+            FAULTED_PUBLISHER.replacen("tier = \"faulted\"", "tier = \"self-hosted\"", 1);
+        assert!(
+            parse(&clean_publisher).is_err(),
+            "checked-by on a row that is not faulted"
         );
     }
 

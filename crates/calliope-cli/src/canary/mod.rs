@@ -16,7 +16,7 @@ use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
 use calliope_core::runner::read_proc_status_kb;
 
 use checks::{FrameChecks, MEMORY_GROWTH_LIMIT_KIB_PER_HOUR, RssWindow};
-use config::{CanaryConfig, Tier};
+use config::CanaryConfig;
 use record::{
     Cause, INCIDENTS_PREFIX, IncidentKind, OpenIncidents, RECOVERIES_PREFIX, Recovery,
     SAMPLES_PREFIX, SECS_PER_DAY, STDERR_DIR, Sample, SharedOpenIncidents, unix_now, until_unix,
@@ -229,18 +229,17 @@ impl<'a> Sampler<'a> {
     }
 
     // records how each faulted row came back from the fault before `window`, and has a run that never did restarted
+    // along with the publishers it checks
     fn judge_recovery(&self, window: &RecoveryWindow) -> Result<()> {
         for (index, pipeline) in self.config.pipelines.iter().enumerate() {
-            if pipeline.tier != Tier::Faulted {
+            if !pipeline.judges_recovery() {
                 continue;
             }
-            let (recovery, pid) = {
-                let mut state = self.states[index].lock().expect("pipeline state lock");
-                let recovery = state
-                    .checks
-                    .take_recovery(window.start as f64, window.end as f64);
-                (recovery, state.pid)
-            };
+            let recovery = self.states[index]
+                .lock()
+                .expect("pipeline state lock")
+                .checks
+                .take_recovery(window.start as f64, window.end as f64);
             let record = Recovery {
                 pipeline: pipeline.id.clone(),
                 fault: window.fault.name.to_string(),
@@ -250,25 +249,39 @@ impl<'a> Sampler<'a> {
                 av_drift_ms: recovery.av_drift_ms,
             };
             record::append(&self.config.log_dir, RECOVERIES_PREFIX, window.end, &record)?;
+            let judged = std::iter::once(index).chain(self.config.publishers_checked_by(pipeline));
             if recovery.recovery_secs.is_some() {
-                self.open_incidents
-                    .lock()
-                    .expect("open incidents lock")
-                    .close(&pipeline.id, IncidentKind::NoRecovery, window.end)?;
+                let mut open_incidents = self.open_incidents.lock().expect("open incidents lock");
+                for judged_index in judged {
+                    let id = &self.config.pipelines[judged_index].id;
+                    open_incidents.close(id, IncidentKind::NoRecovery, window.end)?;
+                }
                 continue;
             }
-            // a row with no run is already down, and its supervisor opened that incident
-            let Some(pid) = pid else {
-                continue;
-            };
-            self.unrecovered[index]
-                .send(UnrecoveredRun {
-                    pid,
-                    fault: record.fault,
-                })
-                .map_err(|_| anyhow!("pipeline '{}' supervisor stopped", pipeline.id))?;
+            for judged_index in judged {
+                self.kill_unrecovered(judged_index, &record.fault)?;
+            }
         }
         Ok(())
+    }
+
+    fn kill_unrecovered(&self, index: usize, fault: &str) -> Result<()> {
+        let pid = self.states[index].lock().expect("pipeline state lock").pid;
+        // a row with no run is already down, and its supervisor opened that incident
+        let Some(pid) = pid else {
+            return Ok(());
+        };
+        self.unrecovered[index]
+            .send(UnrecoveredRun {
+                pid,
+                fault: fault.to_string(),
+            })
+            .map_err(|_| {
+                anyhow!(
+                    "pipeline '{}' supervisor stopped",
+                    self.config.pipelines[index].id
+                )
+            })
     }
 
     fn write_status(&self) -> Result<()> {
@@ -296,5 +309,77 @@ impl<'a> Sampler<'a> {
             now,
         );
         status::write_status(&self.config.status_dir, &summary)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use schedule::{Fault, FaultKind};
+
+    #[test]
+    fn a_reader_that_did_not_recover_restarts_with_the_publisher_it_checks() {
+        let dir =
+            std::env::temp_dir().join(format!("calliope-canary-judge-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        let hashes = dir.join("moving-bar.txt");
+        std::fs::write(&hashes, "0:00:00.000000000 00ff\n").unwrap();
+        let config: CanaryConfig = toml::from_str(&format!(
+            r#"
+            log-dir = "{dir}"
+            status-dir = "{dir}/status"
+            [[pipeline]]
+            id = "publish"
+            tier = "faulted"
+            launch = "videotestsrc ! x264enc ! mpegtsmux ! srtsink"
+            checked-by = "read"
+            [[pipeline]]
+            id = "read"
+            tier = "faulted"
+            launch = "rtspsrc ! h264parse ! avdec_h264 ! checksumsink name=video"
+            video-sink = "video"
+            expect-hashes = "{hashes}"
+            "#,
+            dir = dir.display(),
+            hashes = hashes.display(),
+        ))
+        .unwrap();
+        let pids = [41, 42];
+        let states: Vec<SharedState> = config
+            .pipelines
+            .iter()
+            .zip(pids)
+            .map(|(pipeline, pid)| {
+                let mut state = PipelineState::new(FrameChecks::new(pipeline).unwrap());
+                state.pid = Some(pid);
+                Arc::new(Mutex::new(state))
+            })
+            .collect();
+        let (senders, mut receivers): (Vec<_>, Vec<_>) =
+            config.pipelines.iter().map(|_| unbounded_channel()).unzip();
+        let open_incidents = Arc::new(Mutex::new(OpenIncidents::load(&dir).unwrap()));
+        let sampler = Sampler::new(&config, "test".into(), states, open_incidents, senders);
+        let window = RecoveryWindow {
+            fault: Fault {
+                kind: FaultKind::Netem,
+                name: "a long link outage",
+            },
+            start: 1_000,
+            end: 1_060,
+        };
+
+        sampler.judge_recovery(&window).unwrap();
+
+        for (receiver, pid) in receivers.iter_mut().zip(pids) {
+            let run = receiver.try_recv().expect("both rows are restarted");
+            assert_eq!(run.pid, pid);
+            assert_eq!(run.fault, window.fault.name);
+        }
+        let recoveries: Vec<Recovery> =
+            record::read_days(&dir, RECOVERIES_PREFIX, 0, window.end).unwrap();
+        assert_eq!(recoveries.len(), 1, "only the reader records a recovery");
+        assert_eq!(recoveries[0].pipeline, "read");
+        assert_eq!(recoveries[0].recovery_secs, None);
     }
 }

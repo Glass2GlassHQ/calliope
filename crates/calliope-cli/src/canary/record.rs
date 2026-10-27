@@ -520,6 +520,7 @@ mod tests {
             video_sink: Some("video".into()),
             audio_sink: None,
             expect_hashes: None,
+            checked_by: None,
         }
     }
 

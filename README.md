@@ -415,7 +415,10 @@ audio-sink = "audio"                           # the checksumsink name= on the a
 expect-hashes = "/etc/canary/hashes/baseline.txt"  # reference table for video-sink
 ```
 
-`expect-hashes` and `audio-sink` need `video-sink`. Every sample line then has:
+`expect-hashes` and `audio-sink` need `video-sink`. Every row ends in a
+checksumsink with `video-sink`, so the timestamps check covers it, public rows
+included. The exception is `opus-webrtc`, which decodes only audio and keeps
+`fakesink`, because an audio sink needs a video sink. Every sample line then has:
 
 - `content`, with `expect-hashes`: `matched` frames have a digest in the table,
   `mismatched` frames do not, and `skipped` counts the frames missing between
@@ -476,9 +479,16 @@ same mediamtx image and decodes each video clip into a reference table under
 `baseline`, `hevc`, `av1`, `vp9-opus` and `h264-aac`, pushes `baseline` to
 g2g's SRT listener, and sends it with ffmpeg's librist to g2g's RIST listener.
 
-The egress rows encode a 320x240 `videotestsrc` and publish it into mediamtx
-over RTMP, WHIP, SRT and RTSP (`rtspclientsink`), or serve it over RTSP for
-mediamtx to pull as the `egress-rtsp` path. A second row reads each one back over RTSP or WHEP.
+The egress rows encode a 320x240 `videotestsrc pattern=moving-bar` and publish it
+into mediamtx over RTMP, WHIP, SRT and RTSP (`rtspclientsink`), or serve it over
+RTSP for mediamtx to pull as the `egress-rtsp` path. A second row reads each one
+back over RTSP or WHEP. The encode is lossless (`x264enc pass=quant quantizer=0`,
+H.264 High 4:4:4 Predictive, about 45 kbit/s), and the bar moves 4 pixels a frame
+and wraps, so the source repeats every 80 frames. The readers' `expect-hashes` is
+`moving-bar.txt`, which the image build writes from the source's own 80 frames,
+so every decoded frame must equal the frame g2g generated. The `ball` pattern
+would not do: its bounce plays each loop forward and then backward, so a frame's
+digest does not say where in the loop it is.
 
 The DASH rows read `g2g-canary-livesim2`, DASH-IF's live simulator built from a
 pinned release into the image. It loops its bundled `testpic_2s` asset as a live
@@ -490,18 +500,18 @@ The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
 container with its own network namespace that runs a second mediamtx, a
 gst-rtsp-server relay of the clean `baseline` path and a feeder. Netem on its
 loopback runs the windows in `deploy/canary/fault-schedule.txt` on the
-reader-facing ports only: loss, jitter, reorder, burst loss, rate caps, link
+reader-facing ports and the ports g2g publishes to only: loss, jitter, reorder, burst loss, rate caps, link
 outages and a mediamtx restart, each followed by a clean window. A rate cap is a
 multiple of the traffic the netem band carried in the clean window before it.
 Windows sit at fixed places in a cycle counted from the unix epoch, so the
 container and the canary agree on them from the clock alone. Rootless podman
 allows this: the container has `CAP_NET_ADMIN` in its own namespace, and pasta
-publishes its RTSP and HLS ports on the host loopback and forwards its SRT and
+publishes its RTSP, HLS, WHIP, WebRTC and SRT ports on the host loopback and forwards its SRT and
 RIST sends to the host. Netem runs only inside that namespace, so the
 self-hosted rows never see it.
 
-Every faulted row needs `video-sink` and `expect-hashes`. At the end of each
-clean window the canary judges each row's recovery from the fault before it:
+Every faulted row needs `video-sink` and `expect-hashes`, or `checked-by` as
+below. At the end of each clean window the canary judges each row's recovery from the fault before it:
 the time from the fault's end to the first frame of an unbroken run of right,
 on-time frames that lasts to the window's end. A frame is late when its arrival
 minus its pts exceeds the smallest such delay in its run by more than 5 s, as
@@ -512,6 +522,20 @@ that did not recover is killed and restarted, which opens a `no-recovery`
 incident that closes on its next recovery. Faulted rows are never killed for a
 stall, and their wrong or skipped frames open no `content` incident. The status
 page shows each row's slowest recovery per fault over 24 hours and 7 days.
+
+The faulted egress rows put the fault on g2g's publishing side. `rtspclientsink`,
+`whipsink` and `srtsink` publish the moving bar into the faulted mediamtx on
+faulted ports: RTSP on 19554, WHIP on 19889 with WebRTC media on UDP 19189, and
+SRT on UDP 19891. The faulted mediamtx's `runOnAvailable` starts an ffmpeg that
+copies each `egress-faulted-*` path over its RTMP port, which netem leaves alone,
+into the clean mediamtx. A reader row reads it there over RTSP and checks it
+against `moving-bar.txt`, so only the publisher's leg is faulted. Each publisher
+row names its reader in `checked-by`, and the canary refuses to start unless that
+row exists, is faulted and has `expect-hashes`. The reader's recoveries are the
+publisher's, plus the time ffmpeg and the reader take to reconnect. A publisher
+row has no recovery line of its own, its exits open incidents as on any row, and
+when its reader does not recover the canary restarts both, each with a
+`no-recovery` incident.
 
 ### Deploy
 
