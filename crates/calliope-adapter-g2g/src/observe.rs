@@ -11,6 +11,7 @@ const DECODER_NAME_PART: &str = "Dec";
 const TELEMETRY_TYPE: &str = "telemetry";
 const EVENT_TYPE: &str = "event";
 const CHECKSUM_KIND: &str = "checksum";
+const STREAM_START_KIND: &str = "stream-start";
 // g2g-launch binds the port only once the graph is built
 const RECONNECT_DELAY: Duration = Duration::from_millis(250);
 
@@ -35,6 +36,8 @@ pub struct ChecksumReading {
 pub enum ObserveMessage {
     Telemetry(TelemetryReading),
     Checksum(ChecksumReading),
+    // a source is about to send its first packet, one per source each time a graph starts
+    StreamStart,
 }
 
 pub fn observe_args(launch_line: &str, port: u16) -> Vec<String> {
@@ -50,6 +53,9 @@ pub fn parse_observe_message(text: &str) -> Option<ObserveMessage> {
     let message: Value = serde_json::from_str(text).ok()?;
     if message["type"] == TELEMETRY_TYPE {
         return parse_telemetry(&message).map(ObserveMessage::Telemetry);
+    }
+    if message["type"] == EVENT_TYPE && message["kind"] == STREAM_START_KIND {
+        return Some(ObserveMessage::StreamStart);
     }
     if message["type"] == EVENT_TYPE && message["kind"] == CHECKSUM_KIND {
         return Some(ObserveMessage::Checksum(ChecksumReading {
@@ -155,6 +161,14 @@ mod tests {
 
     // recorded from `g2g-launch -q --observe <port> filesrc location=clip.ts ! tsdemux ! h264parse ! avdec_h264 ! clocksync ! checksumsink name=video`
     const CHECKSUM_EVENT: &str = r#"{"digest":"78fa86525f962ffea7bee0c80aaae2939d83c2ec","element":"video","kind":"checksum","pts_ns":2700000000,"type":"event"}"#;
+
+    #[test]
+    fn reads_stream_start_events() {
+        assert_eq!(
+            parse_observe_message(r#"{"kind":"stream-start","type":"event"}"#),
+            Some(ObserveMessage::StreamStart)
+        );
+    }
 
     #[test]
     fn reads_checksum_events() {

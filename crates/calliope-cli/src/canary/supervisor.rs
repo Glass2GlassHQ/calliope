@@ -91,10 +91,13 @@ impl Supervisor {
     ) -> Self {
         Supervisor {
             pipeline: config.pipelines[index].clone(),
-            program: config
-                .g2g_launch
-                .clone()
-                .unwrap_or_else(calliope_adapter_g2g::g2g_launch_binary),
+            program: match &config.pipelines[index].program {
+                Some(program) => program.to_string_lossy().into_owned(),
+                None => config
+                    .g2g_launch
+                    .clone()
+                    .unwrap_or_else(calliope_adapter_g2g::g2g_launch_binary),
+            },
             port: config.observe_port(index),
             log_dir: config.log_dir.clone(),
             recordings_dir: config.recordings_dir.clone(),
@@ -262,6 +265,8 @@ impl Supervisor {
                         .checks
                         .observe(&reading, arrival_ns, unix_now_fractional());
                 }
+                // a program that rebuilds its graph joins the stream anew without a restart
+                ObserveMessage::StreamStart => state.checks.restart(),
             }
         }
     }
@@ -367,6 +372,7 @@ mod tests {
     use super::*;
     use crate::canary::config::Tier;
     use crate::canary::record::{INCIDENTS_PREFIX, OpenIncidents, read_days};
+    use calliope_adapter_g2g::observe::ChecksumReading;
     use futures::SinkExt;
     use std::path::Path;
     use tokio_tungstenite::tungstenite::Message;
@@ -531,6 +537,63 @@ mod tests {
 
         assert!(state.lock().unwrap().restarts >= 2);
         assert!(reloaded_open_incidents(&dir).is_empty());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[tokio::test]
+    async fn a_program_row_runs_its_program_with_the_scenario() {
+        let dir = scratch("program");
+        let arguments = dir.join("arguments");
+        let program = fake_launch(
+            &dir,
+            &format!("echo \"$@\" > {}\nexec sleep 60", arguments.display()),
+        );
+        let silent = silent_observe_listener();
+        let port = silent.local_addr().unwrap().port();
+        let mut config = config(&dir, &dir.join("no-g2g-launch"), port);
+        config.pipelines[0].program = Some(program);
+        config.pipelines[0].launch = "rebuild".into();
+        let state = SharedState::default();
+        supervise_for(&config, &state).await;
+
+        let arguments = std::fs::read_to_string(&arguments).expect("the program ran");
+        assert_eq!(arguments.trim(), format!("-q --observe {port} rebuild"));
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_stream_start_restarts_the_frame_checks() {
+        let dir = scratch("stream-start");
+        let digests = ["aa", "bb", "cc", "dd"];
+        let table = dir.join("table.txt");
+        let lines: String = digests
+            .iter()
+            .enumerate()
+            .map(|(index, digest)| format!("0:00:00.00000000{index} {digest}\n"))
+            .collect();
+        std::fs::write(&table, lines).unwrap();
+        let mut config = config(&dir, Path::new("/bin/true"), 0);
+        config.pipelines[0].video_sink = Some("video".into());
+        config.pipelines[0].expect_hashes = Some(table);
+        let checks = FrameChecks::new(&config.pipelines[0]).unwrap();
+        let state = Arc::new(Mutex::new(PipelineState::new(checks)));
+        let mut on_message = supervisor(&config, &state).on_message();
+        let frame = |index: usize, pts_ns: u64| {
+            ObserveMessage::Checksum(ChecksumReading {
+                element: "video".into(),
+                pts_ns,
+                digest: digests[index].into(),
+            })
+        };
+        on_message(frame(0, 2_000_000_000));
+        // the rebuilt graph joins the clip two frames on, with its pts back at zero
+        on_message(ObserveMessage::StreamStart);
+        on_message(frame(2, 0));
+
+        let sample = state.lock().unwrap().checks.take_sample();
+        let content = sample.content.unwrap();
+        assert_eq!((content.matched, content.bad()), (2, 0), "{content:?}");
+        assert_eq!(sample.timestamps.unwrap().bad(), 0);
         std::fs::remove_dir_all(&dir).unwrap();
     }
 

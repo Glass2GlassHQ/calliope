@@ -50,8 +50,10 @@ pub struct CanaryConfig {
 pub struct PipelineConfig {
     pub id: String,
     pub tier: Tier,
-    // the g2g-launch pipeline description
+    // the g2g-launch pipeline description, or the scenario name when `program` is set
     pub launch: String,
+    // runs in place of g2g-launch, taking the same arguments with `launch` as the last
+    pub program: Option<PathBuf>,
     // a clean exit after decoding is the end the stream has by design and opens no incident
     #[serde(default)]
     pub ends: bool,
@@ -166,6 +168,14 @@ impl CanaryConfig {
             );
             recording::validate(pipeline, self.recordings_dir.as_deref())
                 .with_context(|| format!("pipeline '{}'", pipeline.id))?;
+            if let Some(program) = &pipeline.program {
+                ensure!(
+                    program.is_file(),
+                    "pipeline '{}': program {} is not a file",
+                    pipeline.id,
+                    program.display()
+                );
+            }
         }
         let last_port = usize::from(self.observe_base_port) + self.pipelines.len() - 1;
         ensure!(
@@ -239,6 +249,23 @@ mod tests {
             parse(&no_hashes).is_err(),
             "a faulted row without a content check has no recovery check"
         );
+    }
+
+    #[test]
+    fn a_program_row_needs_its_program_on_disk() {
+        let program = std::env::current_exe().unwrap();
+        let with_program = TWO_PIPELINES.replace(
+            "stall-secs = 20",
+            "stall-secs = 20\n[[pipeline]]\nid = \"api\"\ntier = \"self-hosted\"\nlaunch = \"rebuild\"\nprogram = \"PROGRAM\"",
+        );
+        let config = parse(&with_program.replace("PROGRAM", &program.to_string_lossy())).unwrap();
+        assert_eq!(
+            config.pipelines[0].program.as_deref(),
+            Some(program.as_path())
+        );
+        assert!(config.pipelines[1].program.is_none());
+        let missing = program.with_file_name("no-such-program");
+        assert!(parse(&with_program.replace("PROGRAM", &missing.to_string_lossy())).is_err());
     }
 
     #[test]

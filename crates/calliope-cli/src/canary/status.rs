@@ -1,5 +1,5 @@
 use std::fmt::Write as _;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
 use serde::Serialize;
@@ -55,8 +55,9 @@ pub struct Status {
 pub struct PipelineStatus {
     pub id: String,
     pub tier: Tier,
-    // the g2g-launch line this row runs
+    // the g2g-launch line this row runs, or the scenario name its program runs
     pub launch: String,
+    pub program: Option<PathBuf>,
     pub note: Option<String>,
     pub up_now: Option<bool>,
     pub uptime_24h: Option<f64>,
@@ -70,6 +71,15 @@ pub struct PipelineStatus {
     pub recovery: Vec<FaultRecovery>,
     // on a row that records
     pub recording: Option<RecordingSummary>,
+}
+
+impl PipelineStatus {
+    fn command(&self) -> String {
+        match &self.program {
+            Some(program) => format!("{} {}", program.display(), self.launch),
+            None => self.launch.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -206,6 +216,7 @@ pub fn summarize(
                 id: pipeline.id.clone(),
                 tier: pipeline.tier,
                 launch: pipeline.launch.clone(),
+                program: pipeline.program.clone(),
                 note: pipeline.note.clone(),
                 up_now: last_sample.map(Sample::up),
                 uptime_24h: uptime_percent(own(), since(1), window_end),
@@ -503,7 +514,7 @@ fn pipeline_row(pipeline: &PipelineStatus) -> String {
         "<tr><td title=\"{}\">{}</td><td>{state}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td>\
          <td>{fps}</td><td>{latency}</td><td>{rss}</td><td>{growth}</td><td>{content}</td>\
          <td>{timestamps}</td><td>{drift}</td><td>{}</td></tr>",
-        escape_html(&pipeline.launch),
+        escape_html(&pipeline.command()),
         escape_html(&pipeline.id),
         format_percent(pipeline.uptime_24h),
         format_percent(pipeline.uptime_7d),
@@ -613,7 +624,8 @@ pub fn render_html(status: &Status) -> String {
     html.push_str(&recording_table(status));
     html.push_str(
         "<h2>What each pipeline runs</h2>\n<p>The <code>g2g-launch</code> pipeline of every row \
-         above. <code>checksumsink</code> digests each decoded frame for the content check, and \
+         above, or the program and scenario of a row that builds its graphs with the g2g Rust API. \
+         <code>checksumsink</code> digests each decoded frame for the content check, and \
          <code>fakesink</code> drops frames on rows without one.</p>\n\
          <table><tr><th>pipeline</th><th>tier</th><th>launch</th><th>note</th></tr>\n",
     );
@@ -623,7 +635,7 @@ pub fn render_html(status: &Status) -> String {
             "<tr><td>{}</td><td>{}</td><td><code>{}</code></td><td>{}</td></tr>",
             escape_html(&pipeline.id),
             pipeline.tier.label(),
-            escape_html(&pipeline.launch),
+            escape_html(&pipeline.command()),
             escape_html(pipeline.note.as_deref().unwrap_or_default())
         );
     }
@@ -720,6 +732,7 @@ mod tests {
             id: id.into(),
             tier: Tier::SelfHosted,
             launch: "videotestsrc ! fakesink".into(),
+            program: None,
             ends: false,
             note: None,
             video_sink: None,
@@ -868,6 +881,18 @@ mod tests {
         let escaped = "rtspsrc location=&quot;rtsp://x&quot; ! decodebin ! fakesink";
         assert!(html.contains(&format!("<td title=\"{escaped}\">a</td>")));
         assert!(html.contains(&format!("<td><code>{escaped}</code></td>")));
+    }
+
+    #[test]
+    fn a_program_row_shows_its_program_beside_the_scenario() {
+        let mut config = pipeline("api");
+        config.program = Some("/usr/local/bin/g2g-api-soak".into());
+        config.launch = "rebuild".into();
+        let status = summarize(&canary(vec![config]), &[], &[], &[], G2G_COMMIT, TODAY);
+        let html = render_html(&status);
+        let command = "/usr/local/bin/g2g-api-soak rebuild";
+        assert!(html.contains(&format!("<td title=\"{command}\">api</td>")));
+        assert!(html.contains(&format!("<td><code>{command}</code></td>")));
     }
 
     #[test]
