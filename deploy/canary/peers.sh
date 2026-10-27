@@ -17,9 +17,10 @@ forever() {
 }
 
 trap "kill 0" TERM INT
-# proxyStream-1 is the clean mediamtx baseline path, proxyStream-2 g2g's rtspserversink, -t asks both for rtp over tcp
-forever "live555 proxy" live555ProxyServer -t -p 18570 \
-    rtsp://127.0.0.1:18554/baseline rtsp://127.0.0.1:18571/peers &
+# one proxy per back-end, so a restart of g2g's rtspserversink cannot stall the baseline proxy
+# -t asks the back-end for rtp over tcp, the clean mediamtx allows only tcp
+forever "live555 baseline proxy" live555ProxyServer -t -p 18570 rtsp://127.0.0.1:18554/baseline &
+forever "live555 serve proxy" live555ProxyServer -t -p 18572 rtsp://127.0.0.1:18571/peers &
 forever "nginx-rtmp" nginx -c /etc/canary/nginx-peers.conf &
 forever "rtmp publish" ffmpeg -hide_banner -loglevel warning -re -stream_loop -1 -i "$clips/baseline.mp4" \
     -c copy -f flv rtmp://127.0.0.1:18936/baseline/baseline &

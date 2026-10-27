@@ -161,12 +161,12 @@ launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s
 [[pipeline]]
 id = "peers-live555-rtsp"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18570/proxyStream-1 ! h264parse ! avdec_h264 ! checksumsink name=video"
+launch = "rtspsrc location=rtsp://127.0.0.1:18570/proxyStream ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 # live555's rtsp client pulls g2g's rtspserversink, a second row reads it back through the proxy
-# live555 retimes the stream at g2g's first sender report by as long as the first frame waited for its PLAY, which the reader sees as one backward pts
+# live555 moves its rtp timestamps by a few ms at g2g's first sender report after both start, so that first run can see one backward pts
 [[pipeline]]
 id = "peers-live555-serve"
 tier = "self-hosted"
@@ -175,7 +175,7 @@ launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate
 [[pipeline]]
 id = "peers-live555-serve-play"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18570/proxyStream-2 ! h264parse ! avdec_h264 ! checksumsink name=video"
+launch = "rtspsrc location=rtsp://127.0.0.1:18572/proxyStream ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 
 # g2g's rtmpsink publishes into nginx-rtmp, which pushes the stream to g2g's rtmpsrc listener

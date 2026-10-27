@@ -10,6 +10,7 @@ Entrypoint=/usr/local/bin/canary-peers.sh
 # -T reaches the clean mediamtx and g2g's rtspserversink and rtmpsrc listeners on the host, -U g2g's srtsrc listener
 Network=pasta:-T,18554,-T,18571,-T,18937-18938,-U,18951
 PublishPort=127.0.0.1:18570:18570
+PublishPort=127.0.0.1:18572:18572
 PublishPort=127.0.0.1:18936:18936
 PublishPort=127.0.0.1:18950:18950/udp
 RunInit=true
