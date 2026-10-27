@@ -389,8 +389,8 @@ mod tests {
         std::fs::write(&hashes, "0:00:00.000000000 00ff\n").unwrap();
         let config: CanaryConfig = toml::from_str(&format!(
             r#"
-            log-dir = "{dir}"
-            status-dir = "{dir}/status"
+            log-dir = '{dir}'
+            status-dir = '{dir}/status'
             [[pipeline]]
             id = "publish"
             tier = "faulted"
@@ -401,7 +401,7 @@ mod tests {
             tier = "faulted"
             launch = "rtspsrc ! h264parse ! avdec_h264 ! checksumsink name=video"
             video-sink = "video"
-            expect-hashes = "{hashes}"
+            expect-hashes = '{hashes}'
             "#,
             dir = dir.display(),
             hashes = hashes.display(),

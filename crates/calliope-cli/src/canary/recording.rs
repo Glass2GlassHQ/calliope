@@ -538,9 +538,15 @@ mod tests {
         let recordings = Path::new("recordings");
         let recording = pipeline(RECORDING_LAUNCH, Some(60));
         validate(&recording, Some(recordings)).unwrap();
+        let location = recordings
+            .join("baseline-record")
+            .join("1792900000-%05d.mp4");
         assert_eq!(
             launch_line(&recording, Some(recordings), 1_792_900_000),
-            "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! h264parse ! splitmuxsink location=recordings/baseline-record/1792900000-%05d.mp4 max-size-time=60000000000"
+            format!(
+                "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! h264parse ! splitmuxsink location={} max-size-time=60000000000",
+                location.display()
+            )
         );
         assert!(validate(&recording, None).is_err());
         assert!(validate(&pipeline(RECORDING_LAUNCH, None), Some(recordings)).is_err());

@@ -411,7 +411,7 @@ mod tests {
         let program = std::env::current_exe().unwrap();
         let with_program = TWO_PIPELINES.replace(
             "stall-secs = 20",
-            "stall-secs = 20\n[[pipeline]]\nid = \"api\"\ntier = \"self-hosted\"\nlaunch = \"rebuild\"\nprogram = \"PROGRAM\"",
+            "stall-secs = 20\n[[pipeline]]\nid = \"api\"\ntier = \"self-hosted\"\nlaunch = \"rebuild\"\nprogram = 'PROGRAM'",
         );
         let config = parse(&with_program.replace("PROGRAM", &program.to_string_lossy())).unwrap();
         assert_eq!(
