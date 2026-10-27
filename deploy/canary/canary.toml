@@ -411,3 +411,23 @@ tier = "public"
 ends = true
 launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8 max-bandwidth=1000000 ! fmp4demux ! clocksync ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
+
+# self-hosted rows that build their graphs with the g2g rust api instead of a launch line, see g2g's examples/g2g-api-soak
+
+# builds rtspsrc ! h264parse ! avdec_h264 ! checksumsink, stops it with a state change to null after 60 s, and builds it again
+[[pipeline]]
+id = "api-rebuild"
+tier = "self-hosted"
+program = "/usr/local/bin/g2g-api-soak"
+launch = "rebuild"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# one graph that adds and removes a scaled tee branch, splices an identity after the decoder and sets h264parse's config-interval, every 12 s
+[[pipeline]]
+id = "api-mutate"
+tier = "self-hosted"
+program = "/usr/local/bin/g2g-api-soak"
+launch = "mutate"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"

@@ -40,7 +40,8 @@ ARG CARGO_BUILD_JOBS=4
 ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 COPY --from=g2g . /src/glass2glass
 RUN cd /src/glass2glass \
-    && cargo build --release --locked -p g2g-plugins --bin g2g-launch --features "${G2G_FEATURES}"
+    && cargo build --release --locked -p g2g-plugins --bin g2g-launch --features "${G2G_FEATURES}" \
+    && cargo build --release --locked --manifest-path examples/g2g-api-soak/Cargo.toml --target-dir target
 COPY . /src/calliope
 RUN cd /src/calliope && cargo build --release --locked -p calliope-cli
 
@@ -50,6 +51,7 @@ RUN dnf -y install --allowerasing ffmpeg ffmpeg-libs opus libdav1d iproute-tc op
         python3-gobject gstreamer1-rtsp-server gstreamer1-plugins-good gstreamer1-plugins-bad-free \
     && dnf clean all
 COPY --from=build /src/glass2glass/target/release/g2g-launch /usr/local/bin/g2g-launch
+COPY --from=build /src/glass2glass/target/release/g2g-api-soak /usr/local/bin/g2g-api-soak
 COPY --from=build /src/calliope/target/release/calliope /usr/local/bin/calliope
 COPY --from=mediamtx /mediamtx /usr/local/bin/mediamtx
 COPY --from=mediamtx /clips /usr/share/g2g-canary/clips

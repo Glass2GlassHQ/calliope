@@ -520,6 +520,7 @@ mod tests {
             id: "baseline-record".into(),
             tier: Tier::SelfHosted,
             launch: launch.into(),
+            program: None,
             ends: false,
             note: None,
             video_sink: None,

@@ -597,6 +597,21 @@ row has no recovery line of its own, its exits open incidents as on any row, and
 when its reader does not recover the canary restarts both, each with a
 `no-recovery` incident.
 
+### Rust API rows
+
+A row with `program` runs that binary in place of `g2g-launch`, with the same
+arguments, and its `launch` is the scenario name. The canary refuses to start
+when the file is missing, and the status page shows the program before the
+scenario. The `api-rebuild` and `api-mutate` rows run g2g's
+`examples/g2g-api-soak`, which the image builds from the same commit as
+`g2g-launch`. It builds its graphs with the typed Rust API. `rebuild` stops its
+graph with `set_state(Null)` every 60 s, drops it and builds a new one in the
+same process. `mutate` runs one graph and every 12 s adds and removes a tee
+branch, splices an element after the decoder and lifts it out again, and sets
+`h264parse`'s `config-interval`. A rebuilt graph joins the clip at another frame
+with its pts back at zero, so each `stream-start` event on the observe socket
+restarts the frame checks the way a new run does.
+
 ### Deploy
 
 The image bundles `calliope` and a `g2g-launch` built from one g2g commit, which
