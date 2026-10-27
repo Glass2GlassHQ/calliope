@@ -1,0 +1,23 @@
+[Unit]
+Description=g2g canary: live555, nginx-rtmp and srt-live-transmit as g2g's rtsp, rtmp and srt peers
+
+[Container]
+Image=ghcr.io/glass2glasshq/g2g-canary:latest
+AutoUpdate=registry
+ContainerName=g2g-canary-peers
+Entrypoint=/usr/local/bin/canary-peers.sh
+# live555 also opens an rtsp over http port on every interface, so pasta publishes only the ports below
+# -T reaches the clean mediamtx and g2g's rtspserversink and rtmpsrc listeners on the host, -U g2g's srtsrc listener
+Network=pasta:-T,18554,-T,18571,-T,18937-18938,-U,18951
+PublishPort=127.0.0.1:18570:18570
+PublishPort=127.0.0.1:18572:18572
+PublishPort=127.0.0.1:18936:18936
+PublishPort=127.0.0.1:18950:18950/udp
+RunInit=true
+
+[Service]
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=default.target

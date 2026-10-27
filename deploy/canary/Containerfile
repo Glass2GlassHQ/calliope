@@ -19,6 +19,18 @@ FROM registry.fedoraproject.org/fedora:${FEDORA_RELEASE} AS base
 RUN dnf -y install "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm" \
     && dnf clean all
 
+# no fedora package carries nginx's rtmp module, so it is built against fedora's nginx as a dynamic module
+FROM base AS nginx-rtmp
+ARG NGINX_RTMP_VERSION=1.2.2
+ARG NGINX_RTMP_SHA256=07f19b7bffec5e357bb8820c63e5281debd45f5a2e6d46b1636d9202c3e09d78
+RUN dnf -y install nginx-mod-devel gcc make && dnf clean all
+RUN curl -fsSLo /nginx-rtmp.tar.gz \
+        "https://github.com/arut/nginx-rtmp-module/archive/refs/tags/v${NGINX_RTMP_VERSION}.tar.gz" \
+    && echo "${NGINX_RTMP_SHA256}  /nginx-rtmp.tar.gz" | sha256sum -c - \
+    && mkdir /nginx-rtmp && tar -xzf /nginx-rtmp.tar.gz -C /nginx-rtmp --strip-components 1 \
+    && cp -a /usr/src/nginx-*/ /nginx-src && cd /nginx-src \
+    && ./configure --with-compat --add-dynamic-module=/nginx-rtmp && make modules
+
 FROM base AS build
 RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
         opus-devel libdav1d-devel \
@@ -43,6 +55,13 @@ COPY --from=mediamtx /mediamtx /usr/local/bin/mediamtx
 COPY --from=mediamtx /clips /usr/share/g2g-canary/clips
 COPY --from=livesim2 /livesim2 /usr/local/bin/livesim2
 COPY --from=livesim2 /src/cmd/livesim2/app/testdata/assets /usr/share/livesim2/vod
+# live555's rtsp proxy, nginx-rtmp and libsrt's srt-live-transmit run in g2g-canary-peers.container
+RUN dnf -y install live555-tools srt nginx-core && dnf clean all
+COPY --from=nginx-rtmp /nginx-src/objs/ngx_rtmp_module.so /usr/lib64/nginx/modules/ngx_rtmp_module.so
+COPY --chmod=0755 deploy/canary/peers.sh /usr/local/bin/canary-peers.sh
+COPY deploy/canary/nginx-peers.conf /etc/canary/nginx-peers.conf
+# nginx refuses a module built for another nginx version, so a mismatch fails the build
+RUN nginx -t -c /etc/canary/nginx-peers.conf
 COPY --chmod=0755 deploy/canary/faulted.sh /usr/local/bin/canary-faulted.sh
 COPY deploy/canary/gst-rtsp-relay.py /usr/local/bin/canary-gst-rtsp-relay.py
 COPY deploy/canary/mediamtx-faulted.yml /etc/canary/mediamtx-faulted.yml
