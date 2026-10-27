@@ -486,6 +486,16 @@ stream on port 18900 of the host loopback, once with a new Period every minute.
 The public livesim2.dashif.org allows 10000 requests per IP address per 24 hours,
 which one live row spends in about 3 hours.
 
+The `peers-*` rows talk to reference servers other than mediamtx and ffmpeg, in
+`g2g-canary-peers`. live555's `live555ProxyServer` re-serves the clean `baseline`
+path, and pulls g2g's `rtspserversink` as a client for a second row to read back.
+nginx with its rtmp module, built from a pinned release into the image, takes
+g2g's `rtmpsink` publish and an ffmpeg publish of the baseline clip, and pushes
+each to a g2g `rtmpsrc` listener. libsrt's `srt-live-transmit` takes g2g's
+`srtsink` call and calls g2g's `srtsrc` listener with the stream. The container
+runs on pasta and publishes only its listening ports on the host loopback,
+because live555 also opens an RTSP over HTTP port on every interface.
+
 The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
 container with its own network namespace that runs a second mediamtx, a
 gst-rtsp-server relay of the clean `baseline` path and a feeder. Netem on its
@@ -516,9 +526,9 @@ page shows each row's slowest recovery per fault over 24 hours and 7 days.
 ### Deploy
 
 The image bundles `calliope` and a `g2g-launch` built from one g2g commit, which
-it reports in `G2G_COMMIT`. Five podman Quadlet units run under the user's
+it reports in `G2G_COMMIT`. Six podman Quadlet units run under the user's
 systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder`, `g2g-canary-faulted`,
-`g2g-canary-livesim2` and `g2g-canary`. The last three run
+`g2g-canary-livesim2`, `g2g-canary-peers` and `g2g-canary`. The last four run
 `ghcr.io/glass2glasshq/g2g-canary:latest`. A
 `canary-publish.timer` copies the status page and sends incident alerts every 5
 minutes.

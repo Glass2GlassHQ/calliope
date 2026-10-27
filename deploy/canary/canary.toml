@@ -154,6 +154,62 @@ id = "dash-livesim2-multiperiod"
 tier = "self-hosted"
 launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
 
+# peers: g2g against the reference servers in g2g-canary-peers, live555, nginx-rtmp and libsrt's srt-live-transmit
+
+# live555ProxyServer re-serves the clean mediamtx baseline path
+# live555 moves its rtp timestamps once when mediamtx's first sender report arrives, so a run that starts with the proxy can see one backward pts
+[[pipeline]]
+id = "peers-live555-rtsp"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18570/proxyStream-1 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# live555's rtsp client pulls g2g's rtspserversink, a second row reads it back through the proxy
+# live555 retimes the stream at g2g's first sender report by as long as the first frame waited for its PLAY, which the reader sees as one backward pts
+[[pipeline]]
+id = "peers-live555-serve"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! rtspserversink address=127.0.0.1 port=18571"
+
+[[pipeline]]
+id = "peers-live555-serve-play"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18570/proxyStream-2 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+
+# g2g's rtmpsink publishes into nginx-rtmp, which pushes the stream to g2g's rtmpsrc listener
+[[pipeline]]
+id = "peers-rtmp-publish"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! flvmux ! rtmpsink location=rtmp://127.0.0.1:18936/egress/egress"
+
+[[pipeline]]
+id = "peers-rtmp-publish-play"
+tier = "self-hosted"
+launch = "rtmpsrc address=127.0.0.1 port=18937 ! flvdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+
+# ffmpeg publishes the baseline clip into nginx-rtmp, which pushes it to g2g's rtmpsrc listener
+[[pipeline]]
+id = "peers-rtmp-push"
+tier = "self-hosted"
+launch = "rtmpsrc address=127.0.0.1 port=18938 ! flvdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# g2g's srtsink calls srt-live-transmit, which calls g2g's srtsrc listener
+[[pipeline]]
+id = "peers-srt-publish"
+tier = "self-hosted"
+launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! mpegtsmux ! srtsink host=127.0.0.1 port=18950"
+
+[[pipeline]]
+id = "peers-srt-play"
+tier = "self-hosted"
+launch = "srtsrc address=127.0.0.1 port=18951 keep-listening=true ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+
 # faulted: the baseline clip through g2g-canary-faulted, whose loopback follows fault-schedule.txt
 # every row needs the content check, the recovery check is built on it
 
