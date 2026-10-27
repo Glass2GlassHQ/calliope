@@ -561,6 +561,7 @@ mod tests {
             audio_sink: None,
             expect_hashes: None,
             recording_segment_secs: None,
+            checked_by: None,
         }
     }
 

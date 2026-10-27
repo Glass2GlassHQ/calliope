@@ -10,8 +10,14 @@ hlsVariant: mpegts
 hlsAlwaysRemux: true
 rtmp: true
 rtmpAddress: :19935
-webrtc: false
-srt: false
+# g2g's whipsink and srtsink publish into these through the faults
+webrtc: true
+webrtcAddress: :19889
+webrtcLocalUDPAddress: :19189
+webrtcIPsFromInterfaces: false
+webrtcAdditionalHosts: [127.0.0.1]
+srt: true
+srtAddress: :19891
 moq: false
 api: false
 metrics: false
@@ -20,3 +26,7 @@ playback: false
 paths:
   faulted: {}
   faulted-av: {}
+  # copied over the unfaulted rtmp port into the clean mediamtx, where the faulted egress readers read it
+  "~^egress-faulted-":
+    runOnAvailable: ffmpeg -hide_banner -loglevel warning -i rtmp://127.0.0.1:19935/$MTX_PATH -c copy -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:18554/$MTX_PATH
+    runOnAvailableRestart: true

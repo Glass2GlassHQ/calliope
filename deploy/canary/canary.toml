@@ -68,6 +68,7 @@ launch = "whepsrc location=http://127.0.0.1:18889/vp9-opus/whep video-codec=vp9 
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/vp9.txt"
 
+# audio only: the config takes no audio-sink without a video-sink
 [[pipeline]]
 id = "opus-webrtc"
 tier = "self-hosted"
@@ -102,69 +103,82 @@ recording-segment-secs = 60
 
 # egress: g2g encodes and publishes into mediamtx, a second row reads it back over rtsp
 # videotestsrc runs ahead of real time, clocksync paces it
+# a lossless encode of a moving bar that repeats every 80 frames, the readers match moving-bar.txt, the source's own frames
 
 [[pipeline]]
 id = "egress-rtmp-publish"
 tier = "self-hosted"
-launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! flvmux ! rtmpsink location=rtmp://127.0.0.1:18935/egress-rtmp"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! flvmux ! rtmpsink location=rtmp://127.0.0.1:18935/egress-rtmp"
 
 [[pipeline]]
 id = "egress-rtmp-play"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtmp ! h264parse ! avdec_h264 ! fakesink"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtmp ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 [[pipeline]]
 id = "egress-whip-publish"
 tier = "self-hosted"
-launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! whipsink location=http://127.0.0.1:18889/egress-whip/whip"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! whipsink location=http://127.0.0.1:18889/egress-whip/whip"
 
 [[pipeline]]
 id = "egress-whip-play"
 tier = "self-hosted"
-launch = "whepsrc location=http://127.0.0.1:18889/egress-whip/whep ! h264parse ! avdec_h264 ! fakesink"
+launch = "whepsrc location=http://127.0.0.1:18889/egress-whip/whep ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 [[pipeline]]
 id = "egress-srt-publish"
 tier = "self-hosted"
-launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! mpegtsmux ! srtsink host=127.0.0.1 port=18891 streamid=publish:egress-srt"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! mpegtsmux ! srtsink host=127.0.0.1 port=18891 streamid=publish:egress-srt"
 
 [[pipeline]]
 id = "egress-srt-play"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-srt ! h264parse ! avdec_h264 ! fakesink"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-srt ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 # g2g serves rtsp and mediamtx pulls it as the egress-rtsp path's source
 [[pipeline]]
 id = "egress-rtsp-serve"
 tier = "self-hosted"
-launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! rtspserversink address=127.0.0.1 port=18560"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! rtspserversink address=127.0.0.1 port=18560"
 
 [[pipeline]]
 id = "egress-rtsp-play"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp ! h264parse ! avdec_h264 ! fakesink"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 [[pipeline]]
 id = "egress-rtsp-publish"
 tier = "self-hosted"
-launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software bitrate=300000 ! h264parse ! rtspclientsink location=rtsp://127.0.0.1:18554/egress-rtsp-publish protocols=tcp"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! rtspclientsink location=rtsp://127.0.0.1:18554/egress-rtsp-publish protocols=tcp"
 
 [[pipeline]]
 id = "egress-rtsp-publish-play"
 tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp-publish ! h264parse ! avdec_h264 ! fakesink"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp-publish ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 # dash-if livesim2 in g2g-canary-livesim2 loops its testpic_2s asset as live cmaf with 64-bit media times
 [[pipeline]]
 id = "dash-livesim2"
 tier = "self-hosted"
-launch = "dashsrc location=http://127.0.0.1:18900/livesim2/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+launch = "dashsrc location=http://127.0.0.1:18900/livesim2/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
 
 # a new period every minute
 [[pipeline]]
 id = "dash-livesim2-multiperiod"
 tier = "self-hosted"
-launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
 
 # faulted: the baseline clip through g2g-canary-faulted, whose loopback follows fault-schedule.txt
 # every row needs the content check, the recovery check is built on it
@@ -223,18 +237,63 @@ video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 recording-segment-secs = 60
 
+# egress through the faults: g2g publishes into the faulted mediamtx, which relays each path over its unfaulted rtmp
+# port into the clean mediamtx, where a reader checks what arrived and records the publisher's recoveries
+
+[[pipeline]]
+id = "egress-faulted-rtsp-publish"
+tier = "faulted"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! rtspclientsink location=rtsp://127.0.0.1:19554/egress-faulted-rtsp protocols=tcp reconnect=1000 reconnect-backoff-max=1000"
+checked-by = "egress-faulted-rtsp-read"
+
+[[pipeline]]
+id = "egress-faulted-rtsp-read"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-rtsp stall-timeout=5000 reconnect=120 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+
+# whipsink has no reconnect: a session it loses ends the run and the supervisor restarts it
+[[pipeline]]
+id = "egress-faulted-whip-publish"
+tier = "faulted"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! whipsink location=http://127.0.0.1:19889/egress-faulted-whip/whip"
+checked-by = "egress-faulted-whip-read"
+
+[[pipeline]]
+id = "egress-faulted-whip-read"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-whip stall-timeout=5000 reconnect=120 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+
+[[pipeline]]
+id = "egress-faulted-srt-publish"
+tier = "faulted"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! mpegtsmux ! srtsink host=127.0.0.1 port=19891 streamid=publish:egress-faulted-srt auto-reconnect=true"
+checked-by = "egress-faulted-srt-read"
+
+[[pipeline]]
+id = "egress-faulted-srt-read"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-srt stall-timeout=5000 reconnect=120 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+
 # public: third-party test streams with no uptime promise
 
 [[pipeline]]
 id = "unified-live-hls"
 tier = "public"
-launch = "hlssrc location=https://demo.unified-streaming.com/k8s/live/stable/live.isml/.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! fakesink"
+launch = "hlssrc location=https://demo.unified-streaming.com/k8s/live/stable/live.isml/.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
 
 # a public webcam in slovakia, h264 1280x720 over rtsp on port 1935
 [[pipeline]]
 id = "strba-rtsp"
 tier = "public"
-launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream reconnect=5 ! decodebin ! fakesink"
+launch = "rtspsrc location=rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream reconnect=5 ! decodebin ! checksumsink name=video"
+video-sink = "video"
 
 # no public srt entry: g2g's srtsrc only listens, a public srt server never calls in
 
@@ -246,7 +305,8 @@ id = "mux-llhls"
 tier = "public"
 ends = true
 note = "Mux ends this live stream at 03:20 and 15:20 UTC and starts a new one. A run that ends on the final playlist opens no incident. When that playlist does not arrive, the stream answers 412 until the next one starts, which shows as a short down incident at one of those times."
-launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8 max-bandwidth=1000000 ! fmp4demux ! h264parse ! avdec_h264 ! fakesink"
+launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E4FUyk02rW4gxRM.m3u8 max-bandwidth=1000000 ! fmp4demux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
 
 # no public moq row: moq.dev's relay negotiates the ietf draft, but its broadcasts use the hang catalog and containers moqtsrc does not read
 
@@ -255,17 +315,20 @@ launch = "hlssrc location=https://stream.mux.com/v69RSHhFelSm4701snP22dYz2jICy4E
 id = "mux-vod-hls"
 tier = "public"
 ends = true
-launch = "hlssrc location=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
+launch = "hlssrc location=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
 
 [[pipeline]]
 id = "apple-vod-hls"
 tier = "public"
 ends = true
-launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
+launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
 
 # the same bipbop content as fmp4 segments
 [[pipeline]]
 id = "apple-fmp4-vod-hls"
 tier = "public"
 ends = true
-launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8 max-bandwidth=1000000 ! fmp4demux ! clocksync ! h264parse ! avdec_h264 ! fakesink"
+launch = "hlssrc location=https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8 max-bandwidth=1000000 ! fmp4demux ! clocksync ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"

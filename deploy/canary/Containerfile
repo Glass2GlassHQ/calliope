@@ -57,6 +57,9 @@ RUN mkdir -p /etc/canary/hashes && cd /usr/share/g2g-canary/clips \
         > /etc/canary/hashes/av1.txt \
     && g2g-launch -q filesrc location=vp9.webm ! matroskademux ! avdec_vp9 ! checksumsink \
         > /etc/canary/hashes/vp9.txt
+# the egress rows encode losslessly, so their table is the source's frames, one 80 frame loop of the moving bar
+RUN g2g-launch -q videotestsrc pattern=moving-bar num-buffers=80 ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 \
+        ! checksumsink > /etc/canary/hashes/moving-bar.txt
 COPY deploy/canary/canary.toml /etc/canary/canary.toml
 ARG G2G_COMMIT
 RUN test -n "${G2G_COMMIT}" || { echo "build with --build-arg G2G_COMMIT=<g2g commit>" >&2; exit 1; }

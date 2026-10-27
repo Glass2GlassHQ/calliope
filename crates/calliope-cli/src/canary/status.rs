@@ -160,7 +160,7 @@ pub fn summarize(
                 .filter(|sample| sample.ts <= now)
                 .max_by_key(|sample| sample.ts);
             let since = |days: u64| now.saturating_sub(days * SECS_PER_DAY);
-            let recovery = if pipeline.tier == Tier::Faulted {
+            let recovery = if pipeline.judges_recovery() {
                 schedule
                     .faults()
                     .map(|fault| {
@@ -726,6 +726,7 @@ mod tests {
             audio_sink: None,
             expect_hashes: None,
             recording_segment_secs: None,
+            checked_by: None,
         }
     }
 
