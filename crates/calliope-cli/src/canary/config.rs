@@ -62,7 +62,7 @@ pub struct PipelineConfig {
     // the `name=` of the checksumsink ending the audio branch, for a/v drift
     pub audio_sink: Option<String>,
     // the video sink's digests of the looped clip, one checksumsink line per frame
-    pub expect_hashes: Option<PathBuf>,
+    pub expect_hashes: Option<ExpectHashes>,
     // the launch line's splitmuxsink starts a new file this often, see recording::launch_line
     pub recording_segment_secs: Option<u64>,
     // the faulted row that reads back what this row publishes and checks its content
@@ -73,6 +73,23 @@ impl PipelineConfig {
     // a faulted publisher's recovery shows in the row that checks it
     pub fn judges_recovery(&self) -> bool {
         self.tier == Tier::Faulted && self.checked_by.is_none()
+    }
+}
+
+// one table, or one per variant of an abr stream with a frame matching in any of them
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum ExpectHashes {
+    Table(PathBuf),
+    VariantTables(Vec<PathBuf>),
+}
+
+impl ExpectHashes {
+    pub fn paths(&self) -> &[PathBuf] {
+        match self {
+            ExpectHashes::Table(path) => std::slice::from_ref(path),
+            ExpectHashes::VariantTables(paths) => paths,
+        }
     }
 }
 
@@ -164,6 +181,14 @@ impl CanaryConfig {
             ensure!(
                 pipeline.video_sink.is_none() || pipeline.video_sink != pipeline.audio_sink,
                 "pipeline '{}': video-sink and audio-sink name the same sink",
+                pipeline.id
+            );
+            ensure!(
+                pipeline
+                    .expect_hashes
+                    .as_ref()
+                    .is_none_or(|tables| !tables.paths().is_empty()),
+                "pipeline '{}': expect-hashes lists no table",
                 pipeline.id
             );
             let recovery_checked =
@@ -275,8 +300,8 @@ mod tests {
         assert_eq!(pipeline.video_sink.as_deref(), Some("video"));
         assert_eq!(pipeline.audio_sink.as_deref(), Some("audio"));
         assert_eq!(
-            pipeline.expect_hashes.as_deref(),
-            Some(Path::new("/etc/canary/hashes/mux.txt"))
+            pipeline.expect_hashes.as_ref().map(ExpectHashes::paths),
+            Some([PathBuf::from("/etc/canary/hashes/mux.txt")].as_slice())
         );
         let no_video_sink = checked.replace("video-sink = \"video\"\n", "");
         assert!(parse(&no_video_sink).is_err());
@@ -345,6 +370,30 @@ mod tests {
             parse(&clean_publisher).is_err(),
             "checked-by on a row that is not faulted"
         );
+    }
+
+    #[test]
+    fn expect_hashes_takes_a_list_of_variant_tables() {
+        let variants = TWO_PIPELINES.replace(
+            "ends = true",
+            "ends = true\nvideo-sink = \"video\"\nexpect-hashes = [\"/hashes/high.txt\", \"/hashes/low.txt\"]",
+        );
+        let config = parse(&variants).unwrap();
+        assert_eq!(
+            config.pipelines[1]
+                .expect_hashes
+                .as_ref()
+                .map(ExpectHashes::paths),
+            Some(
+                [
+                    PathBuf::from("/hashes/high.txt"),
+                    PathBuf::from("/hashes/low.txt")
+                ]
+                .as_slice()
+            )
+        );
+        let empty = variants.replace("[\"/hashes/high.txt\", \"/hashes/low.txt\"]", "[]");
+        assert!(parse(&empty).is_err());
     }
 
     #[test]

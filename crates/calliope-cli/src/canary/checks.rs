@@ -1,5 +1,5 @@
 use std::collections::{HashMap, VecDeque};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail, ensure};
 use serde::{Deserialize, Serialize};
@@ -67,6 +67,31 @@ impl HashTable {
         }
         ensure!(frames > 0, "no checksum lines");
         Ok(HashTable { indices, frames })
+    }
+
+    // every variant table loops in step, so a frame keeps its index whichever variant it came from
+    fn load_variants(paths: &[PathBuf]) -> Result<Self> {
+        let (first, rest) = paths.split_first().context("no table")?;
+        let mut merged = Self::load(first)?;
+        for path in rest {
+            let table = Self::load(path)?;
+            ensure!(
+                table.frames == merged.frames,
+                "{} has {} frames, {} has {}",
+                path.display(),
+                table.frames,
+                first.display(),
+                merged.frames
+            );
+            merged.add_variant(table);
+        }
+        Ok(merged)
+    }
+
+    fn add_variant(&mut self, table: HashTable) {
+        for (digest, indices) in table.indices {
+            self.indices.entry(digest).or_default().extend(indices);
+        }
     }
 }
 
@@ -299,8 +324,8 @@ pub struct FrameChecks {
 impl FrameChecks {
     pub fn new(pipeline: &PipelineConfig) -> Result<Self> {
         let content = match &pipeline.expect_hashes {
-            Some(path) => Some(ContentCheck {
-                table: HashTable::load(path)
+            Some(tables) => Some(ContentCheck {
+                table: HashTable::load_variants(tables.paths())
                     .with_context(|| format!("pipeline '{}' expect-hashes", pipeline.id))?,
                 previous: None,
                 counts: ContentCounts::default(),
@@ -754,6 +779,70 @@ mod tests {
         assert!(HashTable::parse("0:00:00.000000000 AAAA\n").is_err());
         let mixed_lengths = format!("{TABLE}0:00:00.133333333 abcd\n");
         assert!(HashTable::parse(&mixed_lengths).is_err());
+    }
+
+    // TABLE with every digest's first byte changed, standing in for a second variant of the clip
+    fn variant_table() -> String {
+        TABLE
+            .lines()
+            .map(|line| {
+                let (pts, digest) = line.split_once(' ').unwrap();
+                format!("{pts} 00{}\n", &digest[2..])
+            })
+            .collect()
+    }
+
+    fn write_tables(tag: &str, tables: &[&str]) -> Vec<PathBuf> {
+        let dir = std::env::temp_dir().join(format!(
+            "calliope-canary-hashes-{tag}-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        tables
+            .iter()
+            .enumerate()
+            .map(|(index, table)| {
+                let path = dir.join(format!("variant-{index}.txt"));
+                std::fs::write(&path, table).unwrap();
+                path
+            })
+            .collect()
+    }
+
+    #[test]
+    fn a_frame_matches_at_its_index_in_any_variant_table() {
+        let second = variant_table();
+        let paths = write_tables("variants", &[TABLE, &second]);
+        let mut checks = checks(false);
+        checks.content.as_mut().unwrap().table = HashTable::load_variants(&paths).unwrap();
+        // two frames of the first variant, then a switch to the second at frame 2
+        let digests = [digest(0), digest(1)].into_iter().map(String::from).chain(
+            second
+                .lines()
+                .skip(2)
+                .map(|line| line.split_once(' ').unwrap().1.to_string()),
+        );
+        for (frame, digest) in digests.enumerate() {
+            let pts = frame as u64 * FRAME_NS;
+            checks.observe(&event("video", pts, &digest), i128::from(pts), 0.0);
+        }
+        assert_eq!(
+            checks.take_sample().content,
+            Some(ContentCounts {
+                matched: 4,
+                mismatched: 0,
+                skipped: 0,
+            })
+        );
+    }
+
+    #[test]
+    fn variant_tables_must_have_the_same_frame_count() {
+        let short = TABLE.lines().take(3).collect::<Vec<_>>().join("\n");
+        let paths = write_tables("short", &[TABLE, &short]);
+        assert!(HashTable::load_variants(&paths).is_err());
+        let single = HashTable::load_variants(&paths[..1]).unwrap();
+        assert_eq!(single.frames, 4);
     }
 
     #[test]

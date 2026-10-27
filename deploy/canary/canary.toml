@@ -101,6 +101,21 @@ video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 recording-segment-secs = 60
 
+# the switching clip changes size and frame rate at an idr with a new sps, the decoder must follow both
+[[pipeline]]
+id = "switching-rtsp"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/switching ! decodebin ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/switching.txt"
+
+[[pipeline]]
+id = "switching-hls"
+tier = "self-hosted"
+launch = "hlssrc location=http://127.0.0.1:18888/switching/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/switching.txt"
+
 # egress: g2g encodes and publishes into mediamtx, a second row reads it back over rtsp
 # videotestsrc runs ahead of real time, clocksync paces it
 # a lossless encode of a moving bar that repeats every 80 frames, the readers match moving-bar.txt, the source's own frames
@@ -279,6 +294,14 @@ tier = "faulted"
 launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-srt stall-timeout=5000 reconnect=120 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+
+# three variants of one clip, a rate cap makes abr switch down and the clean window after it back up
+[[pipeline]]
+id = "faulted-abr-hls"
+tier = "faulted"
+launch = "hlssrc location=http://127.0.0.1:19890/master.m3u8 abr=true ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = ["/etc/canary/hashes/abr-720.txt", "/etc/canary/hashes/abr-360.txt", "/etc/canary/hashes/abr-180.txt"]
 
 # public: third-party test streams with no uptime promise
 

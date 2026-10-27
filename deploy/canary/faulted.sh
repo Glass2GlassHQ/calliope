@@ -7,9 +7,11 @@ clips=/usr/share/g2g-canary/clips
 config=/etc/canary/mediamtx-faulted.yml
 schedule=/etc/canary/fault-schedule.txt
 gst_relay_port=19555
+abr_port=19890
+abr_dir=/tmp/abr
 # reader-facing ports: mediamtx rtsp and hls, the gst-rtsp-server relay, and the g2g srt and rist listeners the feeder calls
 # publisher-facing ports: mediamtx whip, its webrtc udp and srt
-faulted_ports="19554 $gst_relay_port 19888 18892 18896 18897 19889 19189 19891"
+faulted_ports="19554 $gst_relay_port 19888 18892 18896 18897 19889 19189 19891 $abr_port"
 retry_secs=1
 mediamtx_pid_file=/tmp/mediamtx.pid
 # a netem change keeps the previous rate and reorder unless it sets them
@@ -118,6 +120,21 @@ publish() {
     ffmpeg -hide_banner -loglevel warning "$@"
 }
 
+# the abr variants as one live multi-variant hls stream, cut at the keyframes they share so segment n of every
+# variant holds the same frames, numbered from the clock so a restart never reuses a number, and with no endlist
+# when ffmpeg exits, which would end the reader's stream
+publish_abr() {
+    publish $(looped abr-720.mp4) $(looped abr-360.mp4) $(looped abr-180.mp4) -map 0:v -map 1:v -map 2:v -c copy \
+        -f hls -hls_time 2 -hls_list_size 6 -hls_start_number_source epoch \
+        -hls_flags delete_segments+temp_file+independent_segments+omit_endlist -master_pl_name master.m3u8 \
+        -var_stream_map "v:0 v:1 v:2" -hls_segment_filename "$abr_dir/%v-%d.ts" "$abr_dir/%v.m3u8"
+}
+
+# http.server logs every request to stderr
+serve_abr() {
+    python3 -I -m http.server --bind 0.0.0.0 --directory "$abr_dir" "$abr_port" 2>/dev/null
+}
+
 setup_netem || exit 1
 trap "kill 0" TERM INT
 run_mediamtx &
@@ -130,4 +147,7 @@ forever "srt push" publish $(looped baseline.mp4) -c copy -f mpegts "srt://127.0
 forever "rist push" g2g-launch -q rtspsrc location=rtsp://127.0.0.1:18554/baseline ! h264parse ! mpegtsmux \
     ! ristsink address=127.0.0.1 port=18896 &
 forever "gst relay" python3 -I /usr/local/bin/canary-gst-rtsp-relay.py "$gst_relay_port" &
+mkdir -p "$abr_dir"
+forever "abr hls" publish_abr &
+forever "abr http" serve_abr &
 run_schedule

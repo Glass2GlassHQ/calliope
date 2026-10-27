@@ -16,6 +16,7 @@ PublishPort=127.0.0.1:19888:19888
 PublishPort=127.0.0.1:19889:19889
 PublishPort=127.0.0.1:19189:19189/udp
 PublishPort=127.0.0.1:19891:19891/udp
+PublishPort=127.0.0.1:19890:19890
 RunInit=true
 
 [Service]

@@ -31,6 +31,7 @@ paths:
   av1: {}
   vp9-opus: {}
   h264-aac: {}
+  switching: {}
   egress-rtmp: {}
   egress-whip: {}
   egress-srt: {}
