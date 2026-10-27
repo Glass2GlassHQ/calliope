@@ -3,6 +3,8 @@ log-dir = "canary-out/log"
 status-dir = "canary-out/status"
 sample-secs = 60
 stall-secs = 30
+# a recording row writes its files under <recordings-dir>/<id>, the canary deletes each one that passes its checks
+recordings-dir = "canary-out/recordings"
 
 # self-hosted: mediamtx and the feeder on the same host, a failure here is g2g's
 # rows that decode a feeder clip end in `checksumsink name=video`, matched against its table
@@ -87,6 +89,16 @@ launch = "uridecodebin uri=http://127.0.0.1:18888/h264-aac/index.m3u8 name=d d.v
 video-sink = "video"
 audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# recording: splitmuxsink writes a new mp4 every recording-segment-secs, the tee's second branch keeps the frame checks
+# the canary fills in {recording-location} and {recording-max-size-time} for each run
+[[pipeline]]
+id = "baseline-rtsp-record"
+tier = "self-hosted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! h264parse ! tee name=t ! splitmuxsink location={recording-location} max-size-time={recording-max-size-time} t. ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+recording-segment-secs = 60
 
 # egress: g2g encodes and publishes into mediamtx, a second row reads it back over rtsp
 # videotestsrc runs ahead of real time, clocksync paces it
@@ -201,6 +213,15 @@ launch = "rtspsrc name=s location=rtsp://127.0.0.1:19554/faulted-av stall-timeou
 video-sink = "video"
 audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
+
+# files written across reconnects, each closed one checked
+[[pipeline]]
+id = "faulted-rtsp-record"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted stall-timeout=5000 reconnect=20 reconnect-backoff-max=1000 ! h264parse ! tee name=t ! splitmuxsink location={recording-location} max-size-time={recording-max-size-time} t. ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+recording-segment-secs = 60
 
 # public: third-party test streams with no uptime promise
 

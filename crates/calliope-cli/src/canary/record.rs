@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use super::checks::{ContentCounts, TimestampCounts};
 use super::config::{PipelineConfig, Tier};
+use super::recording::RecordingCounts;
 
 pub const SECS_PER_DAY: u64 = 86_400;
 pub const SECS_PER_HOUR: u64 = 3_600;
@@ -41,6 +42,8 @@ pub struct Sample {
     pub av_drift_ms: Option<f64>,
     // the run's rss slope over the last day, none until it has run a day
     pub rss_growth_kib_per_hour: Option<f64>,
+    // on a row that records
+    pub recording: Option<RecordingCounts>,
 }
 
 impl Sample {
@@ -53,17 +56,40 @@ impl Sample {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum Cause {
-    Exit { code: i32 },
-    Signal { signal: i32 },
-    Stall { secs: u64 },
-    SpawnFailed { message: String },
+    Exit {
+        code: i32,
+    },
+    Signal {
+        signal: i32,
+    },
+    Stall {
+        secs: u64,
+    },
+    SpawnFailed {
+        message: String,
+    },
     // totals over the incident
-    Content { mismatched: u64, skipped: u64 },
-    Timestamps { backward: u64, forward_jumps: u64 },
+    Content {
+        mismatched: u64,
+        skipped: u64,
+    },
+    Timestamps {
+        backward: u64,
+        forward_jumps: u64,
+    },
     // the highest slope while open
-    MemoryGrowth { kib_per_hour: f64 },
+    MemoryGrowth {
+        kib_per_hour: f64,
+    },
     // no unbroken run of right frames lasted the clean window after this fault
-    NoRecovery { fault: String },
+    NoRecovery {
+        fault: String,
+    },
+    // the file is under the log dir, none when no file closed
+    Recording {
+        file: Option<String>,
+        failure: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,6 +99,7 @@ pub enum IncidentKind {
     Timestamps,
     MemoryGrowth,
     NoRecovery,
+    Recording,
 }
 
 impl IncidentKind {
@@ -83,6 +110,7 @@ impl IncidentKind {
             IncidentKind::Timestamps => "timestamps",
             IncidentKind::MemoryGrowth => "memory-growth",
             IncidentKind::NoRecovery => "no-recovery",
+            IncidentKind::Recording => "recording",
         }
     }
 }
@@ -96,6 +124,7 @@ impl Cause {
             Cause::Timestamps { .. } => IncidentKind::Timestamps,
             Cause::MemoryGrowth { .. } => IncidentKind::MemoryGrowth,
             Cause::NoRecovery { .. } => IncidentKind::NoRecovery,
+            Cause::Recording { .. } => IncidentKind::Recording,
         }
     }
 
@@ -134,6 +163,8 @@ impl Cause {
                     kib_per_hour: later_kib_per_hour,
                 },
             ) => *kib_per_hour = kib_per_hour.max(later_kib_per_hour),
+            // the file that opened the incident stays its cause
+            (Cause::Recording { .. }, Cause::Recording { .. }) => {}
             (cause, later) => unreachable!("{later:?} folded into {cause:?}"),
         }
     }
@@ -168,6 +199,14 @@ impl fmt::Display for Cause {
                 )
             }
             Cause::NoRecovery { fault } => write!(f, "no recovery from {fault}"),
+            Cause::Recording {
+                file: Some(file),
+                failure,
+            } => write!(f, "recording {file}: {failure}"),
+            Cause::Recording {
+                file: None,
+                failure,
+            } => write!(f, "recording: {failure}"),
         }
     }
 }
@@ -468,6 +507,7 @@ mod tests {
             timestamps: None,
             av_drift_ms: Some(-3.5),
             rss_growth_kib_per_hour: None,
+            recording: None,
         };
         append(&dir, SAMPLES_PREFIX, day_one, &sample(day_one)).unwrap();
         append(
@@ -520,6 +560,7 @@ mod tests {
             video_sink: Some("video".into()),
             audio_sink: None,
             expect_hashes: None,
+            recording_segment_secs: None,
         }
     }
 

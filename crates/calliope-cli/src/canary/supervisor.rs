@@ -17,6 +17,7 @@ use super::config::{CanaryConfig, PipelineConfig, Tier};
 use super::record::{
     Cause, Incident, IncidentKind, STDERR_DIR, SharedOpenIncidents, unix_now, unix_now_fractional,
 };
+use super::recording;
 
 pub const STDERR_TAIL_LINES: usize = 50;
 const WATCHDOG_INTERVAL: Duration = Duration::from_secs(1);
@@ -60,6 +61,7 @@ pub struct Supervisor {
     program: String,
     port: u16,
     log_dir: PathBuf,
+    recordings_dir: Option<PathBuf>,
     stall: Duration,
     backoff_min: Duration,
     backoff_max: Duration,
@@ -95,6 +97,7 @@ impl Supervisor {
                 .unwrap_or_else(calliope_adapter_g2g::g2g_launch_binary),
             port: config.observe_port(index),
             log_dir: config.log_dir.clone(),
+            recordings_dir: config.recordings_dir.clone(),
             stall: Duration::from_secs(config.stall_secs),
             backoff_min: Duration::from_secs(config.backoff_min_secs),
             backoff_max: Duration::from_secs(config.backoff_max_secs),
@@ -133,8 +136,10 @@ impl Supervisor {
     ) -> Result<RunEnd> {
         let spawned_at = Instant::now();
         let spawned_unix = unix_now();
+        let launch =
+            recording::launch_line(&self.pipeline, self.recordings_dir.as_deref(), spawned_unix);
         let mut child = match Command::new(&self.program)
-            .args(observe_args(&self.pipeline.launch, self.port))
+            .args(observe_args(&launch, self.port))
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::piped())

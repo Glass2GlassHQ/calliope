@@ -513,6 +513,36 @@ incident that closes on its next recovery. Faulted rows are never killed for a
 stall, and their wrong or skipped frames open no `content` incident. The status
 page shows each row's slowest recovery per fault over 24 hours and 7 days.
 
+### Recordings
+
+A recording row writes its stream into a new MP4 file every `recording-segment-secs`
+with `splitmuxsink`, and a `tee` sends the same stream through the decoder to
+`checksumsink`, so the frame checks still run. Its launch line takes the two
+values from the canary:
+
+```toml
+recordings-dir = "canary-out/recordings"       # top level, under the working directory
+launch = "rtspsrc location=... ! h264parse ! tee name=t ! splitmuxsink location={recording-location} max-size-time={recording-max-size-time} t. ! avdec_h264 ! checksumsink name=video"
+recording-segment-secs = 60
+```
+
+Each run writes `<recordings-dir>/<id>/<run start>-<index>.mp4`, because
+`splitmuxsink` numbers its files from 0 in every run. A run's newest file is
+still open, or was when the run ended, so the canary never checks it and deletes
+it once a later run has written a file. Every other file is checked once per
+sample with `ffprobe` and `ffmpeg`: it parses and has a video stream that starts
+on a keyframe, its dts rise, no pts falls below the keyframe before it, every
+frame decodes with no error printed, it lasts no longer than the segment, one
+keyframe interval and a second, and no two frames are more than 1 s apart. On a
+faulted row that gap may be as long as the longest fault in
+`fault-schedule.txt` plus the clean window after it, the time the recovery check
+gives a row. A file that passes is deleted, so the disk stays bounded. A file
+that fails moves to `log/recordings/`, which keeps the newest 20, and opens a
+`recording` incident naming the file and the check. A row that closes no file
+for three segment lengths opens one too. The incident closes on the next file
+that passes. Samples carry `recording` with the files `checked` and `failed`,
+and the status page sums them per row over 24 hours and 7 days.
+
 ### Deploy
 
 The image bundles `calliope` and a `g2g-launch` built from one g2g commit, which

@@ -86,6 +86,17 @@ impl FaultSchedule {
         self.windows.iter().filter_map(|window| window.fault)
     }
 
+    // the longest a faulted row can go without a frame and still recover: a fault and the clean window after it
+    pub fn longest_fault_and_recovery_secs(&self) -> u64 {
+        self.windows
+            .iter()
+            .zip(self.windows.iter().cycle().skip(1))
+            .filter(|(window, _)| window.fault.is_some())
+            .map(|(fault, clean)| fault.secs + clean.secs)
+            .max()
+            .expect("a schedule has a fault")
+    }
+
     // the first recovery window ending after `now`, with windows anchored at multiples of the cycle since the unix epoch
     pub fn next_recovery_window(&self, now: u64) -> RecoveryWindow {
         let mut start = now - now % self.cycle_secs();
@@ -189,6 +200,8 @@ restart 1: server restart
     fn parses_kinds_and_names() {
         let schedule = FaultSchedule::parse(SCHEDULE).unwrap();
         assert_eq!(schedule.cycle_secs(), 391);
+        // the half traffic cap and the 90 s clean window after it
+        assert_eq!(schedule.longest_fault_and_recovery_secs(), 150);
         let faults: Vec<Fault> = schedule.faults().collect();
         assert_eq!(
             faults,

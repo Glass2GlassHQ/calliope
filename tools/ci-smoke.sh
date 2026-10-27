@@ -26,3 +26,5 @@ cargo run -p calliope-cli -- run \
     scenarios/opus-decode-diff.toml \
     scenarios/aac-determinism.toml \
     --engines ffmpeg,gstreamer --report smoke-report.json
+# the canary's recording checks against files ffmpeg generates
+cargo test -p calliope-cli canary::recording -- --ignored

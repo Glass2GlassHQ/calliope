@@ -12,6 +12,10 @@ use super::record::{
     Incident, Recovery, SECS_PER_DAY, SECS_PER_HOUR, SECS_PER_MINUTE, Sample, utc_date,
     utc_datetime,
 };
+use super::recording::{
+    DURATION_SLACK_SECS, IDLE_SEGMENTS, LOCATION_PLACEHOLDER, MAX_SIZE_TIME_PLACEHOLDER,
+    RecordingCounts, SELF_HOSTED_MAX_PTS_GAP_SECS,
+};
 use super::schedule::{FaultKind, FaultSchedule, fault_schedule};
 
 pub const HISTORY_DAYS: u64 = 30;
@@ -64,6 +68,15 @@ pub struct PipelineStatus {
     pub daily: Vec<DailyUptime>,
     // a faulted row's recoveries, one per fault in schedule order
     pub recovery: Vec<FaultRecovery>,
+    // on a row that records
+    pub recording: Option<RecordingSummary>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct RecordingSummary {
+    // closed files checked
+    pub last_24h: RecordingCounts,
+    pub last_7d: RecordingCounts,
 }
 
 #[derive(Debug, Serialize)]
@@ -179,6 +192,16 @@ pub fn summarize(
                     }
                 })
                 .collect();
+            let recorded_since = |days: u64| {
+                own()
+                    .filter(|sample| sample.ts >= since(days) && sample.ts <= now)
+                    .filter_map(|sample| sample.recording)
+                    .fold(RecordingCounts::default(), RecordingCounts::add)
+            };
+            let recording = pipeline.recording_segment_secs.map(|_| RecordingSummary {
+                last_24h: recorded_since(1),
+                last_7d: recorded_since(WEEK_DAYS),
+            });
             PipelineStatus {
                 id: pipeline.id.clone(),
                 tier: pipeline.tier,
@@ -197,6 +220,7 @@ pub fn summarize(
                 last_sample: last_sample.cloned(),
                 daily,
                 recovery,
+                recording,
             }
         })
         .collect();
@@ -377,6 +401,48 @@ fn recovery_table(status: &Status) -> String {
     html
 }
 
+fn recording_cell(counts: &RecordingCounts) -> String {
+    alarm(
+        format!("{} checked, {} failed", counts.checked, counts.failed),
+        counts.failed > 0,
+    )
+}
+
+fn recording_table(status: &Status) -> String {
+    let rows: Vec<String> = status
+        .pipelines
+        .iter()
+        .filter_map(|pipeline| {
+            let recording = pipeline.recording.as_ref()?;
+            Some(format!(
+                "<tr><td>{}</td><td>{}</td><td>{}</td></tr>\n",
+                escape_html(&pipeline.id),
+                recording_cell(&recording.last_24h),
+                recording_cell(&recording.last_7d)
+            ))
+        })
+        .collect();
+    if rows.is_empty() {
+        return String::new();
+    }
+    format!(
+        "<h2>Recordings</h2>\n<p>Rows that record their stream into a series of MP4 files with \
+         <code>splitmuxsink</code>, which starts a new file at the first keyframe after each \
+         segment length. The canary fills in <code>{}</code> and <code>{}</code> in their launch \
+         lines. Each closed file is checked once and then deleted: it parses, starts with a \
+         keyframe, its decode timestamps rise and no frame comes before the keyframe it follows, \
+         every frame decodes, it lasts no longer than a segment, one keyframe interval and \
+         {DURATION_SLACK_SECS} s, and no two frames are further apart than {SELF_HOSTED_MAX_PTS_GAP_SECS} s, \
+         or {} s on a faulted row, its longest fault plus the clean window after it. A file that \
+         fails is kept for inspection and opens a recording incident.</p>\n\
+         <table><tr><th>pipeline</th><th>24h</th><th>{WEEK_DAYS}d</th></tr>\n{}</table>\n",
+        escape_html(LOCATION_PLACEHOLDER),
+        escape_html(MAX_SIZE_TIME_PLACEHOLDER),
+        fault_schedule().longest_fault_and_recovery_secs(),
+        rows.concat()
+    )
+}
+
 fn or_na(value: Option<String>) -> String {
     value.unwrap_or_else(|| "n/a".to_string())
 }
@@ -544,6 +610,7 @@ pub fn render_html(status: &Status) -> String {
             html.push_str(&recovery_table(status));
         }
     }
+    html.push_str(&recording_table(status));
     html.push_str(
         "<h2>What each pipeline runs</h2>\n<p>The <code>g2g-launch</code> pipeline of every row \
          above. <code>checksumsink</code> digests each decoded frame for the content check, and \
@@ -568,8 +635,10 @@ pub fn render_html(status: &Status) -> String {
          {} seconds, and the supervisor restarted it. A content, timestamps or memory-growth \
          incident means the check of that name above failed. A no-recovery incident means a \
          faulted row had not recovered when the next fault started, and the supervisor \
-         restarted it. Restarts counts the restarts \
-         during the incident, and last error is the last error g2g printed before it.</p>",
+         restarted it. A recording incident names a recorded file that failed a check, or says \
+         no file closed for {IDLE_SEGMENTS} segment lengths, and closes on the next file that \
+         passes. Restarts counts the restarts during the incident, and last error is the last \
+         error g2g printed before it.</p>",
         status.stall_secs
     );
     if status.incidents.is_empty() {
@@ -641,6 +710,7 @@ mod tests {
             backoff_max_secs: 1,
             healthy_run_secs: 1,
             startup_grace_secs: 0,
+            recordings_dir: None,
             pipelines,
         }
     }
@@ -655,6 +725,7 @@ mod tests {
             video_sink: None,
             audio_sink: None,
             expect_hashes: None,
+            recording_segment_secs: None,
         }
     }
 
@@ -674,6 +745,7 @@ mod tests {
             timestamps: None,
             av_drift_ms: None,
             rss_growth_kib_per_hour: None,
+            recording: None,
         }
     }
 
@@ -879,6 +951,60 @@ mod tests {
         assert!(table.contains("4.3 s / 9.0 s"), "{table}");
         assert!(table.contains("1 of 2 missed"), "{table}");
         assert!(table.contains("n/a / n/a"), "{table}");
+    }
+
+    #[test]
+    fn recording_rows_sum_their_checked_files() {
+        let mut recording = pipeline("record");
+        recording.recording_segment_secs = Some(60);
+        let now = TODAY + SECS_PER_DAY - 1;
+        let counted = |ts: u64, checked: u64, failed: u64| Sample {
+            recording: Some(RecordingCounts { checked, failed }),
+            ..sample("record", ts, 1800)
+        };
+        let samples = [
+            counted(now - 100, 1, 0),
+            counted(now - 40, 2, 1),
+            // three days ago, only in the week
+            counted(now - 3 * SECS_PER_DAY, 4, 0),
+            sample("a", now - 40, 1800),
+        ];
+        let status = summarize(
+            &canary(vec![pipeline("a"), recording]),
+            &samples,
+            &[],
+            &[],
+            G2G_COMMIT,
+            now,
+        );
+        assert!(
+            status.pipelines[0].recording.is_none(),
+            "not a recording row"
+        );
+        let summary = status.pipelines[1].recording.as_ref().unwrap();
+        assert_eq!(
+            summary.last_24h,
+            RecordingCounts {
+                checked: 3,
+                failed: 1
+            }
+        );
+        assert_eq!(
+            summary.last_7d,
+            RecordingCounts {
+                checked: 7,
+                failed: 1
+            }
+        );
+
+        let html = render_html(&status);
+        let table = &html[html.find("<h2>Recordings</h2>").unwrap()..];
+        assert!(
+            table.contains(
+                "<td>record</td><td><span class=\"down\">3 checked, 1 failed</span></td>"
+            ),
+            "{table}"
+        );
     }
 
     #[test]

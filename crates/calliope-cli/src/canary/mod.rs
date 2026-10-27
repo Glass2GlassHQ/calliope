@@ -1,6 +1,7 @@
 mod checks;
 mod config;
 mod record;
+mod recording;
 mod schedule;
 mod status;
 mod supervisor;
@@ -21,6 +22,7 @@ use record::{
     Cause, INCIDENTS_PREFIX, IncidentKind, OpenIncidents, RECOVERIES_PREFIX, Recovery,
     SAMPLES_PREFIX, SECS_PER_DAY, STDERR_DIR, Sample, SharedOpenIncidents, unix_now, until_unix,
 };
+use recording::{RecordingCounts, RecordingRow};
 use schedule::RecoveryWindow;
 use supervisor::{PipelineState, SharedState, Supervisor, UnrecoveredRun};
 
@@ -61,13 +63,33 @@ pub async fn run(config_path: &Path) -> Result<()> {
             tokio::spawn(supervisor.run(receiver))
         })
         .collect();
-    let mut sampler = Sampler::new(&config, g2g_commit, states, open_incidents, unrecovered);
+    let fault_schedule = schedule::fault_schedule();
+    let started = unix_now();
+    let recording_rows = config
+        .pipelines
+        .iter()
+        .map(|pipeline| {
+            RecordingRow::new(
+                pipeline,
+                config.recordings_dir.as_deref(),
+                &config.log_dir,
+                &fault_schedule,
+                started,
+            )
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let mut sampler = Sampler::new(
+        &config,
+        g2g_commit,
+        states,
+        open_incidents,
+        unrecovered,
+        recording_rows,
+    );
     let mut ticker = tokio::time::interval(Duration::from_secs(config.sample_secs));
     // the first tick fires at once, with nothing to sample yet
     ticker.tick().await;
     sampler.write_status()?;
-    let fault_schedule = schedule::fault_schedule();
-    let started = unix_now();
     let mut recovery_window = fault_schedule.next_recovery_window(started);
     let shutdown = shutdown_signal();
     tokio::pin!(shutdown);
@@ -75,7 +97,8 @@ pub async fn run(config_path: &Path) -> Result<()> {
         let until_judged = until_unix(recovery_window.end, SystemTime::now());
         tokio::select! {
             _ = ticker.tick() => {
-                sampler.sample()?;
+                let recordings = sampler.check_recordings().await?;
+                sampler.sample(&recordings)?;
                 sampler.write_status()?;
             }
             _ = tokio::time::sleep(until_judged) => {
@@ -125,6 +148,8 @@ struct Sampler<'a> {
     sampled_at: Instant,
     // to each pipeline's supervisor
     unrecovered: Vec<UnboundedSender<UnrecoveredRun>>,
+    // none for a row that does not record
+    recording_rows: Vec<Option<RecordingRow>>,
 }
 
 impl<'a> Sampler<'a> {
@@ -134,6 +159,7 @@ impl<'a> Sampler<'a> {
         states: Vec<SharedState>,
         open_incidents: SharedOpenIncidents,
         unrecovered: Vec<UnboundedSender<UnrecoveredRun>>,
+        recording_rows: Vec<Option<RecordingRow>>,
     ) -> Self {
         Sampler {
             config,
@@ -144,10 +170,45 @@ impl<'a> Sampler<'a> {
             open_incidents,
             sampled_at: Instant::now(),
             unrecovered,
+            recording_rows,
         }
     }
 
-    fn sample(&mut self) -> Result<()> {
+    // checks each recording row's closed files, a recording incident tracks every verdict in order
+    async fn check_recordings(&mut self) -> Result<Vec<Option<RecordingCounts>>> {
+        let now = unix_now();
+        let mut counts = Vec::with_capacity(self.recording_rows.len());
+        for (pipeline, row) in self.config.pipelines.iter().zip(&mut self.recording_rows) {
+            let Some(row) = row else {
+                counts.push(None);
+                continue;
+            };
+            let checked = row.check_closed_files(now).await?;
+            let mut open_incidents = self.open_incidents.lock().expect("open incidents lock");
+            for file in &checked {
+                let failure = file.failure.clone().map(|failure| Cause::Recording {
+                    file: Some(file.file.clone()),
+                    failure,
+                });
+                let passed = failure.is_none();
+                open_incidents.track(pipeline, IncidentKind::Recording, failure, passed, now)?;
+            }
+            let idle = row.idle_failure(now).map(|failure| Cause::Recording {
+                file: None,
+                failure,
+            });
+            if idle.is_some() {
+                open_incidents.track(pipeline, IncidentKind::Recording, idle, false, now)?;
+            }
+            counts.push(Some(RecordingCounts {
+                checked: checked.len() as u64,
+                failed: checked.iter().filter(|file| file.failure.is_some()).count() as u64,
+            }));
+        }
+        Ok(counts)
+    }
+
+    fn sample(&mut self, recordings: &[Option<RecordingCounts>]) -> Result<()> {
         let now = unix_now();
         let elapsed = self.sampled_at.elapsed().as_secs_f64();
         self.sampled_at = Instant::now();
@@ -179,6 +240,7 @@ impl<'a> Sampler<'a> {
                     timestamps: frame_sample.timestamps,
                     av_drift_ms: frame_sample.av_drift_ms,
                     rss_growth_kib_per_hour,
+                    recording: recordings[index],
                 }
             };
             record::append(&self.config.log_dir, SAMPLES_PREFIX, now, &sample)?;

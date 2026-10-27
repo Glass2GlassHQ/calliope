@@ -4,6 +4,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail, ensure};
 use serde::{Deserialize, Serialize};
 
+use super::recording;
+
 const DEFAULT_SAMPLE_SECS: u64 = 60;
 const DEFAULT_STALL_SECS: u64 = 30;
 const DEFAULT_OBSERVE_BASE_PORT: u16 = 18700;
@@ -37,6 +39,8 @@ pub struct CanaryConfig {
     // failures this soon after the canary starts, or after an `ends` row ends, open no incident
     #[serde(default = "default_startup_grace_secs")]
     pub startup_grace_secs: u64,
+    // relative to the working directory, a recording row writes its files under <recordings-dir>/<id>
+    pub recordings_dir: Option<PathBuf>,
     #[serde(rename = "pipeline")]
     pub pipelines: Vec<PipelineConfig>,
 }
@@ -59,6 +63,8 @@ pub struct PipelineConfig {
     pub audio_sink: Option<String>,
     // the video sink's digests of the looped clip, one checksumsink line per frame
     pub expect_hashes: Option<PathBuf>,
+    // the launch line's splitmuxsink starts a new file this often, see recording::launch_line
+    pub recording_segment_secs: Option<u64>,
 }
 
 // self-hosted streams separate a g2g failure from the internet failing
@@ -158,6 +164,8 @@ impl CanaryConfig {
                 "pipeline '{}': a faulted row needs video-sink and expect-hashes for its recovery check",
                 pipeline.id
             );
+            recording::validate(pipeline, self.recordings_dir.as_deref())
+                .with_context(|| format!("pipeline '{}'", pipeline.id))?;
         }
         let last_port = usize::from(self.observe_base_port) + self.pipelines.len() - 1;
         ensure!(
