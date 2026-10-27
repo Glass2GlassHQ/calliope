@@ -415,6 +415,11 @@ audio-sink = "audio"                           # the checksumsink name= on the a
 expect-hashes = "/etc/canary/hashes/baseline.txt"  # reference table for video-sink
 ```
 
+`expect-hashes` also takes a list of tables, one per variant of an adaptive
+stream. A frame then matches when its digest is in any of them, at its index in
+that table, so a switch between variants at a segment boundary is no skip. The
+tables must have the same frame count, or the canary refuses to start.
+
 `expect-hashes` and `audio-sink` need `video-sink`. Every sample line then has:
 
 - `content`, with `expect-hashes`: `matched` frames have a digest in the table,
@@ -468,13 +473,20 @@ startup instead of reporting every frame as mismatched. The clip must loop with
 ### Feeds
 
 `feeder.sh` encodes six 16 s clips: H.264 (`baseline`), H.265, AV1 and VP9 at
-640x360 and 30 fps, and AAC and Opus tones. It encodes with ffmpeg's plain C code on
-one thread, so every machine writes the same bytes, and checks the video clips
+640x360 and 30 fps, and AAC and Opus tones, plus the switching and ABR clips
+below. It encodes with ffmpeg's plain C code on one thread, so every machine
+writes the same bytes, and checks the video clips
 against the md5 list in the script. The image build runs the same script in the
 same mediamtx image and decodes each video clip into a reference table under
 `/etc/canary/hashes/`. The feeder publishes the clips to mediamtx over RTSP as
 `baseline`, `hevc`, `av1`, `vp9-opus` and `h264-aac`, pushes `baseline` to
 g2g's SRT listener, and sends it with ffmpeg's librist to g2g's RIST listener.
+
+The feeder also loops `switching.ts`, published as `switching`: 4 s at 640x360
+and 30 fps, 4 s at 1280x720 and 30 fps, then 4 s at 320x240 and 25 fps. Each part
+starts on an IDR with its own SPS, which MPEG-TS carries in band. `switching-rtsp`
+reads it through `decodebin` and `switching-hls` through `tsdemux ! h264parse !
+avdec_h264`, both against one table of the whole clip.
 
 The egress rows encode a 320x240 `videotestsrc` and publish it into mediamtx
 over RTMP, WHIP, SRT and RTSP (`rtspclientsink`), or serve it over RTSP for
@@ -499,6 +511,14 @@ allows this: the container has `CAP_NET_ADMIN` in its own namespace, and pasta
 publishes its RTSP and HLS ports on the host loopback and forwards its SRT and
 RIST sends to the host. Netem runs only inside that namespace, so the
 self-hosted rows never see it.
+
+The container also serves a live multi-variant HLS stream on port 19890: three
+16 s clips the image build encodes at 1280x720, 640x360 and 320x180 and 3, 1 and
+0.3 Mbit/s, keyframes every 30 frames. ffmpeg's HLS muxer loops them with
+`-c copy` and cuts every variant at the same keyframes, so segment n of each
+variant holds the same frames. `faulted-abr-hls` reads it with `hlssrc abr=true`
+and lists the three variant tables in `expect-hashes`. The cap at half the
+traffic makes it switch down, and the clean window after it lets it switch back.
 
 Every faulted row needs `video-sink` and `expect-hashes`. At the end of each
 clean window the canary judges each row's recovery from the fault before it:

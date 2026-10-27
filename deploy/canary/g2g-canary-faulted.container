@@ -13,6 +13,7 @@ Network=pasta:-T,18554,-U,18892,-U,18896-18897
 PublishPort=127.0.0.1:19554:19554
 PublishPort=127.0.0.1:19555:19555
 PublishPort=127.0.0.1:19888:19888
+PublishPort=127.0.0.1:19890:19890
 RunInit=true
 
 [Service]
