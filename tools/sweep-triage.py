@@ -59,7 +59,7 @@ OVERRIDES = {
     'mpeg4/resize_up-up.h263/video': resolution_change(150),
     'vp8/frame_size_change.webm/video': resolution_change(300),
     'vp9-test-vectors/vp90-2-05-resize.ivf/video': resolution_change(10),
-    'h264-conformance/FM1_FT_E.264/video': 'reference quirk: FMO / ASO baseline stream libavcodec does not support. All three engines conceal differently from frame 119',
+    'h264-conformance/FM1_FT_E.264/video': 'reference quirk: FMO / ASO baseline stream libavcodec does not support. The slice headers give 300 pictures, ffmpeg splits five arbitrary-order pictures into 305 frames. All three engines conceal differently from frame 119',
     'h264/data_partitioning.h264/video': 'reference quirk: libavcodec does not support data partitioning, ffmpeg and gstreamer fail. g2g output unverified',
     'h264/data_partitioning_ab.h264/video': 'reference quirk: data partitioning, see h264/data_partitioning.h264',
     'h264/data_partitioning_cip.h264/video': 'reference quirk: data partitioning, see h264/data_partitioning.h264',

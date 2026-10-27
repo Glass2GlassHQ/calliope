@@ -1,15 +1,15 @@
 # fate-suite sweep triage
 
-2221 files, 2411 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master 8e84255e built with linux-full in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/fate-suite`.
+2221 files, 2411 scenarios (one per video / audio stream), reference ffmpeg 8.1.3. g2g-launch is g2g master b74dbbae built with linux-full in release. The class comes from `calliope sweep`. The diagnosis comes from rules over the g2g error and the stream layout, checked by rerunning representative files against ffmpeg and gstreamer. Every g2g diverges row was rerun by hand. Reproducers read the sample tree from `$HOME/.cache/calliope/fate-suite`.
 
 | class | scenarios |
 | :--- | ---: |
 | g2g diverges | 37 |
 | g2g no output | 9 |
 | gstreamer diverges | 284 |
-| reference quirk | 14 |
+| reference quirk | 13 |
 | unsupported codec | 837 |
-| agree | 1230 |
+| agree | 1231 |
 
 Every scenario outside the agree class, by diagnosis:
 
@@ -17,7 +17,7 @@ Every scenario outside the agree class, by diagnosis:
 | :--- | ---: |
 | unsupported | 846 |
 | harness | 100 |
-| reference quirk | 37 |
+| reference quirk | 36 |
 | known difference | 2 |
 | gstreamer only | 194 |
 | open | 2 |
@@ -46,7 +46,7 @@ None open. The bugs of the 42c0a809, b84a510a, 6c675bef, a988298b and 6e1fa495 s
 | `fate-suite/webp/rgb_q80.webp/video` | webp yuv420p | diverged at frame 0 of 1 | known difference: g2g decodes lossy WebP to RGBA as gstreamer does, ffmpeg outputs the coded yuv420p. g2g RGBA is bit-exact with libwebp 1.6.0 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/webp/rgb_q80.webp ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mpeg4/mpeg4_sstp_dpcm.m4v/video` | mpeg4 yuv422p10le | diverged at frame 0 of 1 | open: Studio profile 4:2:2 10-bit, 25% of samples differ from ffmpeg with the same libavcodec 62, gstreamer fails | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg4/mpeg4_sstp_dpcm.m4v ! decodebin ! videoconvert ! video/x-raw,format=I422_10LE ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mov/empty_edit_5s.mp4/video` | h264 yuv444p | diverged at frame 1 of 100 | open: the stream has decode errors from frame 0 and gstreamer fails. ffmpeg threaded and single-thread decodes differ from frame 10, g2g differs from frame 1 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mov/empty_edit_5s.mp4 ! decodebin ! videoconvert ! video/x-raw,format=Y444 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/h264-conformance/FM1_FT_E.264/video` | h264 yuv420p | diverged at frame 126 of 305 | reference quirk: FMO / ASO baseline stream libavcodec does not support. All three engines conceal differently from frame 119 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264-conformance/FM1_FT_E.264 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
+| `fate-suite/h264-conformance/FM1_FT_E.264/video` | h264 yuv420p | diverged at frame 121 of 305 | reference quirk: FMO / ASO baseline stream libavcodec does not support. The slice headers give 300 pictures, ffmpeg splits five arbitrary-order pictures into 305 frames. All three engines conceal differently from frame 119 | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/h264-conformance/FM1_FT_E.264 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/ogg-opus/chained-meta.ogg/audio` | opus | diverged at frame 0 of 1 | reference quirk: Opus is not bit-exact across decoders and gstreamer stops at the chain boundary, so there is no third vote. Lengths match | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/ogg-opus/chained-meta.ogg ! decodebin ! audioconvert dithering=none ! audioresample ! audio/x-raw,format=S16LE,rate=48000,channels=1 ! filesink location=/tmp/calliope-repro/out.pcm` |
 | `fate-suite/webp/anim_rgb_yuv.webp/video` | webp none | lenient: decoded input ffmpeg exit 69 | reference quirk: animated WebP, see webp/anim.webp | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/webp/anim_rgb_yuv.webp ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/webp/anim_yuv_rgb.webp/video` | webp none | lenient: decoded input ffmpeg exit 69 | reference quirk: animated WebP, see webp/anim.webp | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/webp/anim_yuv_rgb.webp ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
@@ -385,7 +385,6 @@ None open. The bugs of the 42c0a809, b84a510a, 6c675bef, a988298b and 6e1fa495 s
 | `fate-suite/mkv/hdr10tags-both.mkv/video` | hevc yuv420p10le | ffmpeg is the outlier, diverged at frame 0 of 10 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mkv/hdr10tags-both.mkv ! decodebin ! videoconvert ! video/x-raw,format=I420_10LE ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mov/displaymatrix.mov/video` | h264 yuv420p | ffmpeg is the outlier, diverged at frame 0 of 33 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mov/displaymatrix.mov ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mov/frag_overlap.mp4/video` | h264 yuv420p | ffmpeg is the outlier, diverged at frame 60 of 96 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mov/frag_overlap.mp4 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
-| `fate-suite/mpeg2/mpeg2_field_encoding.ts/video` | mpeg2video yuv420p | ffmpeg is the outlier, diverged at frame 30 of 31 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg2/mpeg2_field_encoding.ts ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mpeg2/t.mpg/video` | mpeg2video yuv420p | ffmpeg is the outlier, diverged at frame 0 of 351 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg2/t.mpg ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/mpeg4/packed_bframes.avi/video` | mpeg4 yuv420p | ffmpeg is the outlier, diverged at frame 14 of 15 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/mpeg4/packed_bframes.avi ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
 | `fate-suite/probe-format/roundup1414/video` | mpeg2video yuv420p | ffmpeg is the outlier, diverged at frame 77 of 79 | reference quirk: gstreamer and g2g agree, ffmpeg is the outlier | `g2g-launch -q filesrc location=$HOME/.cache/calliope/fate-suite/probe-format/roundup1414 ! decodebin ! videoconvert ! video/x-raw,format=I420 ! filesink location=/tmp/calliope-repro/out.yuv` |
