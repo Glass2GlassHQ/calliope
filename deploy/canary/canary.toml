@@ -207,7 +207,6 @@ video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 # live555's rtsp client pulls g2g's rtspserversink, a second row reads it back through the proxy
-# live555 moves its rtp timestamps by a few ms at g2g's first sender report after both start, so that first run can see one backward pts
 [[pipeline]]
 id = "peers-live555-serve"
 tier = "self-hosted"
@@ -217,6 +216,7 @@ launch = "videotestsrc pattern=ball ! video/x-raw,width=320,height=240,framerate
 id = "peers-live555-serve-play"
 tier = "self-hosted"
 launch = "rtspsrc location=rtsp://127.0.0.1:18572/proxyStream ! h264parse ! avdec_h264 ! checksumsink name=video"
+note = "The live555 proxy shifts its RTP timestamps by a few ms when the first sender report from g2g's rtspserversink arrives. After every canary start this row sees one backward pts, which shows as a one-minute timestamps incident. It does not happen mid-run."
 video-sink = "video"
 
 # g2g's rtmpsink publishes into nginx-rtmp, which pushes the stream to g2g's rtmpsrc listener
