@@ -324,18 +324,18 @@ launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-rtsp stall-time
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
-# [[pipeline]]
-# id = "egress-faulted-whip-publish"
-# tier = "faulted"
-# launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! whipsink location=http://127.0.0.1:19889/egress-faulted-whip/whip"
-# checked-by = "egress-faulted-whip-read"
+[[pipeline]]
+id = "egress-faulted-whip-publish"
+tier = "faulted"
+launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! whipsink location=http://127.0.0.1:19889/egress-faulted-whip/whip reconnect=1000 reconnect-backoff-max=1000"
+checked-by = "egress-faulted-whip-read"
 
-# [[pipeline]]
-# id = "egress-faulted-whip-read"
-# tier = "faulted"
-# launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-whip stall-timeout=5000 reconnect=120 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
-# video-sink = "video"
-# expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+[[pipeline]]
+id = "egress-faulted-whip-read"
+tier = "faulted"
+launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-faulted-whip stall-timeout=5000 reconnect=120 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 [[pipeline]]
 id = "egress-faulted-srt-publish"
