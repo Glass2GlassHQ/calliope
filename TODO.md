@@ -14,8 +14,8 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
   determinism because no two AAC decoders are bit-exact.
 
 ## Mutation testing
-- Add g2g-plugins tests for the missed parser mutants that mark real gaps,
-  h265parse.rs and h264parse.rs first.
+- Add g2g-plugins tests for the missed parser mutants that mark real gaps
+  (`mutants/README.md` lists the per-file counts).
 
 ## Network impairment against reference peers
 - Compose file with reference peers: mediamtx, gst-rtsp-server, janus, livekit,
