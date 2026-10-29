@@ -710,7 +710,17 @@ nokey`, and seeks to up to three keyframes after the first, spread evenly. The
 target is the keyframe's time from the file's start time, rounded down to the
 microsecond, so it lands on that keyframe whatever a demuxer's snapping. g2g
 runs `g2g-launch --seek T` into checksumsink, ffmpeg `-ss T -copyts` into
-framemd5, and the first 5 frames must be the same.
+framemd5, and the first 5 frames must be the same. Each keyframe target also
+gets a non-keyframe target: the frame midway, in presentation order, between
+that keyframe and the next, read from `ffprobe -show_entries packet=pts,flags`
+without decoding and rounded down the same way. Audio streams of the bit-exact
+codecs (technique 13) that the decode sweep agrees on get up to three targets
+at a quarter, half and three quarters of their packets, each halfway through a
+packet so the seek has to trim samples. ffmpeg decodes 1 s from `-ss T -copyts
+-t 1 -i` (an output `-t` under `-copyts` ends at that timestamp instead), g2g
+decodes from `--seek T` to PCM, and g2g's PCM must start with ffmpeg's. The
+scenario id names the kind of target: `seek-key-T`, `seek-inter-T` or
+`seek-in-packet-T`.
 ```
 calliope sweep --mode seek --agreeing runs/fate-suite.json --corpus corpus/fate-suite.toml \
   --workdir runs/seek --title "fate-suite seek" --report runs/fate-suite-seek.json
@@ -738,6 +748,62 @@ Open g2g bugs found here:
   stream's, so a file whose audio starts first lands a keyframe late or past
   the end (17 gst-medias targets on bipbop, `ac3/mp3ac325-4864-small.ts`).
 - **No seek finds a frame in `webm/opus_vp9-alpha.webm`**, at any target.
+
+Non-keyframe and audio targets, against g2g master e2c18741: fate-suite 195
+keyframe, 130 non-keyframe and 101 audio targets on 92 video and 34 audio
+streams, gst-medias 126, 117 and 30 on 48 video and 10 audio streams. The
+keyframe targets classify exactly as a plain rerun of this mode at the same
+g2g. Non-keyframe, fate-suite: 84 agree, 20 unsupported (IVF, VOB, AVI, VP7,
+an elementary stream), 4 g2g bugs (below), and 22 where ffmpeg misses the
+target frame and g2g lands on it: on MPEG-TS `ffmpeg -ss` to a frame between
+keyframes starts at the next keyframe, or decodes nothing when none follows (7
+targets), in `mov/elst_ends_betn_b_and_i.mp4` and
+`mov/mov_ibi_elst_starts_b.mov` it skips the frame exactly at the target, which
+`-ss` 1 ms earlier gives (6), in `mov/test_iibbibb*.mp4` it skips the B-frames
+shown before the I-frame it seeks to (4), `flv/Enigma_Principles_of_Lust-part.flv` carries
+out-of-order pts (2) and ffmpeg's VP8 decoder fails after the seek in
+`vp8/dash_video3.webm` (3). gst-medias: 42 agree and 75 MPEG-TS targets where
+ffmpeg starts at the next keyframe (bipbop, `mpegts/tron_en_ge_aac_h264.ts`),
+with g2g on the target frame in every one. Audio, fate-suite: 51 agree, 26
+unsupported (raw FLAC and AC-3, MPEG-PS: g2g cannot seek them) and 24
+diverge, gst-medias: 5 agree, 6 unsupported and 19 diverge. Of the 43
+divergences 39 are g2g bugs (below). In `mpeg2/xdcam8mp2-1s_small.ts` (MP2,
+2 targets) both engines start on the target sample and differ by 1 LSB from
+each other and from a continuous decode, in `mpegts/GH1_00094_1920x1280.MTS`
+(AC-3) ffmpeg starts at the next packet and g2g on the target sample, and in
+the chained `ogg-flac/chained-meta.ogg` ffmpeg stops after 2106 sample frames,
+which leaves it unresolved.
+
+Open g2g bugs found by the non-keyframe and audio targets:
+- **A Matroska or FLV seek between keyframes lands a frame late**, and on the
+  last frame finds no frame at all (3 targets, plus 1 past-the-end).
+  `g2g-launch --seek 2.5 filesrc location=fate-suite/mkv/test7_cut.mkv ! decodebin !
+  videoconvert ! video/x-raw,format=I420 ! checksumsink hash=md5` starts at pts
+  2.542, its full decode has a frame at 2.500 and `ffmpeg -ss 2.5` starts there.
+  `--seek 1.211` on `h264/H264_might_overflow.mkv` reports the target past the
+  end though its last frame is at 1.211.
+- **An Opus seek starts at the packet holding the target and decodes it with
+  no pre-roll**, so it starts up to a packet early and up to its first 400 ms
+  differ from a continuous decode (27 targets in Ogg, Matroska and TS, the 48
+  agreeing Opus targets are mostly the Matroska test vectors).
+  `g2g-launch --seek 0.202583 filesrc location=fate-suite/ogg/intro-partial.opus !
+  decodebin ! audioconvert dithering=none ! audioresample !
+  audio/x-raw,format=S16LE,rate=48000,channels=2 ! filesink location=out.pcm`
+  starts at sample 9600, 124 before the target, and differs from a continuous
+  decode for its first 238 ms, `ffmpeg -ss 0.202583` matches the continuous
+  decode from the target sample 9724.
+- **A FLAC seek in Matroska with a cover picture lands seconds late** (6
+  targets). `--seek 1.0` on `gst-medias/defaults/matroska/flac_jpeg.0.mkv`
+  (same audio pipeline, `rate=44100,channels=1`) starts at 1.940 s of the
+  continuous decode, `--seek 2.559` at 5.067 s, and the targets at 5.1 s and
+  7.6 s of the 10 s file report past the end.
+- **A seek in `mkv/flac_channel_layouts.mka` loses the last 12288 sample
+  frames** and reports the targets at 0.55 s and 0.81 s of its 1 s past the
+  end (3 targets). `--seek 0.298657` with `rate=48000,channels=6` decodes 21504
+  sample frames, ffmpeg 33791 to the end.
+- **An Opus seek in `matroska/timed_frames_audio_video_1fps.mkv` ends after
+  448 sample frames** at every target (3 targets). `--seek 5.003` on the 20 s
+  file with `rate=48000,channels=1` writes 896 bytes and exits 0.
 
 ### 23. Remux round-trip (fate-suite + gst-medias)
 `calliope sweep --mode remux --agreeing <decode report>` copies each file whose
