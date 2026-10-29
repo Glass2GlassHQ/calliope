@@ -2129,7 +2129,11 @@ mod tests {
         assert!(!ffmpeg.contains("-frames"), "{ffmpeg}");
         let g2g = line(&calliope_adapter_g2g::G2g, &audio_seek);
         assert!(g2g.starts_with("--seek 2.010000 -q filesrc"), "{g2g}");
-        assert!(g2g.ends_with("! filesink location=/run/out.pcm"), "{g2g}");
+        let pcm = workdir.join("out.pcm");
+        assert!(
+            g2g.ends_with(&format!("! filesink location={}", pcm.display())),
+            "{g2g}"
+        );
 
         let mut audio = sweep_cases(&[vector("a", None, Some("flac"))], &engines())
             .remove(0)
