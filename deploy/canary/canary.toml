@@ -209,6 +209,14 @@ launch = "ristsrc address=127.0.0.1 port=18896 ! tsdemux ! h264parse ! avdec_h26
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
+# the same path over webrtc, mediamtx's udp port is inside the faults too
+[[pipeline]]
+id = "faulted-webrtc"
+tier = "faulted"
+launch = "whepsrc location=http://127.0.0.1:19889/faulted/whep reconnect=1000 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/baseline.txt"
+
 # the same path through gst-rtsp-server, a second rtsp implementation
 [[pipeline]]
 id = "faulted-rtsp-gst"
