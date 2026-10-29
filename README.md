@@ -488,13 +488,11 @@ g2g's SRT listener, and sends it with ffmpeg's librist to g2g's RIST listener.
 The feeder also loops `switching.ts`, published as `switching`: 4 s at 640x360
 and 30 fps, 4 s at 1280x720 and 30 fps, then 4 s at 320x240 and 25 fps. Each part
 starts on an IDR with its own SPS, which MPEG-TS carries in band. `switching-rtsp`
-reads it through `decodebin` and `switching-hls` through `tsdemux ! h264parse !
-avdec_h264`, both against one table of the whole clip.
+reads it through `decodebin` against one table of the whole clip.
 
 The egress rows encode a 320x240 `videotestsrc pattern=moving-bar` and publish it
-into mediamtx over RTMP, WHIP, SRT and RTSP (`rtspclientsink`), or serve it over
-RTSP for mediamtx to pull as the `egress-rtsp` path. A second row reads each one
-back over RTSP or WHEP. The encode is lossless (`x264enc pass=quant quantizer=0`,
+into mediamtx over RTMP, and through the faulted mediamtx over WHIP, SRT and RTSP
+(`rtspclientsink`). A second row reads each one back over RTSP. The encode is lossless (`x264enc pass=quant quantizer=0`,
 H.264 High 4:4:4 Predictive, about 45 kbit/s), and the bar moves 4 pixels a frame
 and wraps, so the source repeats every 80 frames. The readers' `expect-hashes` is
 `moving-bar.txt`, which the image build writes from the source's own 80 frames,

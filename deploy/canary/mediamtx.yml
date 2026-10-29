@@ -33,14 +33,7 @@ paths:
   h264-aac: {}
   switching: {}
   egress-rtmp: {}
-  egress-whip: {}
-  egress-srt: {}
-  egress-rtsp-publish: {}
   # relayed from the faulted mediamtx once g2g publishes there
   egress-faulted-rtsp: {}
   egress-faulted-whip: {}
   egress-faulted-srt: {}
-  # pulled from g2g's rtspserversink, mediamtx retries until the serve row is up
-  egress-rtsp:
-    source: rtsp://127.0.0.1:18560/egress
-    rtspTransport: tcp

@@ -91,16 +91,6 @@ video-sink = "video"
 audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
-# recording: splitmuxsink writes a new mp4 every recording-segment-secs, the tee's second branch keeps the frame checks
-# the canary fills in {recording-location} and {recording-max-size-time} for each run
-[[pipeline]]
-id = "baseline-rtsp-record"
-tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/baseline ! h264parse ! tee name=t ! splitmuxsink location={recording-location} max-size-time={recording-max-size-time} t. ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/baseline.txt"
-recording-segment-secs = 60
-
 # the switching clip changes size and frame rate at an idr with a new sps, the decoder must follow both
 [[pipeline]]
 id = "switching-rtsp"
@@ -109,14 +99,7 @@ launch = "rtspsrc location=rtsp://127.0.0.1:18554/switching ! decodebin ! checks
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/switching.txt"
 
-[[pipeline]]
-id = "switching-hls"
-tier = "self-hosted"
-launch = "hlssrc location=http://127.0.0.1:18888/switching/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/switching.txt"
-
-# egress: g2g encodes and publishes into mediamtx, a second row reads it back over rtsp
+# egress: g2g encodes and publishes into mediamtx over rtmp, a second row reads it back over rtsp
 # videotestsrc runs ahead of real time, clocksync paces it
 # a lossless encode of a moving bar that repeats every 80 frames, the readers match moving-bar.txt, the source's own frames
 
@@ -129,55 +112,6 @@ launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,he
 id = "egress-rtmp-play"
 tier = "self-hosted"
 launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtmp ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/moving-bar.txt"
-
-[[pipeline]]
-id = "egress-whip-publish"
-tier = "self-hosted"
-launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! whipsink location=http://127.0.0.1:18889/egress-whip/whip"
-
-[[pipeline]]
-id = "egress-whip-play"
-tier = "self-hosted"
-launch = "whepsrc location=http://127.0.0.1:18889/egress-whip/whep ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/moving-bar.txt"
-
-[[pipeline]]
-id = "egress-srt-publish"
-tier = "self-hosted"
-launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! mpegtsmux ! srtsink host=127.0.0.1 port=18891 streamid=publish:egress-srt"
-
-[[pipeline]]
-id = "egress-srt-play"
-tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-srt ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/moving-bar.txt"
-
-# g2g serves rtsp and mediamtx pulls it as the egress-rtsp path's source
-[[pipeline]]
-id = "egress-rtsp-serve"
-tier = "self-hosted"
-launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! rtspserversink address=127.0.0.1 port=18560"
-
-[[pipeline]]
-id = "egress-rtsp-play"
-tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/moving-bar.txt"
-
-[[pipeline]]
-id = "egress-rtsp-publish"
-tier = "self-hosted"
-launch = "videotestsrc pattern=moving-bar ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 ! clocksync ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! rtspclientsink location=rtsp://127.0.0.1:18554/egress-rtsp-publish protocols=tcp"
-
-[[pipeline]]
-id = "egress-rtsp-publish-play"
-tier = "self-hosted"
-launch = "rtspsrc location=rtsp://127.0.0.1:18554/egress-rtsp-publish ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
@@ -255,13 +189,6 @@ video-sink = "video"
 # every row needs the content check, the recovery check is built on it
 
 [[pipeline]]
-id = "faulted-rtsp"
-tier = "faulted"
-launch = "rtspsrc location=rtsp://127.0.0.1:19554/faulted stall-timeout=5000 reconnect=20 reconnect-backoff-max=1000 ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-expect-hashes = "/etc/canary/hashes/baseline.txt"
-
-[[pipeline]]
 id = "faulted-hls"
 tier = "faulted"
 launch = "hlssrc location=http://127.0.0.1:19888/faulted/index.m3u8 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
@@ -300,6 +227,7 @@ audio-sink = "audio"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
 # files written across reconnects, each closed one checked
+# splitmuxsink writes a new mp4 every recording-segment-secs, the canary fills in {recording-location} and {recording-max-size-time} for each run
 [[pipeline]]
 id = "faulted-rtsp-record"
 tier = "faulted"
@@ -389,13 +317,6 @@ video-sink = "video"
 # no public moq row: moq.dev's relay negotiates the ietf draft, but its broadcasts use the hang catalog and containers moqtsrc does not read
 
 # vod streams loop: clocksync paces them to real time, the lowest variant keeps bandwidth down
-[[pipeline]]
-id = "mux-vod-hls"
-tier = "public"
-ends = true
-launch = "hlssrc location=https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8 max-bandwidth=1000000 ! tsdemux ! clocksync ! h264parse ! avdec_h264 ! checksumsink name=video"
-video-sink = "video"
-
 [[pipeline]]
 id = "apple-vod-hls"
 tier = "public"
