@@ -420,29 +420,114 @@ struct StartTime {
 fn parse_keyframes(json: &str) -> Result<Vec<i64>> {
     let probe: KeyframeProbe =
         serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
-    let stream = probe
-        .streams
-        .first()
-        .ok_or_else(|| Error::Parse("ffprobe found no video stream".into()))?;
-    let time_base = TimeBase::parse(&stream.time_base)?;
-    let start = match probe.format.and_then(|format| format.start_time) {
-        Some(text) => microseconds(&text)?,
-        None => 0,
-    };
-    let to_microseconds = |ticks: i64| {
-        (i128::from(ticks) * i128::from(time_base.numerator) * MICROSECONDS_PER_SECOND)
-            .div_euclid(i128::from(time_base.denominator))
-    };
+    let clock = StartRelativeClock::new(&probe.streams, probe.format)?;
     probe
         .frames
         .iter()
         .filter(|frame| frame.key_frame == 1)
         .filter_map(|frame| frame.best_effort_timestamp)
-        .map(|ticks| {
-            i64::try_from(to_microseconds(ticks) - start)
-                .map_err(|_| Error::Parse(format!("keyframe at {ticks} ticks is out of range")))
-        })
+        .map(|ticks| clock.microseconds(2 * i128::from(ticks)))
         .collect()
+}
+
+// converts a stream's ticks to whole microseconds from the file's start time, rounded down
+#[derive(Debug, Clone, Copy)]
+struct StartRelativeClock {
+    time_base: TimeBase,
+    start_microseconds: i128,
+}
+
+impl StartRelativeClock {
+    fn new(streams: &[TimeBaseStream], format: Option<StartTime>) -> Result<Self> {
+        let stream = streams
+            .first()
+            .ok_or_else(|| Error::Parse("ffprobe found no stream of that kind".into()))?;
+        let start_microseconds = match format.and_then(|format| format.start_time) {
+            Some(text) => microseconds(&text)?,
+            None => 0,
+        };
+        Ok(Self {
+            time_base: TimeBase::parse(&stream.time_base)?,
+            start_microseconds,
+        })
+    }
+
+    // counts half ticks so the middle of a packet converts with one rounding
+    fn microseconds(self, half_ticks: i128) -> Result<i64> {
+        let from_zero =
+            (half_ticks * i128::from(self.time_base.numerator) * MICROSECONDS_PER_SECOND)
+                .div_euclid(2 * i128::from(self.time_base.denominator));
+        i64::try_from(from_zero - self.start_microseconds)
+            .map_err(|_| Error::Parse(format!("{half_ticks} half ticks is out of range")))
+    }
+}
+
+// one packet's times in whole microseconds from the file's start time, rounded down
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PacketTimes {
+    pub pts: i64,
+    // halfway through the packet, None when ffprobe gives it no duration
+    pub middle: Option<i64>,
+    pub keyframe: bool,
+}
+
+// the packets of the first stream of `kind` that carry a pts, in presentation order, read without decoding
+pub async fn probe_packets(
+    input: &Path,
+    kind: StreamKind,
+    timeout: std::time::Duration,
+) -> Result<Vec<PacketTimes>> {
+    let entries = [
+        "-select_streams",
+        kind.first_stream(),
+        "-show_entries",
+        "stream=time_base:format=start_time:packet=pts,duration,flags",
+    ];
+    parse_packets(&ffprobe_json(input, &entries, timeout).await?)
+}
+
+#[derive(Debug, Deserialize)]
+struct PacketProbe {
+    #[serde(default)]
+    streams: Vec<TimeBaseStream>,
+    #[serde(default)]
+    packets: Vec<PacketEntry>,
+    format: Option<StartTime>,
+}
+
+#[derive(Debug, Deserialize)]
+struct PacketEntry {
+    pts: Option<i64>,
+    duration: Option<i64>,
+    #[serde(default)]
+    flags: String,
+}
+
+// ffprobe's packet flag for a keyframe, first of the flag letters
+const KEYFRAME_PACKET_FLAG: char = 'K';
+
+fn parse_packets(json: &str) -> Result<Vec<PacketTimes>> {
+    let probe: PacketProbe =
+        serde_json::from_str(json).map_err(|e| Error::Parse(format!("ffprobe json: {e}")))?;
+    let clock = StartRelativeClock::new(&probe.streams, probe.format)?;
+    let mut packets = probe
+        .packets
+        .iter()
+        .filter_map(|packet| Some((packet, packet.pts?)))
+        .map(|(packet, pts)| {
+            let middle = packet
+                .duration
+                .map(|duration| clock.microseconds(2 * i128::from(pts) + i128::from(duration)))
+                .transpose()?;
+            Ok(PacketTimes {
+                pts: clock.microseconds(2 * i128::from(pts))?,
+                middle,
+                keyframe: packet.flags.starts_with(KEYFRAME_PACKET_FLAG),
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    packets.sort_by_key(|packet| packet.pts);
+    Ok(packets)
 }
 
 // ffprobe prints a start time as seconds with six decimals, exactly the microseconds ffmpeg keeps
@@ -674,6 +759,33 @@ mod tests {
         assert_eq!(parse_keyframes(json).unwrap(), [0, 1_001_000]);
         assert_eq!(microseconds("-0.5").unwrap(), -500_000);
         assert!(microseconds("1.1234567").is_err());
+    }
+
+    #[test]
+    fn packets_sort_into_presentation_order_from_the_start_time() {
+        // a keyframe then two B-frames stored after the P-frame they precede, at 1/90000
+        let json = r#"{"packets": [
+            {"pts": 93600, "duration": 3600, "flags": "K__"},
+            {"pts": 104400, "duration": 3600, "flags": "___"},
+            {"pts": 97200, "duration": 3600, "flags": "___"},
+            {"pts": 100800, "flags": "___"},
+            {"duration": 3600, "flags": "___"}
+        ], "streams": [{"time_base": "1/90000"}], "format": {"start_time": "1.040000"}}"#;
+        let packets = parse_packets(json).unwrap();
+        let times: Vec<(i64, Option<i64>, bool)> = packets
+            .iter()
+            .map(|p| (p.pts, p.middle, p.keyframe))
+            .collect();
+        // 97200 ticks is 1.08 s, 40000 us past the start, its middle 20000 us later
+        assert_eq!(
+            times,
+            [
+                (0, Some(20_000), true),
+                (40_000, Some(60_000), false),
+                (80_000, None, false),
+                (120_000, Some(140_000), false),
+            ]
+        );
     }
 
     #[test]

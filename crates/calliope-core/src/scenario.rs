@@ -109,12 +109,18 @@ pub struct Scenario {
     pub remux: Option<Remux>,
 }
 
-// decode from one seek, comparing the first `frames` frames
+// decode from one seek, comparing what the reference decodes in `length`
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Seek {
     // seconds from the start of the file, the text both engines receive
     pub target: String,
-    pub frames: usize,
+    pub length: SeekLength,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SeekLength {
+    Frames(usize),
+    Seconds(u32),
 }
 
 // which of the file's first video and audio streams go into the container, both through the fan-in muxer

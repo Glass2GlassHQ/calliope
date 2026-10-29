@@ -8,7 +8,7 @@ use calliope_core::engine::{Engine, EngineInfo, Invocation, OutputSpec, binary, 
 use calliope_core::produce::{
     Container, FRAGMENT_DURATION, Produce, ProducedAudio, VideoCodec, whep_endpoint, whip_endpoint,
 };
-use calliope_core::scenario::{Scenario, Video};
+use calliope_core::scenario::{Scenario, Seek, SeekLength, Video};
 use calliope_core::{Error, Result};
 
 const FRAGMENTED_MP4_FLAGS: &str = "+frag_keyframe+empty_moov+default_base_moof";
@@ -202,6 +202,24 @@ fn decode_to_raw(ffmpeg: &str, input: &Path, out: &Path) -> Result<()> {
     Ok(())
 }
 
+fn seek_input_args(seek: &Seek) -> Vec<String> {
+    // -copyts keeps the container timestamps, so what follows the seek is what g2g lands on
+    let mut args = vec!["-ss".into(), seek.target.clone(), "-copyts".into()];
+    // an output -t under -copyts ends at that timestamp, an input -t counts from the seek
+    if let SeekLength::Seconds(seconds) = seek.length {
+        args.extend(["-t".into(), seconds.to_string()]);
+    }
+    args
+}
+
+// `stream` is ffmpeg's stream type letter
+fn seek_output_args(seek: &Seek, stream: char) -> Vec<String> {
+    match seek.length {
+        SeekLength::Frames(frames) => vec![format!("-frames:{stream}"), frames.to_string()],
+        SeekLength::Seconds(_) => Vec::new(),
+    }
+}
+
 /// Pull the `average:<n>` PSNR out of ffmpeg's `psnr` filter log line.
 fn parse_psnr(log: &str) -> Option<f64> {
     let rest = &log[log.rfind("average:")? + "average:".len()..];
@@ -239,6 +257,9 @@ impl Engine for Ffmpeg {
         if let Some(audio) = scenario.audio {
             let out = workdir.join("out.pcm");
             let mut args = vec!["-nostdin".into(), "-hide_banner".into(), "-y".into()];
+            if let Some(seek) = &scenario.seek {
+                args.extend(seek_input_args(seek));
+            }
             if let Some(dec) = audio.codec.ffmpeg_decoder() {
                 args.push("-c:a".into());
                 args.push(dec.into());
@@ -247,6 +268,9 @@ impl Engine for Ffmpeg {
             args.push(input.display().to_string());
             if let Some(index) = scenario.stream_index {
                 args.extend(["-map".into(), format!("0:a:{index}")]);
+            }
+            if let Some(seek) = &scenario.seek {
+                args.extend(seek_output_args(seek, 'a'));
             }
             args.extend([
                 "-vn".into(),
@@ -267,9 +291,8 @@ impl Engine for Ffmpeg {
             });
         }
         let mut args: Vec<String> = vec!["-nostdin".into(), "-hide_banner".into(), "-y".into()];
-        // -copyts keeps the container timestamps, so the frames after the seek are the ones g2g lands on
         if let Some(seek) = &scenario.seek {
-            args.extend(["-ss".into(), seek.target.clone(), "-copyts".into()]);
+            args.extend(seek_input_args(seek));
         }
         args.extend([
             "-i".into(),
@@ -283,7 +306,7 @@ impl Engine for Ffmpeg {
             args.extend(["-map".into(), format!("0:v:{index}")]);
         }
         if let Some(seek) = &scenario.seek {
-            args.extend(["-frames:v".into(), seek.frames.to_string()]);
+            args.extend(seek_output_args(seek, 'v'));
         }
         // golden: whole decoded output as raw video in the vector's format, so
         // the runner's whole-file MD5 reproduces the conformance `result`

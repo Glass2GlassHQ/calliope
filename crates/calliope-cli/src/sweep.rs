@@ -10,12 +10,14 @@ use serde::{Deserialize, Serialize};
 use calliope_core::corpus::{self, AudioStream, Manifest, Media, Vector, VideoStream};
 use calliope_core::engine::OutputSpec;
 use calliope_core::framehash::parse_checksum_lines;
-use calliope_core::probe::{StreamKind, probe_frame_timestamps, probe_keyframes, probe_tracks};
+use calliope_core::probe::{
+    PacketTimes, StreamKind, probe_frame_timestamps, probe_keyframes, probe_packets, probe_tracks,
+};
 use calliope_core::report::ScenarioReport;
 use calliope_core::runner::{RunResult, RunStatus, STDOUT_LOG};
 use calliope_core::scenario::{
     Audio, AudioCodec, Determinism, Input, PixelFormat, Remux, RemuxContainer, SampleFormat,
-    Scenario, Seek, Video,
+    Scenario, Seek, SeekLength, Video,
 };
 use calliope_core::timestamps::{
     self, FramePairing, ReferenceTimestamps, TimeBase, TimestampVerdict,
@@ -35,6 +37,12 @@ const PROBE_BATCH: usize = 16;
 const SEEK_TARGETS: usize = 3;
 // frames compared after each seek
 const SEEK_FRAMES: usize = 5;
+// audio ffmpeg decodes after each seek
+const SEEK_AUDIO_SECONDS: u32 = 1;
+// what each kind of seek target is called in its scenario id
+const KEYFRAME_TARGET: &str = "key";
+const BETWEEN_KEYFRAMES_TARGET: &str = "inter";
+const INSIDE_PACKET_TARGET: &str = "in-packet";
 const REPRODUCER_DIR: &str = "/tmp/calliope-repro";
 const RUN_LOG_EXTENSION: &str = "log";
 // table placeholder for a video stream ffprobe gave no pixel format
@@ -57,7 +65,7 @@ pub enum SweepMode {
     ChunkSize,
     // every stream of a file with several of one kind, by index, against ffmpeg -map
     Tracks,
-    // the frames after a seek to a keyframe, against ffmpeg -ss
+    // the frames or samples after a seek, against ffmpeg -ss
     Seek,
     // g2g's decode of each stream remuxed into every RemuxContainer against its decode of the original
     Remux,
@@ -520,6 +528,15 @@ async fn track_cases(vectors: &[Vector]) -> Result<Vec<SweepCase>> {
     Ok(cases)
 }
 
+// up to SEEK_TARGETS of `items`, spread evenly
+fn spread_targets(items: &[i64]) -> Vec<i64> {
+    let mut targets: Vec<i64> = (1..=SEEK_TARGETS)
+        .filter_map(|part| items.get(part * items.len() / (SEEK_TARGETS + 1)).copied())
+        .collect();
+    targets.dedup();
+    targets
+}
+
 // up to SEEK_TARGETS keyframes after the first, spread evenly over the rest
 fn seek_targets(keyframes_microseconds: &[i64]) -> Vec<i64> {
     let later: Vec<i64> = keyframes_microseconds
@@ -527,11 +544,41 @@ fn seek_targets(keyframes_microseconds: &[i64]) -> Vec<i64> {
         .copied()
         .filter(|&microseconds| microseconds > 0)
         .collect();
-    let mut targets: Vec<i64> = (1..=SEEK_TARGETS)
-        .filter_map(|part| later.get(part * later.len() / (SEEK_TARGETS + 1)).copied())
+    spread_targets(&later)
+}
+
+// for each keyframe target, the frame midway between it and the next keyframe in presentation order
+fn between_keyframe_targets(
+    keyframe_targets: &[i64],
+    keyframes_microseconds: &[i64],
+    packets: &[PacketTimes],
+) -> Vec<i64> {
+    keyframe_targets
+        .iter()
+        .filter_map(|&keyframe| {
+            let next = keyframes_microseconds
+                .iter()
+                .copied()
+                .filter(|&later| later > keyframe)
+                .min();
+            let between: Vec<i64> = packets
+                .iter()
+                .filter(|packet| !packet.keyframe && packet.pts > keyframe)
+                .filter(|packet| next.is_none_or(|next| packet.pts < next))
+                .map(|packet| packet.pts)
+                .collect();
+            between.get(between.len() / 2).copied()
+        })
+        .collect()
+}
+
+// up to SEEK_TARGETS packet middles spread over the stream, so each seek has to trim samples
+fn audio_seek_targets(packets: &[PacketTimes]) -> Vec<i64> {
+    let middles: Vec<i64> = packets
+        .iter()
+        .filter_map(|packet| packet.middle.filter(|&middle| middle > packet.pts.max(0)))
         .collect();
-    targets.dedup();
-    targets
+    spread_targets(&middles)
 }
 
 fn seconds_from_microseconds(microseconds: i64) -> String {
@@ -543,6 +590,37 @@ fn seconds_from_microseconds(microseconds: i64) -> String {
     )
 }
 
+// one stream's seek targets, each with the label its scenario id carries
+async fn stream_seek_targets(
+    input: &Path,
+    kind: StreamKind,
+    timeout: std::time::Duration,
+) -> Result<Vec<(&'static str, i64)>> {
+    if kind == StreamKind::Audio {
+        let packets = probe_packets(input, kind, timeout).await?;
+        return Ok(audio_seek_targets(&packets)
+            .into_iter()
+            .map(|target| (INSIDE_PACKET_TARGET, target))
+            .collect());
+    }
+    let keyframes = probe_keyframes(input, timeout).await?;
+    let keyframe_targets = seek_targets(&keyframes);
+    let between = match probe_packets(input, kind, timeout).await {
+        Ok(packets) => between_keyframe_targets(&keyframe_targets, &keyframes, &packets),
+        // a file ffprobe lists no packets of still has its keyframe targets
+        Err(_) => Vec::new(),
+    };
+    Ok(keyframe_targets
+        .into_iter()
+        .map(|target| (KEYFRAME_TARGET, target))
+        .chain(
+            between
+                .into_iter()
+                .map(|target| (BETWEEN_KEYFRAMES_TARGET, target)),
+        )
+        .collect())
+}
+
 // one case per seek target of each stream
 async fn seek_cases(streams: Vec<SweepCase>) -> Result<Vec<SweepCase>> {
     let cache = corpus::cache_dir();
@@ -551,33 +629,39 @@ async fn seek_cases(streams: Vec<SweepCase>) -> Result<Vec<SweepCase>> {
     for batch in streams.chunks(PROBE_BATCH) {
         let probes = batch.iter().map(|case| {
             let input = cache.join(&case.vector);
-            async move { probe_keyframes(&input, timeout).await }
+            async move { stream_seek_targets(&input, case.kind, timeout).await }
         });
-        for (case, keyframes) in batch.iter().zip(futures::future::join_all(probes).await) {
-            // a file ffprobe cannot read has no keyframe to seek to
-            let Ok(keyframes) = keyframes else {
+        for (case, targets) in batch.iter().zip(futures::future::join_all(probes).await) {
+            // a file ffprobe cannot read has no target to seek to
+            let Ok(targets) = targets else {
                 continue;
             };
-            for target in seek_targets(&keyframes) {
-                let target = seconds_from_microseconds(target);
-                let mut scenario = case.scenario.clone();
-                scenario.id = format!("{}/seek-{target}", case.scenario.id);
-                scenario.seek = Some(Seek {
-                    target,
-                    frames: SEEK_FRAMES,
-                });
-                // g2g decodes on to the end, so its frames go to checksumsink rather than the disk
-                scenario.timestamps = true;
-                cases.push(SweepCase {
-                    scenario,
-                    vector: case.vector.clone(),
-                    kind: case.kind,
-                    codec: case.codec.clone(),
-                });
+            for (label, target) in targets {
+                cases.push(seek_case(case, label, target));
             }
         }
     }
     Ok(cases)
+}
+
+// the stream's case seeking to `target_microseconds`, `label` names the kind of target in the id
+fn seek_case(stream: &SweepCase, label: &str, target_microseconds: i64) -> SweepCase {
+    let target = seconds_from_microseconds(target_microseconds);
+    let mut scenario = stream.scenario.clone();
+    scenario.id = format!("{}/seek-{label}-{target}", stream.scenario.id);
+    let length = match stream.kind {
+        StreamKind::Video => SeekLength::Frames(SEEK_FRAMES),
+        StreamKind::Audio => SeekLength::Seconds(SEEK_AUDIO_SECONDS),
+    };
+    scenario.seek = Some(Seek { target, length });
+    // g2g decodes on to the end, so its frames go to checksumsink rather than the disk
+    scenario.timestamps = stream.kind == StreamKind::Video;
+    SweepCase {
+        scenario,
+        vector: stream.vector.clone(),
+        kind: stream.kind,
+        codec: stream.codec.clone(),
+    }
 }
 
 // classify the first frames after a seek against ffmpeg's
@@ -629,6 +713,52 @@ pub fn classify_seek(report: &ScenarioReport, g2g_stderr: &str) -> (TriageClass,
             TriageClass::G2gDiverges,
             format!("frame {frame} of {} after the seek differs", expected.len()),
         ),
+    }
+}
+
+// classify g2g's PCM after a seek, which must start with ffmpeg's
+pub fn classify_audio_seek(
+    reference: &DecodedOutput,
+    g2g: &DecodedOutput,
+    sample_frame_bytes: usize,
+) -> (TriageClass, String) {
+    if matches!(outcome(g2g.run), Outcome::Crashed | Outcome::Hung) {
+        return (TriageClass::G2gCrashOrHang, status_note(g2g.run));
+    }
+    let Some(DecodedUnits::Pcm(expected)) = &reference.units else {
+        let reference_note = format!("{REFERENCE_ENGINE} {}", status_note(reference.run));
+        if outcome(g2g.run) == Outcome::Decoded {
+            return (TriageClass::ReferenceQuirk, reference_note);
+        }
+        return (
+            TriageClass::Agree,
+            format!("no sample follows the seek on either engine, {reference_note}"),
+        );
+    };
+    if let Some(failure) = g2g_failure(g2g.run, &g2g.stderr) {
+        return failure;
+    }
+    let Some(DecodedUnits::Pcm(decoded)) = &g2g.units else {
+        panic!("a decoded audio run has PCM");
+    };
+    let expected_frames = expected.len() / sample_frame_bytes;
+    let first_difference = expected
+        .chunks_exact(sample_frame_bytes)
+        .zip(decoded.chunks_exact(sample_frame_bytes))
+        .position(|(expected, decoded)| expected != decoded);
+    match first_difference {
+        Some(frame) => (
+            TriageClass::G2gDiverges,
+            format!("sample frame {frame} of {expected_frames} after the seek differs"),
+        ),
+        None if decoded.len() < expected.len() => (
+            TriageClass::G2gDiverges,
+            format!(
+                "{} sample frames after the seek, {REFERENCE_ENGINE} {expected_frames}",
+                decoded.len() / sample_frame_bytes
+            ),
+        ),
+        None => (TriageClass::Agree, String::new()),
     }
 }
 
@@ -1025,7 +1155,7 @@ pub async fn run(
             let engines = [REFERENCE_ENGINE, G2G_ENGINE].map(String::from);
             let streams = sweep_cases(&vectors, &engines)
                 .into_iter()
-                .filter(|case| case.kind == StreamKind::Video && case.scenario.judges_frames())
+                .filter(|case| case.scenario.judges_frames())
                 .filter(agrees)
                 .collect();
             seek_cases(streams).await?
@@ -1129,13 +1259,29 @@ pub async fn run(
                 SweepMode::Remux => unreachable!("the remux mode is classified above"),
                 SweepMode::Seek => {
                     let (scenario, report) = case_reports.remove(0);
-                    let stderr = report
-                        .runs
-                        .iter()
-                        .find(|r| r.run.engine == G2G_ENGINE)
-                        .map(|r| run_stderr(&r.run))
-                        .unwrap_or_default();
-                    let (class, note) = classify_seek(&report, &stderr);
+                    let engine_run = |engine: &str| {
+                        report
+                            .runs
+                            .iter()
+                            .find(|r| r.run.engine == engine)
+                            .map(|r| &r.run)
+                    };
+                    let (class, note) = match scenario.audio {
+                        Some(audio) => {
+                            let reference = engine_run(REFERENCE_ENGINE).map(decoded_output);
+                            let g2g = engine_run(G2G_ENGINE).map(decoded_output);
+                            match (reference.transpose()?, g2g.transpose()?) {
+                                (Some(reference), Some(g2g)) => {
+                                    classify_audio_seek(&reference, &g2g, sample_frame_bytes(audio))
+                                }
+                                _ => (TriageClass::Agree, "an engine did not run".into()),
+                            }
+                        }
+                        None => {
+                            let stderr = engine_run(G2G_ENGINE).map(run_stderr).unwrap_or_default();
+                            classify_seek(&report, &stderr)
+                        }
+                    };
                     (class, note, Some(scenario), report)
                 }
                 SweepMode::Decode | SweepMode::Tracks => {
@@ -1228,6 +1374,10 @@ fn remuxed_file(report: &ScenarioReport) -> Option<PathBuf> {
     written.then(|| file.clone())
 }
 
+fn sample_frame_bytes(audio: Audio) -> usize {
+    audio.channels as usize * PCM_SAMPLE_BYTES
+}
+
 fn decoded_output(run: &RunResult) -> Result<DecodedOutput<'_>> {
     let units = match &run.output {
         _ if outcome(run) != Outcome::Decoded => None,
@@ -1251,8 +1401,7 @@ fn classify_remux_case(
 ) -> Result<Vec<(TriageClass, String, ScenarioReport, Scenario)>> {
     let mut reports = case_reports.into_iter();
     let (original_scenario, original_report) = reports.next().expect("the original decode leads");
-    let audio = original_scenario.audio;
-    let sample_frame_bytes = audio.map(|audio| audio.channels as usize * PCM_SAMPLE_BYTES);
+    let sample_frame_bytes = original_scenario.audio.map(sample_frame_bytes);
     let original = decoded_output(&original_report.runs[0].run)?;
     let mut classified = Vec::new();
     for (remux_scenario, mut remux_report) in reports {
@@ -1947,14 +2096,11 @@ mod tests {
                 .args
                 .join(" ")
         };
-        let mut video = sweep_cases(&[vector("v", Some(("h264", "yuv420p")), None)], &engines())
-            .remove(0)
-            .scenario;
-        video.stream_index = Some(1);
-        video.seek = Some(Seek {
-            target: "3.003000".into(),
-            frames: SEEK_FRAMES,
-        });
+        let mut stream =
+            sweep_cases(&[vector("v", Some(("h264", "yuv420p")), None)], &engines()).remove(0);
+        stream.scenario.stream_index = Some(1);
+        let video = seek_case(&stream, BETWEEN_KEYFRAMES_TARGET, 3_003_000).scenario;
+        assert_eq!(video.id, "v/video/seek-inter-3.003000");
         let ffmpeg = line(&calliope_adapter_ffmpeg::Ffmpeg, &video);
         assert!(
             ffmpeg.starts_with("-nostdin -hide_banner -y -ss 3.003000 -copyts -i /media/v"),
@@ -1967,6 +2113,23 @@ mod tests {
         let g2g = line(&calliope_adapter_g2g::G2g, &video);
         assert!(g2g.starts_with("--seek 3.003000 -q filesrc"), "{g2g}");
         assert!(g2g.contains("! decodebin current-video=1 !"), "{g2g}");
+        assert!(g2g.ends_with("! checksumsink hash=md5"), "{g2g}");
+
+        // ffmpeg decodes a bounded stretch of audio after the seek, g2g writes its PCM to the end
+        let opus = sweep_cases(&[vector("a", None, Some("opus"))], &engines()).remove(0);
+        let audio_seek = seek_case(&opus, INSIDE_PACKET_TARGET, 2_010_000).scenario;
+        assert_eq!(audio_seek.id, "a/audio/seek-in-packet-2.010000");
+        let ffmpeg = line(&calliope_adapter_ffmpeg::Ffmpeg, &audio_seek);
+        assert!(
+            ffmpeg.starts_with(&format!(
+                "-nostdin -hide_banner -y -ss 2.010000 -copyts -t {SEEK_AUDIO_SECONDS} -c:a libopus -i /media/v"
+            )),
+            "{ffmpeg}"
+        );
+        assert!(!ffmpeg.contains("-frames"), "{ffmpeg}");
+        let g2g = line(&calliope_adapter_g2g::G2g, &audio_seek);
+        assert!(g2g.starts_with("--seek 2.010000 -q filesrc"), "{g2g}");
+        assert!(g2g.ends_with("! filesink location=/run/out.pcm"), "{g2g}");
 
         let mut audio = sweep_cases(&[vector("a", None, Some("flac"))], &engines())
             .remove(0)
@@ -2001,6 +2164,119 @@ mod tests {
         assert_eq!(seek_targets(&[0, 1_500_000]), [1_500_000]);
         assert!(seek_targets(&[0]).is_empty());
         assert_eq!(seconds_from_microseconds(3_003_000), "3.003000");
+    }
+
+    fn packet(pts: i64, middle: i64, keyframe: bool) -> PacketTimes {
+        PacketTimes {
+            pts,
+            middle: Some(middle),
+            keyframe,
+        }
+    }
+
+    #[test]
+    fn between_keyframe_targets_land_midway_through_each_group_of_pictures() {
+        // a keyframe every 10 frames at 10 frames a second, the last group cut short
+        let packets: Vec<PacketTimes> = (0..25)
+            .map(|frame| packet(frame * 100_000, frame * 100_000 + 50_000, frame % 10 == 0))
+            .collect();
+        let keyframes = [0, 1_000_000, 2_000_000];
+        let keyframe_targets = seek_targets(&keyframes);
+        assert_eq!(keyframe_targets, [1_000_000, 2_000_000]);
+        // nine frames between the keyframes at 1 s and 2 s, four after the one at 2 s
+        assert_eq!(
+            between_keyframe_targets(&keyframe_targets, &keyframes, &packets),
+            [1_500_000, 2_300_000]
+        );
+        // an intra-only stream has no frame between keyframes
+        let intra: Vec<PacketTimes> = (0..3)
+            .map(|frame| packet(frame * 1_000_000, frame * 1_000_000 + 500_000, true))
+            .collect();
+        assert!(between_keyframe_targets(&keyframe_targets, &keyframes, &intra).is_empty());
+    }
+
+    #[test]
+    fn audio_targets_sit_inside_packets_spread_over_the_stream() {
+        let mut packets: Vec<PacketTimes> = (0..8)
+            .map(|index| packet(index * 20_000, index * 20_000 + 10_000, true))
+            .collect();
+        // a priming packet before the start time and a packet without a duration
+        packets.insert(0, packet(-20_000, -10_000, true));
+        packets.push(PacketTimes {
+            pts: 160_000,
+            middle: None,
+            keyframe: true,
+        });
+        assert_eq!(audio_seek_targets(&packets), [50_000, 90_000, 130_000]);
+        assert!(audio_seek_targets(&[]).is_empty());
+    }
+
+    #[test]
+    fn classifies_the_samples_after_an_audio_seek() {
+        let decoded = run(G2G_ENGINE, RunStatus::Ok, Some(GOOD));
+        // stereo S16LE, four bytes a sample frame
+        let frame_bytes = 2 * PCM_SAMPLE_BYTES;
+        let expected: Vec<u8> = (1..=16).collect();
+        let classify = |g2g: &[u8]| {
+            classify_audio_seek(
+                &decoded_pcm(&decoded, &expected),
+                &decoded_pcm(&decoded, g2g),
+                frame_bytes,
+            )
+        };
+        // g2g decodes to the end, only ffmpeg's samples are compared
+        let mut longer = expected.clone();
+        longer.extend([0; 8]);
+        assert_eq!(classify(&longer), (TriageClass::Agree, String::new()));
+        // g2g starting one sample frame early
+        let mut early = vec![0; frame_bytes];
+        early.extend(&expected);
+        assert_eq!(
+            classify(&early),
+            (
+                TriageClass::G2gDiverges,
+                "sample frame 0 of 4 after the seek differs".into()
+            )
+        );
+        let mut changed = expected.clone();
+        changed[9] = 0;
+        assert_eq!(
+            classify(&changed).1,
+            "sample frame 2 of 4 after the seek differs"
+        );
+        assert_eq!(
+            classify(&expected[..10]),
+            (
+                TriageClass::G2gDiverges,
+                format!("2 sample frames after the seek, {REFERENCE_ENGINE} 4")
+            )
+        );
+        let rejected = run(G2G_ENGINE, RunStatus::ExitFailure { code: 1 }, None);
+        let unseekable = DecodedOutput {
+            run: &rejected,
+            stderr: "g2g-launch: --seek: nothing in the pipeline can seek".into(),
+            units: None,
+        };
+        assert_eq!(
+            classify_audio_seek(&decoded_pcm(&decoded, &expected), &unseekable, frame_bytes).0,
+            TriageClass::UnsupportedCodec
+        );
+        // a target past the last sample either engine decodes is no disagreement
+        let empty = run(REFERENCE_ENGINE, RunStatus::Ok, None);
+        let no_reference = DecodedOutput {
+            run: &empty,
+            stderr: String::new(),
+            units: None,
+        };
+        let no_g2g = DecodedOutput {
+            run: &rejected,
+            stderr: String::new(),
+            units: None,
+        };
+        assert_eq!(
+            classify_audio_seek(&no_reference, &no_g2g, frame_bytes).0,
+            TriageClass::Agree
+        );
     }
 
     #[test]
