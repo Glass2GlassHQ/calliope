@@ -725,29 +725,25 @@ scenario id names the kind of target: `seek-key-T`, `seek-inter-T` or
 calliope sweep --mode seek --agreeing runs/fate-suite.json --corpus corpus/fate-suite.toml \
   --workdir runs/seek --title "fate-suite seek" --report runs/fate-suite-seek.json
 ```
-Volume: fate-suite 195 targets on 92 streams, gst-medias 114 targets on 44
-streams, against g2g master 027dcf4a. Result: fate-suite 79 agree, 65 are
-inputs g2g cannot seek (AVI, IVF, MPEG-PS and elementary streams), 46 are g2g
-bugs (below), and 5 are reference quirks: `flv/Enigma_Principles_of_Lust-part.flv`
-carries out-of-order pts that ffmpeg trims by, `nellymoser/nellymoser-discont.flv`
-has a timestamp discontinuity so its target time occurs twice, `mpegts/loewe.ts`
-(ffmpeg falls back to the first frames) and `flv/multitrack.flv` (ffmpeg
-decodes no frame after the seek). gst-medias: 92 agree, 3 unsupported (AVI)
-and 19 g2g bugs.
+Volume: fate-suite 195 targets on 92 streams, gst-medias 126 targets on 48
+streams, against g2g master e2c18741. Result: fate-suite 125 agree, 65 are
+inputs g2g cannot seek (AVI, IVF, MPEG-PS and elementary streams), 2 are g2g
+bugs (below), and 3 are reference quirks: `flv/Enigma_Principles_of_Lust-part.flv`
+carries out-of-order pts that ffmpeg trims by (2 targets) and in
+`flv/multitrack.flv` ffmpeg decodes no frame after the seek to 0.021.
+gst-medias: 123 agree and 3 unsupported (AVI).
 
 Open g2g bugs found here:
-- **An MP4 seek ignores the edit list.** g2g lands on the frame at the target
-  in media time, ffmpeg in presentation time, so with an edit starting at a
-  B-frame delay g2g lands 1 to 3 frames early (39 fate-suite targets, 1
-  gst-medias). `g2g-launch --seek 0.5 filesrc location=fate-suite/mov/mov-3elist.mov !
-  decodebin ! ...` starts at frame 10, `ffmpeg -ss 0.5` at frame 12.
-- **Matroska and FLV seeks count from pts 0**, ffmpeg from the file's start
-  time, so a file starting late lands early (6 targets, `filter/anim.mkv`
-  starts at 42 ms).
-- **MPEG-TS seeks count from the video's first pts**, ffmpeg from the earliest
-  stream's, so a file whose audio starts first lands a keyframe late or past
-  the end (17 gst-medias targets on bipbop, `ac3/mp3ac325-4864-small.ts`).
-- **No seek finds a frame in `webm/opus_vp9-alpha.webm`**, at any target.
+- **An FLV seek in `flv/multitrack.flv` lands a frame past the keyframe.**
+  `g2g-launch --seek 1.064 filesrc location=fate-suite/flv/multitrack.flv !
+  decodebin ! ...` starts at pts 1.167, `ffmpeg -ss 1.064` at the keyframe at
+  1.126. The file's AAC starts at 62 ms and its video at 83 ms, and 1.064 s
+  from the video's start is 1.147.
+- **A seek to the only keyframe of `h264/H264_might_overflow.mkv` finds no
+  frame.** The file starts with that keyframe at 1.086, then two leading
+  B-frames at 1.003 and 1.044 and frames at 1.211 and 1.128, and ffprobe gives
+  it no start time. `--seek 1.086` reports the target past the end, a full
+  decode and `ffmpeg -ss 1.086` both give 1.086, 1.128 and 1.211.
 
 Non-keyframe and audio targets, against g2g master e2c18741: fate-suite 195
 keyframe, 130 non-keyframe and 101 audio targets on 92 video and 34 audio
