@@ -1,0 +1,6 @@
+# g2g's janusvrsink publishes the moving bar here and janusvrsrc subscribes to it
+room-1: {
+	description = "g2g canary"
+	publishers = 1
+	videocodec = "h264"
+}

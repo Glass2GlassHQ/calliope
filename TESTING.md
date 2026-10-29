@@ -526,6 +526,18 @@ in `AacParse -> FfmpegAudioDec: video/x-h264 ... CapsMismatch` before any data
 arrives, whichever branch comes first. PORTING.md lists network demux fan-out
 as file sources only. So no live A/V row can run yet.
 
+Janus and LiveKit peer rows: a 36 minute run on hercules on 2026-10-29, the
+image built from g2g e2c18741, with only the new rows in its config beside the
+peers container on pasta. Both readers were alive at 30 fps in all 36 samples
+and matched 64746 frames each against `moving-bar.txt`, with no mismatched or
+skipped frame, no timestamp jump and no incident. CPU over the run, from `ps`
+times: the publishers 0.6% to 0.9% of a core, since they replay the encoded
+loop, the readers 1.6% to 1.8%, Janus 1.1% and `livekit-server` 1.1%, all flat.
+After a `SIGKILL` of either server, its rows restarted and closed their
+incidents within 5 s. `livekit-server` ignores `SIGTERM` while a room has
+participants. A reader that joins before its publisher exits on Janus's error
+428 (No such feed), which `janusvrsrc` reports as `Hardware(Other)`.
+
 ### 18. Mutation testing (cargo-mutants)
 The other techniques look for bugs in g2g. This one checks the g2g test suite
 instead. cargo-mutants injects one bug at a time into g2g's source (a function

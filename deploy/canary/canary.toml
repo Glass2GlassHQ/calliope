@@ -129,7 +129,8 @@ tier = "self-hosted"
 launch = "dashsrc location=http://127.0.0.1:18900/livesim2/periods_60/testpic_2s/Manifest.mpd ! fmp4demux ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 
-# peers: g2g against the reference servers in g2g-canary-peers, live555, nginx-rtmp and libsrt's srt-live-transmit
+# peers: g2g against the reference servers in g2g-canary-peers, live555, nginx-rtmp, libsrt's srt-live-transmit, janus
+# and livekit
 
 # live555ProxyServer re-serves the clean mediamtx baseline path
 # live555 moves its rtp timestamps once when mediamtx's first sender report arrives, so a run that starts with the proxy can see one backward pts
@@ -184,6 +185,34 @@ id = "peers-srt-play"
 tier = "self-hosted"
 launch = "srtsrc address=127.0.0.1 port=18951 keep-listening=true ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
+
+# janus and livekit: g2g publishes the moving bar and a second row reads it back through the server
+# the publishers loop the 80 frames the image encodes once, so they decode nothing and encode nothing
+# the readers match moving-bar.txt, the frames videotestsrc generated
+
+[[pipeline]]
+id = "peers-janus-publish"
+tier = "self-hosted"
+launch = "multifilesrc location=/usr/share/g2g-canary/clips/moving-bar/%02d.h264 loop=true framerate=30/1 ! h264parse ! clocksync ! janusvrsink janus-endpoint=ws://127.0.0.1:18960 room-id=1 feed-id=1"
+
+[[pipeline]]
+id = "peers-janus-play"
+tier = "self-hosted"
+launch = "janusvrsrc name=s janus-endpoint=ws://127.0.0.1:18960 room-id=1 feed-id=1 s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! fakesink"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
+
+[[pipeline]]
+id = "peers-livekit-publish"
+tier = "self-hosted"
+launch = "multifilesrc location=/usr/share/g2g-canary/clips/moving-bar/%02d.h264 loop=true framerate=30/1 ! h264parse ! clocksync ! livekitsink url=ws://127.0.0.1:18970 room=canary identity=publisher api-key=canary api-secret=g2g-canary-loopback-only-livekit-secret"
+
+[[pipeline]]
+id = "peers-livekit-play"
+tier = "self-hosted"
+launch = "livekitsrc name=s url=ws://127.0.0.1:18970 room=canary identity=reader api-key=canary api-secret=g2g-canary-loopback-only-livekit-secret s. ! h264parse ! avdec_h264 ! checksumsink name=video s. ! fakesink"
+video-sink = "video"
+expect-hashes = "/etc/canary/hashes/moving-bar.txt"
 
 # faulted: the baseline clip through g2g-canary-faulted, whose loopback follows fault-schedule.txt
 # every row needs the content check, the recovery check is built on it

@@ -1,0 +1,16 @@
+# janus in g2g-canary-peers, read by canary-peers.sh
+general: {
+	plugins_folder = "/opt/janus/lib/janus/plugins"
+	transports_folder = "/opt/janus/lib/janus/transports"
+	debug_level = 3
+}
+
+media: {
+	# published on the host loopback by g2g-canary-peers.container
+	rtp_port_range = "18961-18968"
+}
+
+nat: {
+	# pasta delivers the published ports on the container's address, the readers reach them on the host loopback
+	nat_1_1_mapping = "127.0.0.1"
+}

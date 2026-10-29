@@ -516,6 +516,15 @@ each to a g2g `rtmpsrc` listener. libsrt's `srt-live-transmit` takes g2g's
 runs on pasta and publishes only its listening ports on the host loopback,
 because live555 also opens an RTSP over HTTP port on every interface.
 
+The same container runs Janus with its VideoRoom plugin and WebSocket
+transport and `livekit-server`, each from a pinned release. Per server, one row
+publishes the moving bar with `janusvrsink` or `livekitsink`, and a second row
+reads it back with `janusvrsrc` or `livekitsrc` against `moving-bar.txt`. The
+publishers encode nothing: the image build encodes the 80 frame loop once into
+one H.264 access unit per file, and `multifilesrc loop=true framerate=30/1`
+replays them. Both servers advertise 127.0.0.1 as their ICE candidate on fixed
+UDP ports that the container publishes on the host loopback.
+
 The `faulted` tier reads the baseline clip from `g2g-canary-faulted`, a
 container with its own network namespace that runs a second mediamtx, a
 gst-rtsp-server relay of the clean `baseline` path and a feeder. Netem on its

@@ -1,5 +1,5 @@
 [Unit]
-Description=g2g canary: live555, nginx-rtmp and srt-live-transmit as g2g's rtsp, rtmp and srt peers
+Description=g2g canary: live555, nginx-rtmp, srt-live-transmit, janus and livekit as g2g's peers
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest
@@ -13,6 +13,10 @@ PublishPort=127.0.0.1:18570:18570
 PublishPort=127.0.0.1:18572:18572
 PublishPort=127.0.0.1:18936:18936
 PublishPort=127.0.0.1:18950:18950/udp
+PublishPort=127.0.0.1:18960:18960
+PublishPort=127.0.0.1:18961-18968:18961-18968/udp
+PublishPort=127.0.0.1:18970:18970
+PublishPort=127.0.0.1:18971:18971/udp
 RunInit=true
 
 [Service]

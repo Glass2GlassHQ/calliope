@@ -1,6 +1,6 @@
 #!/bin/sh
 # runs the reference servers the peers rows talk to: live555's rtsp proxy, nginx-rtmp with an ffmpeg feed of the
-# baseline clip, and libsrt's srt-live-transmit relaying g2g's srt caller to g2g's srt listener
+# baseline clip, libsrt's srt-live-transmit relaying g2g's srt caller to g2g's srt listener, janus and livekit
 set -u
 
 clips=/usr/share/g2g-canary/clips
@@ -25,4 +25,6 @@ forever "nginx-rtmp" nginx -c /etc/canary/nginx-peers.conf &
 forever "rtmp publish" ffmpeg -hide_banner -loglevel warning -re -stream_loop -1 -i "$clips/baseline.mp4" \
     -c copy -f flv rtmp://127.0.0.1:18936/baseline/baseline &
 forever "srt relay" srt-live-transmit "srt://:18950?mode=listener" "srt://127.0.0.1:18951?mode=caller" &
+forever "janus" /opt/janus/bin/janus --configs-folder=/etc/canary/janus &
+forever "livekit" livekit-server --config /etc/canary/livekit-peers.yaml &
 wait

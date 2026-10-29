@@ -1,0 +1,14 @@
+# livekit-server in g2g-canary-peers, read by canary-peers.sh
+port: 18970
+rtc:
+  # one udp port for every peer connection, published on the host loopback by g2g-canary-peers.container
+  udp_port: 18971
+  tcp_port: 0
+  use_external_ip: false
+  # pasta delivers the published ports on the container's address, the readers reach them on the host loopback
+  node_ip: 127.0.0.1
+# g2g's livekitsink and livekitsrc mint their tokens from this pair
+keys:
+  canary: g2g-canary-loopback-only-livekit-secret
+logging:
+  level: warn

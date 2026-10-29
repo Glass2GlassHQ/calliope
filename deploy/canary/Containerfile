@@ -31,11 +31,36 @@ RUN curl -fsSLo /nginx-rtmp.tar.gz \
     && cp -a /usr/src/nginx-*/ /nginx-src && cd /nginx-src \
     && ./configure --with-compat --add-dynamic-module=/nginx-rtmp && make modules
 
+# fedora's janus follows its updates repo, so the videoroom plugin and websocket transport build from a pinned release
+FROM base AS janus
+ARG JANUS_VERSION=1.4.3
+ARG JANUS_SHA256=e66d752dcf0966cbb4f4c7d3264d6e295aeab21537594bd5e630e94a3640a9e5
+RUN dnf -y install autoconf automake libtool make gcc pkgconf-pkg-config glib2-devel jansson-devel libconfig-devel \
+        libnice-devel libsrtp-devel openssl-devel libwebsockets-devel zlib-devel \
+    && dnf clean all
+RUN curl -fsSLo /janus.tar.gz \
+        "https://github.com/meetecho/janus-gateway/archive/refs/tags/v${JANUS_VERSION}.tar.gz" \
+    && echo "${JANUS_SHA256}  /janus.tar.gz" | sha256sum -c - \
+    && mkdir /janus && tar -xzf /janus.tar.gz -C /janus --strip-components 1 && cd /janus \
+    && sh autogen.sh \
+    && ./configure --prefix=/opt/janus --disable-docs --disable-data-channels --disable-turn-rest-api \
+        --disable-all-plugins --enable-plugin-videoroom --disable-all-transports --enable-websockets \
+        --disable-all-handlers --disable-all-loggers \
+    && make -j"$(nproc)" && make install
+
+FROM base AS livekit
+ARG LIVEKIT_VERSION=1.13.11
+ARG LIVEKIT_SHA256=1e9ee90ca301e1842b2887fc77cb122759756a9c8aeb4334ee91de3325ec43fb
+RUN curl -fsSLo /livekit.tar.gz \
+        "https://github.com/livekit/livekit/releases/download/v${LIVEKIT_VERSION}/livekit_${LIVEKIT_VERSION}_linux_amd64.tar.gz" \
+    && echo "${LIVEKIT_SHA256}  /livekit.tar.gz" | sha256sum -c - \
+    && tar -xzf /livekit.tar.gz -C / livekit-server
+
 FROM base AS build
 RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
         opus-devel libdav1d-devel \
     && dnf clean all
-ARG G2G_FEATURES=std,multi-thread,rtsp,rtsp-server,rtsp-client-sink,srt,rist,rtmp,webrtc,http-src,hls,dash,ffmpeg,opus,dav1d,observe
+ARG G2G_FEATURES=std,multi-thread,rtsp,rtsp-server,rtsp-client-sink,srt,rist,rtmp,webrtc,webrtc-janus,webrtc-livekit,http-src,hls,dash,ffmpeg,opus,dav1d,observe
 ARG CARGO_BUILD_JOBS=4
 ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 COPY --from=g2g . /src/glass2glass
@@ -57,11 +82,14 @@ COPY --from=mediamtx /mediamtx /usr/local/bin/mediamtx
 COPY --from=mediamtx /clips /usr/share/g2g-canary/clips
 COPY --from=livesim2 /livesim2 /usr/local/bin/livesim2
 COPY --from=livesim2 /src/cmd/livesim2/app/testdata/assets /usr/share/livesim2/vod
-# live555's rtsp proxy, nginx-rtmp and libsrt's srt-live-transmit run in g2g-canary-peers.container
-RUN dnf -y install live555-tools srt nginx-core && dnf clean all
+# live555's rtsp proxy, nginx-rtmp, libsrt's srt-live-transmit, janus and livekit run in g2g-canary-peers.container
+RUN dnf -y install live555-tools srt nginx-core glib2 jansson libconfig libnice libsrtp libwebsockets && dnf clean all
 COPY --from=nginx-rtmp /nginx-src/objs/ngx_rtmp_module.so /usr/lib64/nginx/modules/ngx_rtmp_module.so
+COPY --from=janus /opt/janus /opt/janus
+COPY --from=livekit /livekit-server /usr/local/bin/livekit-server
 COPY --chmod=0755 deploy/canary/peers.sh /usr/local/bin/canary-peers.sh
-COPY deploy/canary/nginx-peers.conf /etc/canary/nginx-peers.conf
+COPY deploy/canary/nginx-peers.conf deploy/canary/livekit-peers.yaml /etc/canary/
+COPY deploy/canary/janus /etc/canary/janus
 # nginx refuses a module built for another nginx version, so a mismatch fails the build
 RUN nginx -t -c /etc/canary/nginx-peers.conf
 COPY --chmod=0755 deploy/canary/faulted.sh /usr/local/bin/canary-faulted.sh
@@ -81,6 +109,12 @@ RUN mkdir -p /etc/canary/hashes && cd /usr/share/g2g-canary/clips \
 # the egress rows encode losslessly, so their table is the source's frames, one 80 frame loop of the moving bar
 RUN g2g-launch -q videotestsrc pattern=moving-bar num-buffers=80 ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 \
         ! checksumsink > /etc/canary/hashes/moving-bar.txt
+# the janus and livekit publishers loop the same 80 frames encoded once, one access unit per file
+RUN mkdir /usr/share/g2g-canary/clips/moving-bar && cd /usr/share/g2g-canary/clips/moving-bar \
+    && g2g-launch -q videotestsrc pattern=moving-bar num-buffers=80 ! video/x-raw,format=I420,width=320,height=240,framerate=30/1 \
+        ! x264enc backend=software pass=quant quantizer=0 ! h264parse ! multifilesink location=%02d.h264 \
+    && g2g-launch -q multifilesrc location=%02d.h264 framerate=30/1 ! h264parse ! avdec_h264 ! checksumsink \
+        | cmp - /etc/canary/hashes/moving-bar.txt
 # the switching clip changes size and frame rate mid-stream, the abr row matches whichever variant it reads
 RUN cd /usr/share/g2g-canary/clips \
     && g2g-launch -q filesrc location=switching.ts ! tsdemux ! h264parse ! avdec_h264 ! checksumsink \
