@@ -727,10 +727,13 @@ calliope sweep --mode seek --agreeing runs/fate-suite.json --corpus corpus/fate-
 ```
 Volume: fate-suite 195 targets on 92 streams, gst-medias 126 targets on 48
 streams, against g2g master e2c18741. Result: fate-suite 125 agree, 65 are
-inputs g2g cannot seek (AVI, IVF, MPEG-PS and elementary streams), 2 are g2g
-bugs (below), and 3 are reference quirks: `flv/Enigma_Principles_of_Lust-part.flv`
-carries out-of-order pts that ffmpeg trims by (2 targets) and in
-`flv/multitrack.flv` ffmpeg decodes no frame after the seek to 0.021.
+inputs g2g cannot seek (AVI, IVF, MPEG-PS and elementary streams), 1 is a g2g
+bug (below), and 4 are reference quirks: `flv/Enigma_Principles_of_Lust-part.flv`
+carries out-of-order pts that ffmpeg trims by (2 targets), in
+`flv/multitrack.flv` ffmpeg decodes no frame after the seek to 0.021, and
+`h264/H264_might_overflow.mkv` has no DTS on any packet, so ffprobe gives it
+no start time and `ffmpeg -ss` counts from 0. g2g counts from its first pts,
+1.086, gst from 1.003, so `--seek 1.086` is past the end of the 1.25 s file.
 gst-medias: 123 agree and 3 unsupported (AVI).
 
 Open g2g bugs found here:
@@ -739,18 +742,14 @@ Open g2g bugs found here:
   decodebin ! ...` starts at pts 1.167, `ffmpeg -ss 1.064` at the keyframe at
   1.126. The file's AAC starts at 62 ms and its video at 83 ms, and 1.064 s
   from the video's start is 1.147.
-- **A seek to the only keyframe of `h264/H264_might_overflow.mkv` finds no
-  frame.** The file starts with that keyframe at 1.086, then two leading
-  B-frames at 1.003 and 1.044 and frames at 1.211 and 1.128, and ffprobe gives
-  it no start time. `--seek 1.086` reports the target past the end, a full
-  decode and `ffmpeg -ss 1.086` both give 1.086, 1.128 and 1.211.
 
 Non-keyframe and audio targets, against g2g master e2c18741: fate-suite 195
 keyframe, 130 non-keyframe and 101 audio targets on 92 video and 34 audio
 streams, gst-medias 126, 117 and 30 on 48 video and 10 audio streams. The
 keyframe targets classify exactly as a plain rerun of this mode at the same
 g2g. Non-keyframe, fate-suite: 84 agree, 20 unsupported (IVF, VOB, AVI, VP7,
-an elementary stream), 4 g2g bugs (below), and 22 where ffmpeg misses the
+an elementary stream), 3 g2g bugs (below), 1 past the end of
+`h264/H264_might_overflow.mkv` (above), and 22 where ffmpeg misses the
 target frame and g2g lands on it: on MPEG-TS `ffmpeg -ss` to a frame between
 keyframes starts at the next keyframe, or decodes nothing when none follows (7
 targets), in `mov/elst_ends_betn_b_and_i.mp4` and
@@ -772,12 +771,10 @@ which leaves it unresolved.
 
 Open g2g bugs found by the non-keyframe and audio targets:
 - **A Matroska or FLV seek between keyframes lands a frame late**, and on the
-  last frame finds no frame at all (3 targets, plus 1 past-the-end).
+  last frame finds no frame at all (3 targets).
   `g2g-launch --seek 2.5 filesrc location=fate-suite/mkv/test7_cut.mkv ! decodebin !
   videoconvert ! video/x-raw,format=I420 ! checksumsink hash=md5` starts at pts
   2.542, its full decode has a frame at 2.500 and `ffmpeg -ss 2.5` starts there.
-  `--seek 1.211` on `h264/H264_might_overflow.mkv` reports the target past the
-  end though its last frame is at 1.211.
 - **An Opus seek starts at the packet holding the target and decodes it with
   no pre-roll**, so it starts up to a packet early and up to its first 400 ms
   differ from a continuous decode (27 targets in Ogg, Matroska and TS, the 48
