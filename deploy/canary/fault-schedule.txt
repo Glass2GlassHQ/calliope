@@ -8,9 +8,9 @@ netem 60 loss 3%: 3% packet loss
 clean 60
 netem 60 delay 80ms 40ms distribution normal: 80 ms delay with 40 ms jitter
 clean 60
-netem 60 delay 20ms reorder 25% 50%: 25% of packets reordered
+netem 60 delay 20ms reorder 25%: 25% of packets reordered
 clean 60
-netem 30 loss 20% 25%: 20% loss
+netem 30 loss 20%: 20% loss
 clean 90
 cap 60 1.5: the link capped at 1.5 times its traffic
 clean 60
