@@ -6,6 +6,8 @@ TESTING.md stating method, volume, and result. Delete an item when it lands.
 ## Canary
 - Run the canary on the EC2 instance for 6 months and link the S3 status page
   from the g2g docs site.
+- Add a public SRT server row: `srtsrc mode=caller` calls one now, so the "no
+  public srt entry" comment in `deploy/canary/canary.toml` no longer holds.
 
 ## Corpus differential depth
 - Timestamp differential: compare each frame's duration too, once a g2g sink
