@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
@@ -157,14 +158,24 @@ pub fn summarize(
     let day_ago = now.saturating_sub(SECS_PER_DAY);
     let first_day = (now / SECS_PER_DAY + 1).saturating_sub(HISTORY_DAYS);
     let history_start = first_day * SECS_PER_DAY;
+    let mut samples_by_pipeline: HashMap<&str, Vec<&Sample>> = HashMap::new();
+    for sample in samples {
+        samples_by_pipeline
+            .entry(sample.pipeline.as_str())
+            .or_default()
+            .push(sample);
+    }
     let pipeline_statuses = config
         .pipelines
         .iter()
         .map(|pipeline| {
+            // a row that has not run yet has no samples
             let own = || {
-                samples
-                    .iter()
-                    .filter(|sample| sample.pipeline == pipeline.id)
+                samples_by_pipeline
+                    .get(pipeline.id.as_str())
+                    .into_iter()
+                    .flatten()
+                    .copied()
             };
             let last_sample = own()
                 .filter(|sample| sample.ts <= now)
