@@ -227,7 +227,7 @@ expect-hashes = "/etc/canary/hashes/baseline.txt"
 [[pipeline]]
 id = "faulted-srt"
 tier = "faulted"
-launch = "srtsrc address=127.0.0.1 port=18892 keep-listening=true ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
+launch = "srtsrc address=127.0.0.1 port=18892 keep-listening=true lossmaxttl=20 ! tsdemux ! h264parse ! avdec_h264 ! checksumsink name=video"
 video-sink = "video"
 expect-hashes = "/etc/canary/hashes/baseline.txt"
 
