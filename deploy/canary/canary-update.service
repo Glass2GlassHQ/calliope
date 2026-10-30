@@ -1,0 +1,6 @@
+[Unit]
+Description=pull the g2g canary image and install its deploy files when it changed
+
+[Service]
+Type=oneshot
+ExecStart=%h/g2g-canary/canary-update.sh pull

@@ -3,7 +3,6 @@ Description=g2g canary: a second mediamtx, a gst-rtsp-server relay and a feeder 
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest
-AutoUpdate=registry
 ContainerName=g2g-canary-faulted
 Entrypoint=/usr/local/bin/canary-faulted.sh
 # netem on the container's own loopback, the host network is untouched

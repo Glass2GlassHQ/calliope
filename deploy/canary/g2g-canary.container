@@ -5,7 +5,6 @@ After=g2g-canary-feeder.service g2g-canary-livesim2.service
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest
-AutoUpdate=registry
 ContainerName=g2g-canary
 Network=host
 RunInit=true

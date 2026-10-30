@@ -3,7 +3,6 @@ Description=g2g canary: livesim2 serving the self-hosted dash streams
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest
-AutoUpdate=registry
 ContainerName=g2g-canary-livesim2
 Entrypoint=/usr/local/bin/livesim2
 Exec=--vodroot /usr/share/livesim2/vod --port 18900

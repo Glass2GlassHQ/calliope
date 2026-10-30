@@ -3,7 +3,6 @@ Description=g2g canary: live555, nginx-rtmp, srt-live-transmit, janus and liveki
 
 [Container]
 Image=ghcr.io/glass2glasshq/g2g-canary:latest
-AutoUpdate=registry
 ContainerName=g2g-canary-peers
 Entrypoint=/usr/local/bin/canary-peers.sh
 # live555 also opens an rtsp over http port on every interface, so pasta publishes only the ports below

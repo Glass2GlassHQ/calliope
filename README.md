@@ -630,23 +630,25 @@ systemd: `g2g-canary-mediamtx`, `g2g-canary-feeder`, `g2g-canary-faulted`,
 minutes.
 
 The g2g repo's `canary image` workflow builds the image after each master commit
-passes CI and pushes it as `:latest` and `:<short sha>`. On the host,
-`podman-auto-update.timer` pulls `:latest` daily at midnight and restarts the
-units whose image changed.
+passes CI and pushes it as `:latest` and `:<short sha>`. The image also carries
+every file the host needs under `/usr/share/g2g-canary/deploy`. On the host,
+`canary-update.timer` runs `canary-update.sh pull` daily at midnight. When
+`:latest` is a new image, it installs those files and restarts the units, so the
+units, config and image always come from the same calliope commit.
 
 ```sh
 tools/canary-deploy.sh local               # or <ssh-host>
 ```
 
-`canary-deploy.sh` pulls the image on the host and copies
-`deploy/canary/*.container` to `~/.config/containers/systemd/`, the publish units
-to `~/.config/systemd/user/`, and the config, `mediamtx.yml`, `feeder.sh`,
-`canary-publish.sh` and `canary-alert.sh` to `~/g2g-canary/`. It then restarts
-the units and enables `podman-auto-update.timer`. Logs and the status page land
-in `~/g2g-canary/data/canary-out/`.
+`canary-deploy.sh` pulls the image on the host and runs `canary-update.sh install`.
+That copies the image's `*.container` files to `~/.config/containers/systemd/`, the
+publish and update units to `~/.config/systemd/user/`, and the config,
+`mediamtx.yml`, `feeder.sh`, `canary-publish.sh`, `canary-alert.sh` and
+`canary-update.sh` to `~/g2g-canary/`. It then restarts the units and enables
+`canary-update.timer`. Logs and the status page land in `~/g2g-canary/data/canary-out/`.
 
-A unit that runs the canary image sets `Image=ghcr.io/glass2glasshq/g2g-canary:latest`
-and `AutoUpdate=registry`, so one auto-update run restarts all of them on a new image.
+The units carry no `AutoUpdate=registry`: podman auto-update would replace the
+image but leave the host files from the previous image.
 
 To run an image built here instead of the registry's:
 
@@ -656,8 +658,7 @@ CANARY_IMAGE=localhost/g2g-canary:latest tools/canary-deploy.sh <ssh-host>
 ```
 
 The deploy copies it with `podman save | ssh podman load` and tags it with the
-ghcr name. It runs until the next auto-update, which replaces it with the
-registry's `:latest` because the digests differ.
+ghcr name. It runs until `canary-update.timer` next pulls the registry's `:latest`.
 
 The publish timer starts only when `~/g2g-canary/publish.env` exists, see
 `deploy/canary/publish.env.example`. `CANARY_PUBLISH_DESTINATION` is an `s3://`

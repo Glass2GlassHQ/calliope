@@ -126,6 +126,9 @@ RUN cd /usr/share/g2g-canary/clips \
     && g2g-launch -q filesrc location=abr-180.mp4 ! qtdemux ! h264parse ! avdec_h264 ! checksumsink \
         > /etc/canary/hashes/abr-180.txt
 COPY deploy/canary/canary.toml /etc/canary/canary.toml
+# canary-update.sh installs these on the host, so the host files match the image they run with
+COPY deploy/canary /usr/share/g2g-canary/deploy
+COPY tools/canary-publish.sh tools/canary-alert.sh /usr/share/g2g-canary/deploy/
 ARG G2G_COMMIT
 RUN test -n "${G2G_COMMIT}" || { echo "build with --build-arg G2G_COMMIT=<g2g commit>" >&2; exit 1; }
 ENV G2G_COMMIT=${G2G_COMMIT}

@@ -1,0 +1,10 @@
+[Unit]
+Description=check for a new g2g canary image daily at midnight
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=900
+Persistent=true
+
+[Install]
+WantedBy=timers.target
