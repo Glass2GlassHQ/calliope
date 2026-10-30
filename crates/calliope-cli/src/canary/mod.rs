@@ -12,6 +12,7 @@ use std::time::{Duration, Instant, SystemTime};
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
 use futures::stream::{FuturesUnordered, StreamExt};
+use tokio::sync::Notify;
 use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
 
 use calliope_core::runner::read_proc_status_kb;
@@ -32,7 +33,7 @@ pub async fn run(config_path: &Path) -> Result<()> {
     let g2g_commit = std::env::var("G2G_COMMIT")
         .context("G2G_COMMIT must name the g2g commit g2g-launch was built from")?;
     ensure!(!g2g_commit.is_empty(), "G2G_COMMIT is empty");
-    let config = CanaryConfig::load(config_path)?;
+    let config = Arc::new(CanaryConfig::load(config_path)?);
     let stderr_dir = config.log_dir.join(STDERR_DIR);
     std::fs::create_dir_all(&stderr_dir)
         .with_context(|| format!("create {}", stderr_dir.display()))?;
@@ -78,19 +79,23 @@ pub async fn run(config_path: &Path) -> Result<()> {
             )
         })
         .collect::<Result<Vec<_>>>()?;
-    let mut sampler = Sampler::new(
-        &config,
+    let status_requests = Arc::new(Notify::new());
+    let mut status_writer = tokio::spawn(write_status_on_request(
+        Arc::clone(&config),
+        Arc::clone(&open_incidents),
         g2g_commit,
-        states,
-        open_incidents,
-        unrecovered,
-        recording_rows,
-    );
+        Arc::clone(&status_requests),
+    ));
+    let mut sampler = Sampler::new(&config, states, open_incidents, unrecovered, recording_rows);
     let mut ticker = tokio::time::interval(Duration::from_secs(config.sample_secs));
     // the first tick fires at once, with nothing to sample yet
     ticker.tick().await;
-    sampler.write_status()?;
+    status_requests.notify_one();
     let mut recovery_window = fault_schedule.next_recovery_window(started);
+    // the canary started inside this window, after its fault
+    if recovery_window.start >= started {
+        sampler.judge_next(&recovery_window);
+    }
     let shutdown = shutdown_signal();
     tokio::pin!(shutdown);
     loop {
@@ -99,14 +104,21 @@ pub async fn run(config_path: &Path) -> Result<()> {
             _ = ticker.tick() => {
                 let recordings = sampler.check_recordings().await?;
                 sampler.sample(&recordings)?;
-                sampler.write_status()?;
+                status_requests.notify_one();
             }
             _ = tokio::time::sleep(until_judged) => {
-                // the canary started inside this window, after its fault
                 if recovery_window.start >= started {
                     sampler.judge_recovery(&recovery_window)?;
                 }
                 recovery_window = fault_schedule.next_recovery_window(recovery_window.end);
+                sampler.judge_next(&recovery_window);
+            }
+            written = &mut status_writer => {
+                match written {
+                    Ok(Err(e)) => return Err(e),
+                    Err(e) => bail!("status writer panicked: {e}"),
+                    Ok(Ok(())) => bail!("status writer stopped"),
+                }
             }
             ended = supervisors.next() => {
                 match ended {
@@ -118,6 +130,45 @@ pub async fn run(config_path: &Path) -> Result<()> {
             signal = &mut shutdown => return signal,
         }
     }
+}
+
+// reading a month of logs takes seconds, which the sampler loop does not wait for
+async fn write_status_on_request(
+    config: Arc<CanaryConfig>,
+    open_incidents: SharedOpenIncidents,
+    g2g_commit: String,
+    requests: Arc<Notify>,
+) -> Result<()> {
+    let g2g_commit = Arc::new(g2g_commit);
+    loop {
+        requests.notified().await;
+        let (config, open_incidents, g2g_commit) = (
+            Arc::clone(&config),
+            Arc::clone(&open_incidents),
+            Arc::clone(&g2g_commit),
+        );
+        tokio::task::spawn_blocking(move || write_status(&config, &open_incidents, &g2g_commit))
+            .await
+            .context("status writer panicked")??;
+    }
+}
+
+fn write_status(
+    config: &CanaryConfig,
+    open_incidents: &SharedOpenIncidents,
+    g2g_commit: &str,
+) -> Result<()> {
+    let now = unix_now();
+    let since = now.saturating_sub(status::HISTORY_DAYS * SECS_PER_DAY);
+    let samples: Vec<Sample> = record::read_days(&config.log_dir, SAMPLES_PREFIX, since, now)?;
+    let mut incidents: Vec<record::Incident> =
+        record::read_days(&config.log_dir, INCIDENTS_PREFIX, since, now)?;
+    incidents.extend_from_slice(open_incidents.lock().expect("open incidents lock").all());
+    let week_ago = now.saturating_sub(status::WEEK_DAYS * SECS_PER_DAY);
+    let recoveries: Vec<Recovery> =
+        record::read_days(&config.log_dir, RECOVERIES_PREFIX, week_ago, now)?;
+    let summary = status::summarize(config, &samples, &incidents, &recoveries, g2g_commit, now);
+    status::write_status(&config.status_dir, &summary)
 }
 
 #[cfg(unix)]
@@ -139,7 +190,6 @@ async fn shutdown_signal() -> Result<()> {
 #[derive(Debug)]
 struct Sampler<'a> {
     config: &'a CanaryConfig,
-    g2g_commit: String,
     states: Vec<SharedState>,
     open_incidents: SharedOpenIncidents,
     // frames_total of each pipeline at the previous sample
@@ -155,7 +205,6 @@ struct Sampler<'a> {
 impl<'a> Sampler<'a> {
     fn new(
         config: &'a CanaryConfig,
-        g2g_commit: String,
         states: Vec<SharedState>,
         open_incidents: SharedOpenIncidents,
         unrecovered: Vec<UnboundedSender<UnrecoveredRun>>,
@@ -163,7 +212,6 @@ impl<'a> Sampler<'a> {
     ) -> Self {
         Sampler {
             config,
-            g2g_commit,
             sampled_frames: vec![0; states.len()],
             rss_windows: states.iter().map(|_| RssWindow::default()).collect(),
             states,
@@ -290,6 +338,19 @@ impl<'a> Sampler<'a> {
         )
     }
 
+    // each faulted row settles `window` at its end, so judging it late changes nothing
+    fn judge_next(&self, window: &RecoveryWindow) {
+        for (pipeline, state) in self.config.pipelines.iter().zip(&self.states) {
+            if pipeline.judges_recovery() {
+                state
+                    .lock()
+                    .expect("pipeline state lock")
+                    .checks
+                    .judge_next(window.start as f64, window.end as f64);
+            }
+        }
+    }
+
     // records how each faulted row came back from the fault before `window`, and has a run that never did restarted
     // along with the publishers it checks
     fn judge_recovery(&self, window: &RecoveryWindow) -> Result<()> {
@@ -345,33 +406,6 @@ impl<'a> Sampler<'a> {
                 )
             })
     }
-
-    fn write_status(&self) -> Result<()> {
-        let now = unix_now();
-        let since = now.saturating_sub(status::HISTORY_DAYS * SECS_PER_DAY);
-        let samples: Vec<Sample> =
-            record::read_days(&self.config.log_dir, SAMPLES_PREFIX, since, now)?;
-        let mut incidents: Vec<record::Incident> =
-            record::read_days(&self.config.log_dir, INCIDENTS_PREFIX, since, now)?;
-        incidents.extend_from_slice(
-            self.open_incidents
-                .lock()
-                .expect("open incidents lock")
-                .all(),
-        );
-        let week_ago = now.saturating_sub(status::WEEK_DAYS * SECS_PER_DAY);
-        let recoveries: Vec<Recovery> =
-            record::read_days(&self.config.log_dir, RECOVERIES_PREFIX, week_ago, now)?;
-        let summary = status::summarize(
-            self.config,
-            &samples,
-            &incidents,
-            &recoveries,
-            &self.g2g_commit,
-            now,
-        );
-        status::write_status(&self.config.status_dir, &summary)
-    }
 }
 
 #[cfg(test)]
@@ -422,14 +456,7 @@ mod tests {
             config.pipelines.iter().map(|_| unbounded_channel()).unzip();
         let open_incidents = Arc::new(Mutex::new(OpenIncidents::load(&dir).unwrap()));
         let recording_rows = config.pipelines.iter().map(|_| None).collect();
-        let sampler = Sampler::new(
-            &config,
-            "test".into(),
-            states,
-            open_incidents,
-            senders,
-            recording_rows,
-        );
+        let sampler = Sampler::new(&config, states, open_incidents, senders, recording_rows);
         let window = RecoveryWindow {
             fault: Fault {
                 kind: FaultKind::Netem,

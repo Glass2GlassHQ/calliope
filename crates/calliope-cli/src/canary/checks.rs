@@ -319,6 +319,10 @@ pub struct FrameChecks {
     previous_frame: HashMap<String, (u64, i128)>,
     timestamps: TimestampCounts,
     clean_run: CleanRun,
+    // the fault end and window end of the window the sampler judges next
+    next_window: Option<(f64, f64)>,
+    // how that window's run stood at its end, once a frame or restart came after the end
+    recovery_at_window_end: Option<WindowRecovery>,
 }
 
 impl FrameChecks {
@@ -345,7 +349,8 @@ impl FrameChecks {
     }
 
     // a new run joins the stream anywhere and starts its timestamps afresh
-    pub fn restart(&mut self) {
+    pub fn restart(&mut self, now_unix: f64) {
+        self.settle_window_before(now_unix);
         self.previous_frame.clear();
         self.clean_run = CleanRun::default();
         if let Some(content) = &mut self.content {
@@ -355,6 +360,7 @@ impl FrameChecks {
 
     // arrival_ns is the canary's monotonic clock when the line arrived, arrival_unix the wall clock
     pub fn observe(&mut self, reading: &ChecksumReading, arrival_ns: i128, arrival_unix: f64) {
+        self.settle_window_before(arrival_unix);
         let pts_ns = i128::from(reading.pts_ns);
         self.timestamps.frames += 1;
         if let Some((previous_pts, previous_arrival)) = self
@@ -393,8 +399,32 @@ impl FrameChecks {
         }
     }
 
-    // judged at `window_end`, the end of the clean window after a fault that ended at `fault_end`
+    // the sampler can judge a window seconds late, when the next fault has already broken frames
+    pub fn judge_next(&mut self, fault_end: f64, window_end: f64) {
+        self.next_window = Some((fault_end, window_end));
+    }
+
+    fn settle_window_before(&mut self, now_unix: f64) {
+        let Some((fault_end, window_end)) = self.next_window else {
+            return;
+        };
+        if now_unix < window_end {
+            return;
+        }
+        self.next_window = None;
+        self.recovery_at_window_end = Some(self.recovery_now(fault_end, window_end));
+    }
+
+    // the clean window after a fault that ended at `fault_end`, as it stood at `window_end`
     pub fn take_recovery(&mut self, fault_end: f64, window_end: f64) -> WindowRecovery {
+        self.next_window = None;
+        match self.recovery_at_window_end.take() {
+            Some(recovery) => recovery,
+            None => self.recovery_now(fault_end, window_end),
+        }
+    }
+
+    fn recovery_now(&mut self, fault_end: f64, window_end: f64) -> WindowRecovery {
         let run = &mut self.clean_run;
         let video = run.video_offset.take_mean_ns();
         let audio = run.audio_offset.take_mean_ns();
@@ -640,7 +670,7 @@ mod tests {
     fn a_restart_breaks_the_run() {
         let mut checks = checks(false);
         feed(&mut checks, &clip(0, 20.0), 0, FAULT_END - 10.0);
-        checks.restart();
+        checks.restart(FAULT_END + 10.0);
         let rejoined = FAULT_END + 15.0;
         feed(&mut checks, &clip(1, WINDOW_END - rejoined), 1, rejoined);
         let secs = checks
@@ -648,6 +678,20 @@ mod tests {
             .recovery_secs
             .unwrap();
         assert!((secs - 15.0).abs() < 1e-6, "recovered after {secs} s");
+    }
+
+    #[test]
+    fn a_late_judgement_sees_the_run_as_it_stood_at_the_window_end() {
+        let mut checks = checks(false);
+        checks.judge_next(FAULT_END, WINDOW_END);
+        feed(&mut checks, &clip(0, WINDOW_END - FAULT_END), 0, FAULT_END);
+        // the next fault corrupts every frame after the window ends, before the sampler gets to judge it
+        feed(&mut checks, &[CORRUPT; 30], 0, WINDOW_END + FRAME_SECS);
+        checks.restart(WINDOW_END + 2.0);
+        assert_eq!(
+            checks.take_recovery(FAULT_END, WINDOW_END).recovery_secs,
+            Some(0.0)
+        );
     }
 
     // a tcp stream that stalls delivers what it held back in a burst, 1 ms per frame
@@ -887,7 +931,7 @@ mod tests {
     fn a_restart_rejoins_without_a_skip() {
         let mut checks = checks(false);
         checks.observe(&event("video", 0, digest(0)), 0, 0.0);
-        checks.restart();
+        checks.restart(0.0);
         checks.observe(&event("video", 0, digest(3)), 1_000_000_000_000, 0.0);
         let sample = checks.take_sample();
         assert_eq!(sample.content.unwrap().skipped, 0);

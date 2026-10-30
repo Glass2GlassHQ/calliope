@@ -14,8 +14,8 @@ abr_dir=/tmp/abr
 faulted_ports="19554 $gst_relay_port 19888 18892 18896 18897 19889 19189 19891 $abr_port"
 retry_secs=1
 mediamtx_pid_file=/tmp/mediamtx.pid
-# a netem change keeps the previous rate and reorder unless it sets them
-clean_netem="delay 0ms rate 0bit reorder 0%"
+# a netem change keeps the previous rate, reorder and correlations unless it sets them
+clean_netem="delay 0ms 0ms 0% loss 0% 0% rate 0bit reorder 0% 0%"
 
 # every packet goes to band 1, the filters move faulted-port packets to band 4, which carries the netem qdisc
 setup_netem() {

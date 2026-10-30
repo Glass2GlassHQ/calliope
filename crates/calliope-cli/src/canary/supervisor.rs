@@ -166,7 +166,7 @@ impl Supervisor {
             let mut state = self.lock();
             state.pid = child.id();
             state.last_frame = None;
-            state.checks.restart();
+            state.checks.restart(unix_now_fractional());
         }
         let tail = Arc::new(Mutex::new(VecDeque::with_capacity(STDERR_TAIL_LINES)));
         let stderr_reader = child.stderr.take().map(|stderr| {
@@ -266,7 +266,7 @@ impl Supervisor {
                         .observe(&reading, arrival_ns, unix_now_fractional());
                 }
                 // a program that rebuilds its graph joins the stream anew without a restart
-                ObserveMessage::StreamStart => state.checks.restart(),
+                ObserveMessage::StreamStart => state.checks.restart(unix_now_fractional()),
             }
         }
     }
