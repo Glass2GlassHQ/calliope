@@ -57,7 +57,7 @@ RUN curl -fsSLo /livekit.tar.gz \
     && tar -xzf /livekit.tar.gz -C / livekit-server
 
 FROM base AS build
-RUN dnf -y install --allowerasing cargo rust clang-devel pkgconf-pkg-config openssl-devel ffmpeg-devel \
+RUN dnf -y install --allowerasing cargo rust clang-devel cmake pkgconf-pkg-config openssl-devel ffmpeg-devel \
         opus-devel libdav1d-devel \
     && dnf clean all
 ARG G2G_FEATURES=std,multi-thread,rtsp,rtsp-server,rtsp-client-sink,srt,rist,rtmp,webrtc,webrtc-janus,webrtc-livekit,http-src,hls,dash,ffmpeg,opus,dav1d,observe
