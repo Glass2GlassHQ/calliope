@@ -840,34 +840,20 @@ name: mp4mux and matroskamux take the same codecs at any pad count (H.264,
 H.265, VP8, VP9, AV1, AAC, Opus and text). mp4mux refuses MP3, AC-3, ALAC and
 MPEG-4 Part 2 video. matroskamux refuses Vorbis, FLAC, PCM, MP3, Theora,
 MPEG-2, MJPEG and ProRes. mpegtsmux refuses MPEG-2 video and MP3. flvmux
-refuses Opus, MP3 from MPEG-PS and VP6. mp4mux, matroskamux or mpegtsmux
-refusing a stream fails with a bare `pipeline error: CapsMismatch` that names
-neither the muxer nor the codec.
+refuses Opus, MP3 from MPEG-PS and VP6. flvmux, mp4mux and matroskamux also
+refuse LOAS/LATM AAC, and mpegtsmux refuses USAC. A refusing muxer logs its
+name and the caps it cannot carry.
 
 Open g2g bugs found here:
 - **parsebin cannot fan out files decodebin plays** (280 pairs, 70 streams):
   WAV, IVF, Ogg Theora and VP8, FLV VP6 and H.264, and AVI with a tagged codec
   fail with `no caps overlap between FileSrc and demux` or `no free output pad
   named 'video_0'`.
-- **flvmux writes an AAC sequence header no decoder takes** (13 streams from
-  MP4, `aac/al04_44.mp4`: ffmpeg fails it with `decode_pce: Input buffer
-  exhausted before END element found`, g2g decodes nothing).
-- **mpegtsmux takes USAC and writes a file nothing decodes** (8 streams,
-  `aac/usac/*`).
-- **LATM AAC loses samples** through flvmux and mpegtsmux, and fails the remux
-  of `mpegts/loewe.ts` into mp4mux and matroskamux (6 pairs,
-  `aac/latm_stereo_to_51.ts`: 1179648 bytes of PCM, 507904 through flvmux).
-- **The remux changes samples or frames** (14 pairs): bipbop TS AAC through
-  mp4mux comes back 49 sample frames short at the start,
-  `mpegts/tron_en_ge_aac_h264.ts` AAC comes back the same length with
-  different samples through flvmux, matroskamux and mp4mux,
-  `mp4/fragmented_nonseekable_sink.mp4` loses 3 of 300 frames and
-  `h264/twofields_packet.mp4` 2 of 147 through matroskamux and mpegtsmux,
-  `mkv/test7_cut.mkv` 1 of 72 through mp4mux, `webm/opus_vp9-alpha.webm` Opus
-  comes back 8 stereo samples longer through mp4mux and matroskamux.
-- **The remux fails mid-run or writes a file that does not decode** (5 pairs):
-  Opus in TS into matroskamux and mpegtsmux, `aac/al04sf_48.mp4` into
-  mpegtsmux.
+Rechecked at g2g master 1a3bdfcc, the remux keeps every frame and sample of
+the bipbop TS AAC through mp4mux, `mpegts/tron_en_ge_aac_h264.ts` AAC through
+flvmux, matroskamux and mp4mux, `mkv/test7_cut.mkv` through mp4mux,
+`aac/al04sf_48.mp4` through mpegtsmux and `webm/opus_vp9-alpha.webm` Opus
+through mp4mux. Bugs 75-81 cover the rest of the pairs this sweep found.
 
 ## Bugs found
 
@@ -879,8 +865,8 @@ sweep binary on Fedora 44, bugs 38-57 by the corpus sweep at b84a510a, bug 58
 by the canary (technique 17), bugs 59-62 by the sweep at 6c675bef, bug 63
 by the sweep at a988298b, bugs 64-67 by the sweep at 6e1fa495, bugs 68-71, 73 and 74
 by golden conformance through nvdec (technique 2, the nightly GPU gate) and bug 72
-by golden conformance through VulkanVideoDec on RADV. All
-are fixed in g2g with regression tests.
+by golden conformance through VulkanVideoDec on RADV, and bugs 75-81 by the
+remux round trip (technique 23). All are fixed in g2g with regression tests.
 
 1. **FLV demuxer out-of-bounds panic.** `flv.rs::parse_tag` indexed the AVC
    composition-time bytes directly while guarding the rest; a video tag shorter
@@ -1008,6 +994,22 @@ are fixed in g2g with regression tests.
 72. **VulkanVideoDec repeated earlier pictures on RADV when an H.264 frame_num gap was not passed to the driver** (M1805).
 73. **nvdec failed a VP9 show_existing_frame of a frame still held downstream** (M1811).
 74. **nvdec failed a VP9 superframe of two hidden frames and a show_existing_frame, which NVIDIA's parser rejects when handed it whole** (M1813).
+75. **flvmux, mp4mux and matroskamux dropped the program config element** of
+    channel-configuration-0 AAC, so ffmpeg failed `aac/al04_44.mp4` out of
+    flvmux (M1842).
+76. **mpegtsmux took USAC** and wrote a file nothing decodes (M1843).
+77. **LATM AAC lost samples** through flvmux and mpegtsmux: mpegtsmux carries it
+    as it arrives and the other muxers refuse it (M1844).
+78. **fMP4 fragments without a tfdt restarted their track at 0,** so
+    `mp4/fragmented_nonseekable_sink.mp4` lost 3 of 300 frames through
+    matroskamux and mpegtsmux (M1845).
+79. **Opus out of MPEG-TS lost its channel count and OpusHead,** so 7.1 Opus in
+    TS failed to remux into matroskamux and mpegtsmux (M1859).
+80. **The mkv, flv, TS, PS and fragmented-MP4 demuxers clipped open-GOP B frames**
+    presenting before the segment start, so `h264/twofields_packet.mp4` lost 2
+    of 147 frames through matroskamux and mpegtsmux (M1883).
+81. **matroskamux dropped an Opus end trim shorter than a millisecond,** so
+    `webm/opus_vp9-alpha.webm` came back 8 stereo samples longer (M2204).
 
 ## Not a gap
 
